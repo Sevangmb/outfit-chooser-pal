@@ -1,9 +1,18 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ClothingCard } from "@/components/ClothingCard";
 import { AddClothingButton } from "@/components/AddClothingButton";
+import { toast } from "sonner";
 
-// Données de test
-const sampleClothes = [
+interface Clothing {
+  id: number;
+  name: string;
+  category: string;
+  color: string;
+  image?: string;
+}
+
+// Données de test initiales
+const initialClothes = [
   {
     id: 1,
     name: "T-shirt blanc",
@@ -28,10 +37,30 @@ const sampleClothes = [
 ];
 
 const Index = () => {
-  const [clothes] = useState(sampleClothes);
+  const [clothes, setClothes] = useState<Clothing[]>([]);
+
+  // Charger les vêtements depuis localStorage au démarrage
+  useEffect(() => {
+    const savedClothes = localStorage.getItem('clothes');
+    if (savedClothes) {
+      setClothes(JSON.parse(savedClothes));
+      console.log("Vêtements chargés depuis localStorage:", JSON.parse(savedClothes));
+    } else {
+      setClothes(initialClothes);
+      localStorage.setItem('clothes', JSON.stringify(initialClothes));
+      console.log("Données initiales sauvegardées dans localStorage");
+    }
+  }, []);
+
+  // Sauvegarder les vêtements dans localStorage à chaque modification
+  useEffect(() => {
+    localStorage.setItem('clothes', JSON.stringify(clothes));
+    console.log("Vêtements sauvegardés dans localStorage:", clothes);
+  }, [clothes]);
 
   const handleAddClothing = () => {
     console.log("Ouvrir le formulaire d'ajout");
+    toast("Cette fonctionnalité sera bientôt disponible !");
   };
 
   return (
