@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Tshirt } from "lucide-react";
+import { Shirt } from "lucide-react";
 
 interface ClothingCardProps {
   image?: string;
@@ -20,7 +20,7 @@ export const ClothingCard = ({ image, name, category, color }: ClothingCardProps
           />
         ) : (
           <div className="w-full h-48 bg-secondary flex items-center justify-center">
-            <Tshirt className="w-16 h-16 text-muted-foreground" />
+            <Shirt className="w-16 h-16 text-muted-foreground" />
           </div>
         )}
       </CardHeader>
