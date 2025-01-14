@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { ClothingCard } from "@/components/ClothingCard";
 import { AddClothingButton } from "@/components/AddClothingButton";
 import { toast } from "sonner";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 
 interface Clothing {
