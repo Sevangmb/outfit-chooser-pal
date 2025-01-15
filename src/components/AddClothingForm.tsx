@@ -14,6 +14,8 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
@@ -32,6 +34,8 @@ interface AddClothingFormProps {
 
 export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
   const queryClient = useQueryClient();
+  const [isUploading, setIsUploading] = useState(false);
+  
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -42,6 +46,37 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
       user_id: null,
     },
   });
+
+  const handleImageUpload = async (file: File) => {
+    try {
+      setIsUploading(true);
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      console.log("Uploading file:", filePath);
+      const { error: uploadError, data } = await supabase.storage
+        .from('clothes')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      console.log("File uploaded successfully:", data);
+      const { data: { publicUrl } } = supabase.storage
+        .from('clothes')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      toast.error("Erreur lors du téléchargement de l'image");
+      return null;
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const onSubmit = async (values: FormValues) => {
     try {
@@ -106,8 +141,41 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
           )}
         />
 
-        <Button type="submit" className="w-full">
-          Ajouter
+        <FormField
+          control={form.control}
+          name="image"
+          render={({ field: { onChange, value } }) => (
+            <FormItem>
+              <FormLabel>Image</FormLabel>
+              <FormControl>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const imageUrl = await handleImageUpload(file);
+                      if (imageUrl) {
+                        onChange(imageUrl);
+                      }
+                    }
+                  }}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <Button type="submit" className="w-full" disabled={isUploading}>
+          {isUploading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Téléchargement...
+            </>
+          ) : (
+            "Ajouter"
+          )}
         </Button>
       </form>
     </Form>
