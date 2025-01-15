@@ -39,7 +39,7 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       console.log("Submitting form with values:", values);
-      const { error } = await supabase.from("clothes").insert([values]);
+      const { error } = await supabase.from("clothes").insert(values);
 
       if (error) throw error;
 
