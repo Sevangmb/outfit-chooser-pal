@@ -26,7 +26,14 @@ const formSchema = z.object({
   created_at: z.string().optional(),
 });
 
-type FormValues = z.infer<typeof formSchema>;
+type FormValues = {
+  name: string;
+  category: string;
+  color: string;
+  image: string | null;
+  user_id: string | null;
+  created_at?: string;
+};
 
 interface AddClothingFormProps {
   onSuccess?: () => void;
@@ -81,7 +88,13 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
   const onSubmit = async (values: FormValues) => {
     try {
       console.log("Submitting form with values:", values);
-      const { error } = await supabase.from("clothes").insert(values);
+      const { error } = await supabase.from("clothes").insert({
+        name: values.name,
+        category: values.category,
+        color: values.color,
+        image: values.image,
+        user_id: values.user_id,
+      });
 
       if (error) throw error;
 
