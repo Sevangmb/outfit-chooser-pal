@@ -19,7 +19,12 @@ const formSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
   category: z.string().min(2, "La catégorie doit contenir au moins 2 caractères"),
   color: z.string().min(2, "La couleur doit contenir au moins 2 caractères"),
+  image: z.string().nullable().optional(),
+  user_id: z.string().nullable().optional(),
+  created_at: z.string().optional(),
 });
+
+type FormValues = z.infer<typeof formSchema>;
 
 interface AddClothingFormProps {
   onSuccess?: () => void;
@@ -27,16 +32,18 @@ interface AddClothingFormProps {
 
 export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
   const queryClient = useQueryClient();
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
       category: "",
       color: "",
+      image: null,
+      user_id: null,
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: FormValues) => {
     try {
       console.log("Submitting form with values:", values);
       const { error } = await supabase.from("clothes").insert(values);
