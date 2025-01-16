@@ -4,6 +4,9 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { AddClothingDialog } from "@/components/AddClothingDialog";
+import { Button } from "@/components/ui/button";
+import { LogOut } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface Clothing {
   id: number;
@@ -30,6 +33,7 @@ const fetchClothes = async () => {
 };
 
 const Index = () => {
+  const navigate = useNavigate();
   const { data: clothes = [], isLoading, error } = useQuery({
     queryKey: ["clothes"],
     queryFn: fetchClothes,
@@ -42,6 +46,15 @@ const Index = () => {
     }
   }, [error]);
 
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast.error("Erreur lors de la déconnexion");
+    } else {
+      navigate("/auth");
+    }
+  };
+
   if (isLoading) {
     return <div>Chargement...</div>;
   }
@@ -50,7 +63,13 @@ const Index = () => {
     <div className="container py-8 px-4 mx-auto">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-semibold">Ma Garde-robe</h1>
-        <AddClothingDialog />
+        <div className="flex gap-4">
+          <AddClothingDialog />
+          <Button variant="outline" onClick={handleLogout}>
+            <LogOut className="mr-2 h-4 w-4" />
+            Déconnexion
+          </Button>
+        </div>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
