@@ -22,8 +22,6 @@ const formSchema = z.object({
   category: z.string().min(2, "La catégorie doit contenir au moins 2 caractères"),
   color: z.string().min(2, "La couleur doit contenir au moins 2 caractères"),
   image: z.string().nullable().optional(),
-  user_id: z.string().nullable().optional(),
-  created_at: z.string().optional(),
 });
 
 type FormValues = {
@@ -31,8 +29,6 @@ type FormValues = {
   category: string;
   color: string;
   image: string | null;
-  user_id: string | null;
-  created_at?: string;
 };
 
 interface AddClothingFormProps {
@@ -50,7 +46,6 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
       category: "",
       color: "",
       image: null,
-      user_id: null,
     },
   });
 
@@ -88,12 +83,21 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
   const onSubmit = async (values: FormValues) => {
     try {
       console.log("Submitting form with values:", values);
+      
+      // Get the current user's ID
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast.error("Vous devez être connecté pour ajouter un vêtement");
+        return;
+      }
+
       const { error } = await supabase.from("clothes").insert({
         name: values.name,
         category: values.category,
         color: values.color,
         image: values.image,
-        user_id: values.user_id,
+        user_id: user.id, // Use the current user's ID
       });
 
       if (error) throw error;
