@@ -82,6 +82,12 @@ export const FriendsList = () => {
         return;
       }
 
+      // Ensure data.users exists and is an array before using find
+      if (!Array.isArray(data?.users)) {
+        toast.error("Erreur lors de la recherche de l'utilisateur");
+        return;
+      }
+
       const friendUser = data.users.find((u: User) => u.email === newFriendEmail);
       if (!friendUser) {
         toast.error("Utilisateur non trouvé");
