@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { AddClothingDialog } from "@/components/AddClothingDialog";
 import { Button } from "@/components/ui/button";
-import { LogOut, Menu, Plus } from "lucide-react";
+import { LogOut, Menu, Plus, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   Sheet,
@@ -18,6 +18,8 @@ import {
   ScrollArea,
   ScrollBar,
 } from "@/components/ui/scroll-area";
+import { FriendsList } from "@/components/FriendsList";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Clothing {
   id: number;
@@ -25,6 +27,7 @@ interface Clothing {
   category: string;
   color: string;
   image?: string;
+  user_id: string;
 }
 
 const fetchClothes = async () => {
@@ -175,18 +178,31 @@ const Index = () => {
 
       {/* Content */}
       <div className="container py-8 px-4 mx-auto mt-16 md:mt-0">
-        {clothes.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground mb-4">Aucun vêtement dans votre garde-robe</p>
-            <AddClothingDialog />
-          </div>
-        ) : (
-          <div className="space-y-8">
-            <CategorySection title="Hauts" items={tops} />
-            <CategorySection title="Bas" items={bottoms} />
-            <CategorySection title="Chaussures" items={shoes} />
-          </div>
-        )}
+        <Tabs defaultValue="clothes">
+          <TabsList className="mb-8">
+            <TabsTrigger value="clothes">Mes Vêtements</TabsTrigger>
+            <TabsTrigger value="friends">Mes Amis</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="clothes">
+            {clothes.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground mb-4">Aucun vêtement dans votre garde-robe</p>
+                <AddClothingDialog />
+              </div>
+            ) : (
+              <div className="space-y-8">
+                <CategorySection title="Hauts" items={tops} />
+                <CategorySection title="Bas" items={bottoms} />
+                <CategorySection title="Chaussures" items={shoes} />
+              </div>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="friends">
+            <FriendsList />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
