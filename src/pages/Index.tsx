@@ -14,6 +14,10 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  ScrollArea,
+  ScrollBar,
+} from "@/components/ui/scroll-area";
 
 interface Clothing {
   id: number;
@@ -39,6 +43,35 @@ const fetchClothes = async () => {
   return data;
 };
 
+const CategorySection = ({ title, items }: { title: string; items: Clothing[] }) => (
+  <div className="mb-8">
+    <h2 className="text-xl font-semibold text-primary mb-4 px-4">{title}</h2>
+    <ScrollArea className="w-full whitespace-nowrap rounded-lg">
+      <div className="flex w-full space-x-4 p-4">
+        {items.length === 0 ? (
+          <div className="flex-none w-full">
+            <div className="text-muted-foreground text-center py-8 bg-secondary/30 rounded-lg">
+              Aucun vêtement dans cette catégorie
+            </div>
+          </div>
+        ) : (
+          items.map((item) => (
+            <div key={item.id} className="flex-none w-[250px]">
+              <ClothingCard
+                image={item.image}
+                name={item.name}
+                category={item.category}
+                color={item.color}
+              />
+            </div>
+          ))
+        )}
+      </div>
+      <ScrollBar orientation="horizontal" />
+    </ScrollArea>
+  </div>
+);
+
 const Index = () => {
   const navigate = useNavigate();
   const { data: clothes = [], isLoading, error } = useQuery({
@@ -61,6 +94,26 @@ const Index = () => {
       navigate("/auth");
     }
   };
+
+  const tops = clothes.filter(item => 
+    item.category.toLowerCase().includes("haut") || 
+    item.category.toLowerCase().includes("t-shirt") ||
+    item.category.toLowerCase().includes("chemise") ||
+    item.category.toLowerCase().includes("pull")
+  );
+
+  const bottoms = clothes.filter(item => 
+    item.category.toLowerCase().includes("bas") || 
+    item.category.toLowerCase().includes("pantalon") ||
+    item.category.toLowerCase().includes("jean") ||
+    item.category.toLowerCase().includes("short")
+  );
+
+  const shoes = clothes.filter(item => 
+    item.category.toLowerCase().includes("chaussure") || 
+    item.category.toLowerCase().includes("basket") ||
+    item.category.toLowerCase().includes("botte")
+  );
 
   if (isLoading) {
     return (
@@ -107,10 +160,7 @@ const Index = () => {
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-semibold text-primary">Ma Garde-robe</h1>
           <div className="flex gap-4">
-            <Button className="bg-primary hover:bg-primary/90">
-              <Plus className="mr-2 h-4 w-4" />
-              Ajouter un vêtement
-            </Button>
+            <AddClothingDialog />
             <Button 
               variant="outline" 
               onClick={handleLogout}
@@ -131,16 +181,10 @@ const Index = () => {
             <AddClothingDialog />
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {clothes.map((item) => (
-              <ClothingCard
-                key={item.id}
-                image={item.image}
-                name={item.name}
-                category={item.category}
-                color={item.color}
-              />
-            ))}
+          <div className="space-y-8">
+            <CategorySection title="Hauts" items={tops} />
+            <CategorySection title="Bas" items={bottoms} />
+            <CategorySection title="Chaussures" items={shoes} />
           </div>
         )}
       </div>
