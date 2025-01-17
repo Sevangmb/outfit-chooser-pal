@@ -63,6 +63,98 @@ export type Database = {
         }
         Relationships: []
       }
+      outfit_clothes: {
+        Row: {
+          clothes_id: number | null
+          created_at: string
+          id: number
+          outfit_id: number | null
+        }
+        Insert: {
+          clothes_id?: number | null
+          created_at?: string
+          id?: number
+          outfit_id?: number | null
+        }
+        Update: {
+          clothes_id?: number | null
+          created_at?: string
+          id?: number
+          outfit_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outfit_clothes_clothes_id_fkey"
+            columns: ["clothes_id"]
+            isOneToOne: false
+            referencedRelation: "clothes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "outfit_clothes_outfit_id_fkey"
+            columns: ["outfit_id"]
+            isOneToOne: false
+            referencedRelation: "outfits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      outfit_votes: {
+        Row: {
+          created_at: string
+          id: number
+          outfit_id: number | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          outfit_id?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          outfit_id?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outfit_votes_outfit_id_fkey"
+            columns: ["outfit_id"]
+            isOneToOne: false
+            referencedRelation: "outfits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      outfits: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: number
+          name: string
+          rating: number | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: number
+          name: string
+          rating?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: number
+          name?: string
+          rating?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
