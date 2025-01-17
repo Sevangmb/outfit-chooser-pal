@@ -75,14 +75,14 @@ export const FriendsList = () => {
       }
 
       // Find the user by email
-      const { data: users, error: userError } = await supabase.auth.admin.listUsers();
+      const { data, error: userError } = await supabase.auth.admin.listUsers();
       if (userError) {
         console.error("Error fetching users:", userError);
         toast.error("Erreur lors de la recherche de l'utilisateur");
         return;
       }
 
-      const friendUser = users?.find((u: User) => u.email === newFriendEmail);
+      const friendUser = data.users.find((u: User) => u.email === newFriendEmail);
       if (!friendUser) {
         toast.error("Utilisateur non trouvé");
         return;
