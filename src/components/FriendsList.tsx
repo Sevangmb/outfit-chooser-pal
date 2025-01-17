@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { UserPlus, UserCheck, UserX } from "lucide-react";
+import { User } from "@supabase/supabase-js";
 
 interface Friend {
   id: number;
@@ -74,17 +75,14 @@ export const FriendsList = () => {
       }
 
       // Find the user by email
-      const { data: { users }, error: userError } = await supabase.auth.admin.listUsers({
-        perPage: 1000,
-      });
-
+      const { data: users, error: userError } = await supabase.auth.admin.listUsers();
       if (userError) {
         console.error("Error fetching users:", userError);
         toast.error("Erreur lors de la recherche de l'utilisateur");
         return;
       }
 
-      const friendUser = users?.find(u => u.email === newFriendEmail);
+      const friendUser = users?.find((u: User) => u.email === newFriendEmail);
       if (!friendUser) {
         toast.error("Utilisateur non trouvé");
         return;
