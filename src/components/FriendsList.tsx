@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { UserPlus, UserCheck, UserX } from "lucide-react";
+import { User } from "@supabase/supabase-js";
 
 interface Friend {
   id: number;
@@ -51,7 +52,7 @@ export const FriendsList = () => {
 
       const friendsWithEmails = friendships.map((friendship: Friend) => {
         const friendId = friendship.friend_id === session.user.id ? friendship.user_id : friendship.friend_id;
-        const friendUser = users.find(u => u.id === friendId);
+        const friendUser = (users as User[]).find(u => u.id === friendId);
         return {
           ...friendship,
           friend_email: friendUser?.email
@@ -84,7 +85,7 @@ export const FriendsList = () => {
         return;
       }
 
-      const friendUser = users.find(u => u.email === newFriendEmail);
+      const friendUser = (users as User[]).find(u => u.email === newFriendEmail);
       if (!friendUser) {
         toast.error("Utilisateur non trouvé");
         return;
