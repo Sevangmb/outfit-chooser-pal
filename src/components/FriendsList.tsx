@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { UserPlus, UserCheck, UserX } from "lucide-react";
-import { User } from "@supabase/supabase-js";
 
 interface Friend {
   id: number;
@@ -23,6 +22,9 @@ export const FriendsList = () => {
     queryKey: ["friends"],
     queryFn: async () => {
       console.log("Fetching friends...");
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("No session");
+
       const { data: friendships, error } = await supabase
         .from("friendships")
         .select("*");
@@ -32,32 +34,29 @@ export const FriendsList = () => {
         throw error;
       }
 
-      // Get current user's session
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error("No session");
+      // For each friendship, get the friend's email using their profile
+      const friendsWithEmails = await Promise.all(
+        friendships.map(async (friendship: Friend) => {
+          const friendId = friendship.friend_id === session.user.id 
+            ? friendship.user_id 
+            : friendship.friend_id;
 
-      // Get emails for friends using their IDs
-      const friendIds = friendships.map((friendship: Friend) => 
-        friendship.friend_id === session.user.id ? friendship.user_id : friendship.friend_id
+          const { data: { user }, error: userError } = await supabase.auth.admin.getUserById(friendId);
+          
+          if (userError) {
+            console.error("Error fetching user:", userError);
+            return {
+              ...friendship,
+              friend_email: "Unknown user"
+            };
+          }
+
+          return {
+            ...friendship,
+            friend_email: user?.email
+          };
+        })
       );
-
-      const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers({
-        perPage: 1000,
-      });
-
-      if (usersError) {
-        console.error("Error fetching users:", usersError);
-        throw usersError;
-      }
-
-      const friendsWithEmails = friendships.map((friendship: Friend) => {
-        const friendId = friendship.friend_id === session.user.id ? friendship.user_id : friendship.friend_id;
-        const friendUser = (users as User[]).find(u => u.id === friendId);
-        return {
-          ...friendship,
-          friend_email: friendUser?.email
-        };
-      });
 
       console.log("Fetched friends:", friendsWithEmails);
       return friendsWithEmails;
@@ -74,7 +73,7 @@ export const FriendsList = () => {
         return;
       }
 
-      // Get the user ID for the email
+      // Find the user by email
       const { data: { users }, error: userError } = await supabase.auth.admin.listUsers({
         perPage: 1000,
       });
@@ -85,12 +84,25 @@ export const FriendsList = () => {
         return;
       }
 
-      const friendUser = (users as User[]).find(u => u.email === newFriendEmail);
+      const friendUser = users?.find(u => u.email === newFriendEmail);
       if (!friendUser) {
         toast.error("Utilisateur non trouvé");
         return;
       }
 
+      // Check if friendship already exists
+      const { data: existingFriendship } = await supabase
+        .from("friendships")
+        .select("*")
+        .or(`and(user_id.eq.${session.user.id},friend_id.eq.${friendUser.id}),and(user_id.eq.${friendUser.id},friend_id.eq.${session.user.id})`)
+        .single();
+
+      if (existingFriendship) {
+        toast.error("Cette amitié existe déjà");
+        return;
+      }
+
+      // Create new friendship
       const { error } = await supabase
         .from("friendships")
         .insert([{ 
@@ -100,12 +112,8 @@ export const FriendsList = () => {
         }]);
 
       if (error) {
-        if (error.code === "23505") {
-          toast.error("Cette amitié existe déjà");
-        } else {
-          console.error("Error adding friend:", error);
-          toast.error("Erreur lors de l'ajout de l'ami");
-        }
+        console.error("Error adding friend:", error);
+        toast.error("Erreur lors de l'ajout de l'ami");
         return;
       }
 
