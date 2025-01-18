@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Star } from "lucide-react";
+import { User } from "@supabase/supabase-js";
 
 interface Outfit {
   id: number;
@@ -87,13 +88,13 @@ export const FavoriteOutfits = () => {
       }
 
       // Récupérer les emails des amis
-      const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers();
+      const { data: users, error: usersError } = await supabase.auth.admin.listUsers();
       if (usersError) throw usersError;
 
       const outfitsWithUserEmails = outfits.map((outfit: any) => ({
         ...outfit,
         clothes: outfit.clothes.map((item: any) => item.clothes),
-        user_email: users.find(u => u.id === outfit.user_id)?.email || "Utilisateur inconnu"
+        user_email: (users as User[]).find(u => u.id === outfit.user_id)?.email || "Utilisateur inconnu"
       }));
 
       console.log("Fetched friends' favorite outfits:", outfitsWithUserEmails);
