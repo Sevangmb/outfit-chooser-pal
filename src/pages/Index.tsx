@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -17,6 +18,21 @@ interface Clothing {
   image?: string;
   user_id: string;
 }
+
+const fetchClothes = async (): Promise<Clothing[]> => {
+  console.log("Fetching clothes...");
+  const { data, error } = await supabase
+    .from("clothes")
+    .select("*");
+
+  if (error) {
+    console.error("Error fetching clothes:", error);
+    throw error;
+  }
+
+  console.log("Fetched clothes:", data);
+  return data || [];
+};
 
 const Index = () => {
   const navigate = useNavigate();
@@ -63,7 +79,7 @@ const Index = () => {
           </TabsList>
           
           <TabsContent value="outfits">
-            <OutfitCreator />
+            <OutfitCreator clothes={clothes} />
           </TabsContent>
 
           <TabsContent value="clothes">
