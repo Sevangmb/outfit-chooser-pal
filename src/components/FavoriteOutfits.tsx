@@ -1,10 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Star } from "lucide-react";
 import { User } from "@supabase/supabase-js";
+import { FavoritesList } from "./favorites/FavoritesList";
 
 interface Outfit {
   id: number;
@@ -46,7 +44,7 @@ export const FavoriteOutfits = () => {
       console.log("Fetched my favorite outfits:", outfits);
       return outfits.map((outfit: any) => ({
         ...outfit,
-        clothes: outfit.clothes.map((item: any) => item.clothes)
+        clothes: outfit.clothes.map((item: any) => item.clothes),
       }));
     },
   });
@@ -55,7 +53,6 @@ export const FavoriteOutfits = () => {
     queryKey: ["friends-favorite-outfits"],
     queryFn: async () => {
       console.log("Fetching friends' favorite outfits...");
-      // D'abord, récupérer les IDs des amis
       const { data: friendships, error: friendshipsError } = await supabase
         .from("friendships")
         .select("*")
@@ -65,12 +62,11 @@ export const FavoriteOutfits = () => {
 
       const currentUserId = (await supabase.auth.getSession()).data.session?.user.id;
       const friendIds = friendships
-        .map(f => f.user_id === currentUserId ? f.friend_id : f.user_id)
-        .filter(id => id !== currentUserId);
+        .map((f) => (f.user_id === currentUserId ? f.friend_id : f.user_id))
+        .filter((id) => id !== currentUserId);
 
       if (friendIds.length === 0) return [];
 
-      // Ensuite, récupérer les tenues favorites des amis
       const { data: outfits, error: outfitsError } = await supabase
         .from("outfits")
         .select(`
@@ -87,48 +83,21 @@ export const FavoriteOutfits = () => {
         throw outfitsError;
       }
 
-      // Récupérer les emails des amis
-      const { data: users, error: usersError } = await supabase.auth.admin.listUsers();
+      const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers();
       if (usersError) throw usersError;
+
+      const userArray = Array.isArray(users) ? users : [];
 
       const outfitsWithUserEmails = outfits.map((outfit: any) => ({
         ...outfit,
         clothes: outfit.clothes.map((item: any) => item.clothes),
-        user_email: (users as User[]).find(u => u.id === outfit.user_id)?.email || "Utilisateur inconnu"
+        user_email: userArray.find((u) => u.id === outfit.user_id)?.email || "Utilisateur inconnu",
       }));
 
       console.log("Fetched friends' favorite outfits:", outfitsWithUserEmails);
       return outfitsWithUserEmails;
     },
   });
-
-  const OutfitCard = ({ outfit }: { outfit: Outfit }) => (
-    <Card className="w-full">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <div className="flex flex-col">
-          <h3 className="font-semibold">{outfit.name}</h3>
-          {outfit.user_email && (
-            <p className="text-sm text-muted-foreground">Par {outfit.user_email}</p>
-          )}
-        </div>
-        <Star className="h-4 w-4 fill-primary text-primary" />
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-wrap gap-2">
-          {outfit.clothes.map((item) => (
-            <div
-              key={item.id}
-              className="flex items-center gap-2 rounded-full bg-secondary px-3 py-1 text-sm"
-            >
-              <span>{item.name}</span>
-              <span className="text-muted-foreground">•</span>
-              <span className="text-muted-foreground">{item.color}</span>
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-  );
 
   return (
     <Tabs defaultValue="my-favorites" className="w-full">
@@ -137,34 +106,16 @@ export const FavoriteOutfits = () => {
         <TabsTrigger value="friends-favorites">Favoris des Amis</TabsTrigger>
       </TabsList>
       <TabsContent value="my-favorites">
-        <ScrollArea className="h-[600px] w-full rounded-md border p-4">
-          <div className="space-y-4">
-            {myFavorites.length === 0 ? (
-              <p className="text-center text-muted-foreground">
-                Vous n'avez pas encore de tenues favorites
-              </p>
-            ) : (
-              myFavorites.map((outfit) => (
-                <OutfitCard key={outfit.id} outfit={outfit} />
-              ))
-            )}
-          </div>
-        </ScrollArea>
+        <FavoritesList
+          outfits={myFavorites}
+          emptyMessage="Vous n'avez pas encore de tenues favorites"
+        />
       </TabsContent>
       <TabsContent value="friends-favorites">
-        <ScrollArea className="h-[600px] w-full rounded-md border p-4">
-          <div className="space-y-4">
-            {friendsFavorites.length === 0 ? (
-              <p className="text-center text-muted-foreground">
-                Vos amis n'ont pas encore de tenues favorites
-              </p>
-            ) : (
-              friendsFavorites.map((outfit) => (
-                <OutfitCard key={outfit.id} outfit={outfit} />
-              ))
-            )}
-          </div>
-        </ScrollArea>
+        <FavoritesList
+          outfits={friendsFavorites}
+          emptyMessage="Vos amis n'ont pas encore de tenues favorites"
+        />
       </TabsContent>
     </Tabs>
   );

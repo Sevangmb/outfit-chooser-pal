@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FriendsList } from "@/components/FriendsList";
 import { Header } from "@/components/Header";
-import { MobileHeader } from "@/components/MobileHeader";
+import { Navigation } from "@/components/Navigation";
 import { ClothingTab } from "@/components/ClothingTab";
 import { OutfitCreator } from "@/components/OutfitCreator";
 
@@ -21,9 +21,7 @@ interface Clothing {
 
 const fetchClothes = async (): Promise<Clothing[]> => {
   console.log("Fetching clothes...");
-  const { data, error } = await supabase
-    .from("clothes")
-    .select("*");
+  const { data, error } = await supabase.from("clothes").select("*");
 
   if (error) {
     console.error("Error fetching clothes:", error);
@@ -36,7 +34,11 @@ const fetchClothes = async (): Promise<Clothing[]> => {
 
 const Index = () => {
   const navigate = useNavigate();
-  const { data: clothes = [], isLoading, error } = useQuery({
+  const {
+    data: clothes = [],
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["clothes"],
     queryFn: fetchClothes,
   });
@@ -67,17 +69,17 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-secondary/30">
-      <MobileHeader onLogout={handleLogout} />
-      <Header onLogout={handleLogout} className="hidden md:block container py-8" />
+      <Navigation />
+      <Header onLogout={handleLogout} className="container py-8 mt-16" />
 
-      <div className="container py-8 px-4 mx-auto mt-16 md:mt-0">
+      <div className="container py-8 px-4 mx-auto">
         <Tabs defaultValue="outfits">
           <TabsList className="mb-8">
             <TabsTrigger value="outfits">Créer un ensemble</TabsTrigger>
             <TabsTrigger value="clothes">Mes Vêtements</TabsTrigger>
             <TabsTrigger value="friends">Mes Amis</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="outfits">
             <OutfitCreator clothes={clothes} />
           </TabsContent>
@@ -85,7 +87,7 @@ const Index = () => {
           <TabsContent value="clothes">
             <ClothingTab clothes={clothes} />
           </TabsContent>
-          
+
           <TabsContent value="friends">
             <FriendsList />
           </TabsContent>
