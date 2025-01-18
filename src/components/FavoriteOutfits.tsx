@@ -22,7 +22,7 @@ interface Outfit {
 }
 
 export const FavoriteOutfits = () => {
-  const { data: myFavorites = [] } = useQuery({
+  const { data: myFavorites = [] } = useQuery<Outfit[]>({
     queryKey: ["my-favorite-outfits"],
     queryFn: async () => {
       console.log("Fetching my favorite outfits...");
@@ -50,7 +50,7 @@ export const FavoriteOutfits = () => {
     },
   });
 
-  const { data: friendsFavorites = [] } = useQuery({
+  const { data: friendsFavorites = [] } = useQuery<Outfit[]>({
     queryKey: ["friends-favorite-outfits"],
     queryFn: async () => {
       console.log("Fetching friends' favorite outfits...");
