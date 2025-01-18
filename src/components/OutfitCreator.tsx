@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import { Star, StarOff } from "lucide-react";
+import { Star } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
 
 interface Clothing {
   id: number;
@@ -15,29 +14,14 @@ interface Clothing {
   user_id: string;
 }
 
-export const OutfitCreator = () => {
+interface OutfitCreatorProps {
+  clothes: Clothing[];
+}
+
+export const OutfitCreator = ({ clothes }: OutfitCreatorProps) => {
   const [selectedTop, setSelectedTop] = useState<number | null>(null);
   const [selectedBottom, setSelectedBottom] = useState<number | null>(null);
   const [selectedShoes, setSelectedShoes] = useState<number | null>(null);
-
-  const { data: clothes = [] } = useQuery({
-    queryKey: ["clothes"],
-    queryFn: async () => {
-      console.log("Fetching clothes...");
-      const { data, error } = await supabase
-        .from("clothes")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        console.error("Error fetching clothes:", error);
-        throw error;
-      }
-
-      console.log("Fetched clothes:", data);
-      return data;
-    },
-  });
 
   const tops = clothes.filter(item => 
     item.category.toLowerCase().includes("haut") || 
