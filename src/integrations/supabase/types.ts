@@ -133,6 +133,7 @@ export type Database = {
           created_at: string
           description: string | null
           id: number
+          is_favorite: boolean | null
           name: string
           rating: number | null
           user_id: string | null
@@ -141,6 +142,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: number
+          is_favorite?: boolean | null
           name: string
           rating?: number | null
           user_id?: string | null
@@ -149,6 +151,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: number
+          is_favorite?: boolean | null
           name?: string
           rating?: number | null
           user_id?: string | null
