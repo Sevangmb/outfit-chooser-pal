@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Favorites from "./pages/Favorites";
+import Contest from "./pages/Contest";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +57,14 @@ const App = () => (
             element={
               <ProtectedRoute>
                 <Favorites />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/contest"
+            element={
+              <ProtectedRoute>
+                <Contest />
               </ProtectedRoute>
             }
           />
