@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { UserPlus, UserCheck, UserX } from "lucide-react";
-import { User } from "@supabase/supabase-js";
 
 interface Friend {
   id: number;
@@ -35,17 +34,21 @@ export const FriendsList = () => {
         throw error;
       }
 
-      // For each friendship, get the friend's email using their profile
+      // Get friend emails using their profiles
       const friendsWithEmails = await Promise.all(
         friendships.map(async (friendship: Friend) => {
           const friendId = friendship.friend_id === session.user.id 
             ? friendship.user_id 
             : friendship.friend_id;
 
-          const { data: { user }, error: userError } = await supabase.auth.admin.getUserById(friendId);
+          const { data: profiles, error: profileError } = await supabase
+            .from('profiles')
+            .select('email')
+            .eq('id', friendId)
+            .single();
           
-          if (userError) {
-            console.error("Error fetching user:", userError);
+          if (profileError) {
+            console.error("Error fetching profile:", profileError);
             return {
               ...friendship,
               friend_email: "Unknown user"
@@ -54,7 +57,7 @@ export const FriendsList = () => {
 
           return {
             ...friendship,
-            friend_email: user?.email
+            friend_email: profiles?.email
           };
         })
       );
@@ -67,29 +70,20 @@ export const FriendsList = () => {
   const handleAddFriend = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // Get the current user's session
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         toast.error("Vous devez être connecté");
         return;
       }
 
-      // Find the user by email
-      const { data, error: userError } = await supabase.auth.admin.listUsers();
-      if (userError) {
-        console.error("Error fetching users:", userError);
-        toast.error("Erreur lors de la recherche de l'utilisateur");
-        return;
-      }
+      // Find the user by email in the profiles table
+      const { data: friendProfile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', newFriendEmail)
+        .single();
 
-      // Ensure data.users exists and is an array before using find
-      if (!Array.isArray(data?.users)) {
-        toast.error("Erreur lors de la recherche de l'utilisateur");
-        return;
-      }
-
-      const friendUser = data.users.find((u: User) => u.email === newFriendEmail);
-      if (!friendUser) {
+      if (profileError || !friendProfile) {
         toast.error("Utilisateur non trouvé");
         return;
       }
@@ -98,7 +92,7 @@ export const FriendsList = () => {
       const { data: existingFriendship } = await supabase
         .from("friendships")
         .select("*")
-        .or(`and(user_id.eq.${session.user.id},friend_id.eq.${friendUser.id}),and(user_id.eq.${friendUser.id},friend_id.eq.${session.user.id})`)
+        .or(`and(user_id.eq.${session.user.id},friend_id.eq.${friendProfile.id}),and(user_id.eq.${friendProfile.id},friend_id.eq.${session.user.id})`)
         .single();
 
       if (existingFriendship) {
@@ -111,7 +105,7 @@ export const FriendsList = () => {
         .from("friendships")
         .insert([{ 
           user_id: session.user.id,
-          friend_id: friendUser.id,
+          friend_id: friendProfile.id,
           status: 'pending'
         }]);
 
