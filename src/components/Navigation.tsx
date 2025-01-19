@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { NavigationMenu, NavigationMenuItem, NavigationMenuList } from "@/components/ui/navigation-menu";
-import { Home, Heart, Menu } from "lucide-react";
+import { Home, Heart, Trophy, Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 
@@ -41,6 +41,21 @@ export const Navigation = ({ className }: NavigationProps) => {
           <Link to="/favorites">
             <Heart className="h-4 w-4" />
             <span>Favoris</span>
+          </Link>
+        </Button>
+      </NavigationMenuItem>
+      <NavigationMenuItem>
+        <Button
+          variant="ghost"
+          className={cn(
+            "flex items-center gap-2",
+            location.pathname === "/contest" && "bg-primary/10 text-primary"
+          )}
+          asChild
+        >
+          <Link to="/contest">
+            <Trophy className="h-4 w-4" />
+            <span>Concours</span>
           </Link>
         </Button>
       </NavigationMenuItem>
