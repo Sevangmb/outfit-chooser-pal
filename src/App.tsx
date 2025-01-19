@@ -10,6 +10,7 @@ import Auth from "./pages/Auth";
 import Favorites from "./pages/Favorites";
 import Contest from "./pages/Contest";
 import LandingPage from "./pages/LandingPage";
+import Profile from "./pages/Profile";
 
 const queryClient = new QueryClient();
 
@@ -67,6 +68,14 @@ const App = () => (
             element={
               <ProtectedRoute>
                 <Contest />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
               </ProtectedRoute>
             }
           />

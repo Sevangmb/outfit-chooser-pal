@@ -1,94 +1,49 @@
-import { Link, useLocation } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { NavigationMenu, NavigationMenuItem, NavigationMenuList } from "@/components/ui/navigation-menu";
-import { Home, Heart, Trophy, Menu } from "lucide-react";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { NavLink } from "react-router-dom";
+import { Home, Heart, Trophy, User } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "./ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
-interface NavigationProps {
-  className?: string;
-}
-
-export const Navigation = ({ className }: NavigationProps) => {
-  const location = useLocation();
-
-  const NavLinks = () => (
-    <>
-      <NavigationMenuItem>
-        <Button
-          variant="ghost"
-          className={cn(
-            "flex items-center gap-2",
-            location.pathname === "/" && "bg-primary/10 text-primary"
-          )}
-          asChild
-        >
-          <Link to="/">
-            <Home className="h-4 w-4" />
-            <span>Accueil</span>
-          </Link>
-        </Button>
-      </NavigationMenuItem>
-      <NavigationMenuItem>
-        <Button
-          variant="ghost"
-          className={cn(
-            "flex items-center gap-2",
-            location.pathname === "/favorites" && "bg-primary/10 text-primary"
-          )}
-          asChild
-        >
-          <Link to="/favorites">
-            <Heart className="h-4 w-4" />
-            <span>Favoris</span>
-          </Link>
-        </Button>
-      </NavigationMenuItem>
-      <NavigationMenuItem>
-        <Button
-          variant="ghost"
-          className={cn(
-            "flex items-center gap-2",
-            location.pathname === "/contest" && "bg-primary/10 text-primary"
-          )}
-          asChild
-        >
-          <Link to="/contest">
-            <Trophy className="h-4 w-4" />
-            <span>Concours</span>
-          </Link>
-        </Button>
-      </NavigationMenuItem>
-    </>
-  );
+export const Navigation = () => {
+  const links = [
+    { to: "/", icon: Home, label: "Accueil" },
+    { to: "/favorites", icon: Heart, label: "Favoris" },
+    { to: "/contest", icon: Trophy, label: "Concours" },
+    { to: "/profile", icon: User, label: "Profil" },
+  ];
 
   return (
-    <div className={cn("fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b border-secondary", className)}>
-      {/* Desktop Navigation */}
-      <div className="hidden md:block container">
-        <NavigationMenu className="mx-auto">
-          <NavigationMenuList className="space-x-2">
-            <NavLinks />
-          </NavigationMenuList>
-        </NavigationMenu>
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-t border-secondary md:top-0 md:bottom-auto">
+      <div className="container mx-auto px-4">
+        <div className="flex justify-around md:justify-end items-center h-16 gap-2">
+          {links.map(({ to, icon: Icon, label }) => (
+            <Tooltip key={to}>
+              <TooltipTrigger asChild>
+                <NavLink
+                  to={to}
+                  className={({ isActive }) =>
+                    cn(
+                      "transition-colors hover:text-primary",
+                      isActive ? "text-primary" : "text-muted-foreground"
+                    )
+                  }
+                >
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="relative"
+                  >
+                    <Icon className="h-5 w-5" />
+                  </Button>
+                </NavLink>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{label}</p>
+              </TooltipContent>
+            </Tooltip>
+          ))}
+        </div>
       </div>
-
-      {/* Mobile Navigation */}
-      <div className="md:hidden p-4 flex justify-between items-center">
-        <h1 className="text-xl font-semibold text-primary">Ma Garde-robe</h1>
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <Menu className="h-6 w-6" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="right">
-            <nav className="flex flex-col gap-2 mt-8">
-              <NavLinks />
-            </nav>
-          </SheetContent>
-        </Sheet>
-      </div>
-    </div>
+    </nav>
   );
 };
