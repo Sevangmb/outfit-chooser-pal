@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Favorites from "./pages/Favorites";
 import Contest from "./pages/Contest";
+import LandingPage from "./pages/LandingPage";
 
 const queryClient = new QueryClient();
 
@@ -33,7 +34,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <div>Chargement...</div>;
   }
 
-  return isAuthenticated ? <>{children}</> : <Navigate to="/auth" />;
+  return isAuthenticated ? <>{children}</> : <Navigate to="/landing" />;
 };
 
 const App = () => (
@@ -43,6 +44,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          <Route path="/landing" element={<LandingPage />} />
           <Route path="/auth" element={<Auth />} />
           <Route
             path="/"
