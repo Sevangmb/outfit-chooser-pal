@@ -15,6 +15,12 @@ interface Friend {
   friend_email?: string;
 }
 
+interface Profile {
+  id: string;
+  email: string;
+  created_at: string;
+}
+
 export const FriendsList = () => {
   const [newFriendEmail, setNewFriendEmail] = useState("");
 
@@ -41,10 +47,10 @@ export const FriendsList = () => {
             ? friendship.user_id 
             : friendship.friend_id;
 
-          const { data: profiles, error: profileError } = await supabase
-            .from('profiles')
-            .select('email')
-            .eq('id', friendId)
+          const { data: profile, error: profileError } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", friendId)
             .single();
           
           if (profileError) {
@@ -57,7 +63,7 @@ export const FriendsList = () => {
 
           return {
             ...friendship,
-            friend_email: profiles?.email
+            friend_email: (profile as Profile)?.email
           };
         })
       );
@@ -78,9 +84,9 @@ export const FriendsList = () => {
 
       // Find the user by email in the profiles table
       const { data: friendProfile, error: profileError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('email', newFriendEmail)
+        .from("profiles")
+        .select("*")
+        .eq("email", newFriendEmail)
         .single();
 
       if (profileError || !friendProfile) {
