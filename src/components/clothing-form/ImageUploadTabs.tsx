@@ -7,11 +7,14 @@ import { UseFormReturn } from "react-hook-form";
 import { FormValues } from "@/types/clothing";
 import { toast } from "sonner";
 import { useCallback, useState } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 interface ImageUploadTabsProps {
   form: UseFormReturn<FormValues>;
   isUploading: boolean;
   previewUrl: string | null;
+  uploadError: string | null;
   onFileUpload: (file: File) => Promise<string | null>;
   onCameraCapture: () => Promise<void>;
   onUrlUpload: (url: string) => Promise<void>;
@@ -21,6 +24,7 @@ export const ImageUploadTabs = ({
   form,
   isUploading,
   previewUrl,
+  uploadError,
   onFileUpload,
   onCameraCapture,
   onUrlUpload,
@@ -60,11 +64,21 @@ export const ImageUploadTabs = ({
 
     try {
       setIsVerifying(true);
-      new URL(url); // Validate URL format
+      // Validate URL format
+      new URL(url);
+      
+      // Verify image can be loaded
+      await new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = url;
+      });
+      
       await onUrlUpload(url);
     } catch (error) {
       console.error("Error with URL:", error);
-      toast.error("URL invalide");
+      toast.error("URL invalide ou image inaccessible");
     } finally {
       setIsVerifying(false);
     }
@@ -130,6 +144,13 @@ export const ImageUploadTabs = ({
           </div>
         </TabsContent>
       </Tabs>
+
+      {uploadError && (
+        <Alert variant="destructive" className="mt-2">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{uploadError}</AlertDescription>
+        </Alert>
+      )}
 
       {previewUrl && (
         <div className="mt-4 relative aspect-square w-full max-w-sm mx-auto overflow-hidden rounded-lg border">
