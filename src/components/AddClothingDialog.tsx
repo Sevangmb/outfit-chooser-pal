@@ -12,20 +12,16 @@ import { useState } from "react";
 export const AddClothingDialog = () => {
   const [open, setOpen] = useState(false);
 
-  const handleOpenChange = (newOpen: boolean) => {
-    setOpen(newOpen);
-  };
-
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <AddClothingButton onClick={() => handleOpenChange(true)} />
+        <AddClothingButton onClick={() => setOpen(true)} />
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Ajouter un vêtement</DialogTitle>
         </DialogHeader>
-        <AddClothingForm onSuccess={() => handleOpenChange(false)} />
+        <AddClothingForm onSuccess={() => setOpen(false)} />
       </DialogContent>
     </Dialog>
   );
