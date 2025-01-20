@@ -19,7 +19,7 @@ const Favorites = () => {
   return (
     <div className="min-h-screen bg-secondary/30">
       <Navigation />
-      <Header onLogout={handleLogout} className="container py-8 mt-16" />
+      <Header className="container py-8 mt-16" />
 
       <div className="container py-8 px-4 mx-auto">
         <h1 className="text-2xl font-bold mb-6">Tenues Favorites</h1>
