@@ -85,7 +85,22 @@ export type Database = {
           following_id?: string
           id?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "followers_follower_profile_fkey"
+            columns: ["follower_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "followers_following_profile_fkey"
+            columns: ["following_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       friendships: {
         Row: {

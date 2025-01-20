@@ -1,6 +1,6 @@
-export interface FollowStats {
-  followers_count: number;
-  following_count: number;
+export interface Profile {
+  id: string;
+  email: string;
 }
 
 export interface Follower {
@@ -8,8 +8,6 @@ export interface Follower {
   follower_id: string;
   following_id: string;
   created_at: string;
-  profile?: {
-    id: string;
-    email: string;
-  }
+  follower?: Profile;
+  following?: Profile;
 }

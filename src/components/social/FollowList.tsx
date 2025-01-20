@@ -18,7 +18,7 @@ export const FollowList = ({ userId }: FollowListProps) => {
         .from("followers")
         .select(`
           *,
-          profile:profiles(id, email)
+          follower:profiles!followers_follower_profile_fkey(id, email)
         `)
         .eq("following_id", userId)
         .returns<Follower[]>();
@@ -40,7 +40,7 @@ export const FollowList = ({ userId }: FollowListProps) => {
         .from("followers")
         .select(`
           *,
-          profile:profiles(id, email)
+          following:profiles!followers_following_profile_fkey(id, email)
         `)
         .eq("follower_id", userId)
         .returns<Follower[]>();
@@ -76,10 +76,10 @@ export const FollowList = ({ userId }: FollowListProps) => {
             <div className="flex items-center gap-3">
               <Avatar>
                 <AvatarFallback>
-                  {follower.profile?.email?.charAt(0).toUpperCase()}
+                  {follower.follower?.email?.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <span>{follower.profile?.email}</span>
+              <span>{follower.follower?.email}</span>
             </div>
             <FollowButton
               userId={follower.follower_id}
@@ -99,10 +99,10 @@ export const FollowList = ({ userId }: FollowListProps) => {
             <div className="flex items-center gap-3">
               <Avatar>
                 <AvatarFallback>
-                  {follow.profile?.email?.charAt(0).toUpperCase()}
+                  {follow.following?.email?.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <span>{follow.profile?.email}</span>
+              <span>{follow.following?.email}</span>
             </div>
             <FollowButton
               userId={follow.following_id}
