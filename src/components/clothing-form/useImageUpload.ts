@@ -8,14 +8,26 @@ export const useImageUpload = () => {
 
   const verifyImageUrl = async (url: string): Promise<boolean> => {
     try {
-      const response = await fetch(url);
+      console.log("Verifying image URL:", url);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 seconds timeout
+
+      const response = await fetch(url, {
+        signal: controller.signal,
+        method: 'HEAD' // Only fetch headers, not the full image
+      });
+
+      clearTimeout(timeoutId);
+
       if (!response.ok) {
         throw new Error(`Image not accessible: ${response.status}`);
       }
+
       const contentType = response.headers.get("content-type");
       if (!contentType || !contentType.startsWith("image/")) {
         throw new Error("URL does not point to a valid image");
       }
+
       return true;
     } catch (error) {
       console.error("Error verifying image URL:", error);
@@ -27,6 +39,19 @@ export const useImageUpload = () => {
     try {
       setIsUploading(true);
       toast.info("Téléchargement de l'image en cours...");
+      
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast.error("Le fichier doit être une image");
+        return null;
+      }
+
+      // Validate file size (5MB max)
+      const MAX_SIZE = 5 * 1024 * 1024;
+      if (file.size > MAX_SIZE) {
+        toast.error("L'image ne doit pas dépasser 5MB");
+        return null;
+      }
       
       // Create a local preview URL
       const localPreviewUrl = URL.createObjectURL(file);
@@ -51,7 +76,7 @@ export const useImageUpload = () => {
         .from('clothes')
         .getPublicUrl(filePath);
 
-      // Verify the uploaded image is accessible
+      // Verify the uploaded image is accessible with timeout
       const isValid = await verifyImageUrl(publicUrl);
       if (!isValid) {
         throw new Error("Uploaded image is not accessible");
@@ -84,5 +109,6 @@ export const useImageUpload = () => {
     previewUrl,
     handleImageUpload,
     resetPreview,
+    verifyImageUrl,
   };
 };

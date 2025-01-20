@@ -6,7 +6,7 @@ import { FormControl, FormItem, FormLabel, FormMessage } from "@/components/ui/f
 import { UseFormReturn } from "react-hook-form";
 import { FormValues } from "@/types/clothing";
 import { toast } from "sonner";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 interface ImageUploadTabsProps {
   form: UseFormReturn<FormValues>;
@@ -26,9 +26,11 @@ export const ImageUploadTabs = ({
   onUrlUpload,
 }: ImageUploadTabsProps) => {
   const [imageLoadError, setImageLoadError] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
 
   const verifyImageUrl = async (url: string) => {
     try {
+      setIsVerifying(true);
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`Image not accessible: ${response.status}`);
@@ -41,8 +43,20 @@ export const ImageUploadTabs = ({
     } catch (error) {
       console.error("Error verifying image URL:", error);
       return false;
+    } finally {
+      setIsVerifying(false);
     }
   };
+
+  const handleImageLoad = useCallback(() => {
+    setImageLoadError(false);
+    toast.success("Image chargée avec succès");
+  }, []);
+
+  const handleImageError = useCallback(() => {
+    setImageLoadError(true);
+    toast.error("Erreur lors du chargement de l'image");
+  }, []);
 
   useEffect(() => {
     if (previewUrl) {
@@ -54,6 +68,8 @@ export const ImageUploadTabs = ({
           setImageLoadError(false);
         }
       });
+    } else {
+      setImageLoadError(false);
     }
   }, [previewUrl]);
 
@@ -90,6 +106,7 @@ export const ImageUploadTabs = ({
                   }
                 }
               }}
+              disabled={isUploading}
             />
           </FormControl>
         </TabsContent>
@@ -112,6 +129,7 @@ export const ImageUploadTabs = ({
               type="url"
               placeholder="https://example.com/image.jpg"
               onChange={(e) => form.setValue("imageUrl", e.target.value)}
+              disabled={isUploading || isVerifying}
             />
             <Button
               type="button"
@@ -126,9 +144,9 @@ export const ImageUploadTabs = ({
                   }
                 }
               }}
-              disabled={isUploading}
+              disabled={isUploading || isVerifying}
             >
-              Importer
+              {isVerifying ? "Vérification..." : "Importer"}
             </Button>
           </div>
         </TabsContent>
@@ -140,14 +158,8 @@ export const ImageUploadTabs = ({
             src={previewUrl}
             alt="Aperçu"
             className={`object-cover w-full h-full ${imageLoadError ? 'opacity-50' : ''}`}
-            onError={() => {
-              setImageLoadError(true);
-              toast.error("Erreur lors du chargement de l'image");
-            }}
-            onLoad={() => {
-              setImageLoadError(false);
-              toast.success("Image chargée avec succès");
-            }}
+            onError={handleImageError}
+            onLoad={handleImageLoad}
           />
           {imageLoadError && (
             <div className="absolute inset-0 flex items-center justify-center bg-background/50">
