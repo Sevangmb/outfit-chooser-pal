@@ -43,6 +43,7 @@ interface OutfitCardProps {
 
 export const OutfitCard = ({ outfit }: OutfitCardProps) => {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: commentCount = 0 } = useQuery({
@@ -152,12 +153,21 @@ export const OutfitCard = ({ outfit }: OutfitCardProps) => {
         <CardContent className="p-0">
           <AspectRatio ratio={4/3}>
             {mainImage ? (
-              <img
-                src={mainImage}
-                alt={outfit.name}
-                className="w-full h-full object-cover cursor-pointer"
-                onClick={() => setIsDetailsOpen(true)}
-              />
+              <>
+                {!isImageLoaded && (
+                  <div className="w-full h-full bg-secondary/30 animate-pulse" />
+                )}
+                <img
+                  src={`${mainImage}?quality=75&width=600`}
+                  alt={outfit.name}
+                  className={`w-full h-full object-cover cursor-pointer transition-opacity duration-300 ${
+                    isImageLoaded ? 'opacity-100' : 'opacity-0'
+                  }`}
+                  onClick={() => setIsDetailsOpen(true)}
+                  onLoad={() => setIsImageLoaded(true)}
+                  loading="lazy"
+                />
+              </>
             ) : (
               <div className="w-full h-full bg-secondary/30 flex items-center justify-center">
                 Pas d'image

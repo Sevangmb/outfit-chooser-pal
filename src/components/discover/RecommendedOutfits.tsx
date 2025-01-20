@@ -1,6 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { OutfitCard } from "@/components/feed/OutfitCard";
+import { useInView } from "react-intersection-observer";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useEffect, useState } from "react";
 
 interface Outfit {
   id: number;
@@ -21,7 +24,13 @@ interface Outfit {
   }[];
 }
 
+const ITEMS_PER_PAGE = 6;
+
 export const RecommendedOutfits = () => {
+  const [page, setPage] = useState(0);
+  const { ref, inView } = useInView();
+
+  // Cache les préférences utilisateur pendant 5 minutes
   const { data: userPreferences } = useQuery({
     queryKey: ["user-preferences"],
     queryFn: async () => {
@@ -37,14 +46,17 @@ export const RecommendedOutfits = () => {
 
       return preferences;
     },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 10 * 60 * 1000, // 10 minutes
   });
 
-  const { data: recommendedOutfits = [], isLoading } = useQuery({
-    queryKey: ["recommended-outfits", userPreferences],
+  // Cache les tenues recommandées pendant 2 minutes
+  const { data: recommendedOutfits = [], isLoading, fetchNextPage, hasNextPage } = useQuery({
+    queryKey: ["recommended-outfits", userPreferences, page],
     queryFn: async () => {
       if (!userPreferences?.length) return [];
 
-      console.log("Fetching recommended outfits...");
+      console.log("Fetching recommended outfits for page:", page);
       const preferredCategories = userPreferences.map((pref) => pref.category);
       const preferredColors = userPreferences.map((pref) => pref.color);
 
@@ -57,7 +69,7 @@ export const RecommendedOutfits = () => {
           )
         `)
         .order("rating", { ascending: false })
-        .limit(6);
+        .range(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE - 1);
 
       if (outfitsError) {
         console.error("Error fetching recommended outfits:", outfitsError);
@@ -98,11 +110,19 @@ export const RecommendedOutfits = () => {
       });
 
       return outfitsWithScores
-        .sort((a, b) => b.preferenceScore - a.preferenceScore)
-        .slice(0, 6);
+        .sort((a, b) => b.preferenceScore - a.preferenceScore);
     },
     enabled: !!userPreferences?.length,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    cacheTime: 5 * 60 * 1000, // 5 minutes
   });
+
+  // Charger plus de tenues quand l'utilisateur atteint le bas de la page
+  useEffect(() => {
+    if (inView && !isLoading) {
+      setPage((prev) => prev + 1);
+    }
+  }, [inView, isLoading]);
 
   if (!userPreferences?.length) {
     return null;
@@ -111,14 +131,30 @@ export const RecommendedOutfits = () => {
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-semibold">Recommandés pour vous</h2>
-      {isLoading ? (
-        <div className="text-center py-8">Chargement des recommandations...</div>
-      ) : recommendedOutfits.length > 0 ? (
+      {isLoading && page === 0 ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {recommendedOutfits.map((outfit: Outfit) => (
-            <OutfitCard key={outfit.id} outfit={outfit} />
+          {[...Array(6)].map((_, i) => (
+            <Skeleton key={i} className="h-[400px] rounded-xl" />
           ))}
         </div>
+      ) : recommendedOutfits.length > 0 ? (
+        <>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {recommendedOutfits.map((outfit: Outfit) => (
+              <OutfitCard key={outfit.id} outfit={outfit} />
+            ))}
+          </div>
+          {/* Intersection Observer target */}
+          <div ref={ref} className="h-20 flex items-center justify-center">
+            {isLoading && (
+              <div className="grid grid-cols-3 gap-4 w-full">
+                {[...Array(3)].map((_, i) => (
+                  <Skeleton key={i} className="h-[400px] rounded-xl" />
+                ))}
+              </div>
+            )}
+          </div>
+        </>
       ) : (
         <div className="text-center py-8 text-muted-foreground">
           Aucune recommandation disponible
