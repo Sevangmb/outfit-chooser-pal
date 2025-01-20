@@ -39,9 +39,12 @@ export const useImageUpload = () => {
       if (!publicUrl) {
         setUploadError("Erreur lors du téléchargement de l'image");
         toast.error("Erreur lors du téléchargement de l'image");
+        URL.revokeObjectURL(localPreviewUrl);
         return null;
       }
 
+      // Clean up local preview and set the public URL
+      URL.revokeObjectURL(localPreviewUrl);
       setPreviewUrl(publicUrl);
       toast.success("Image téléchargée avec succès");
       return publicUrl;

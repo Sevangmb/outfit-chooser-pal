@@ -11,7 +11,8 @@ export const uploadImageToSupabase = async (file: File): Promise<string | null> 
       .from('clothes')
       .upload(fileName, file, {
         cacheControl: '3600',
-        upsert: false
+        upsert: false,
+        contentType: file.type // Ajout explicite du type de contenu
       });
 
     if (error) {
@@ -24,6 +25,12 @@ export const uploadImageToSupabase = async (file: File): Promise<string | null> 
     const { data: { publicUrl } } = supabase.storage
       .from('clothes')
       .getPublicUrl(fileName);
+
+    // Vérifier que l'URL est bien générée
+    if (!publicUrl) {
+      console.error("Failed to generate public URL");
+      return null;
+    }
 
     console.log("Generated public URL:", publicUrl);
     return publicUrl;

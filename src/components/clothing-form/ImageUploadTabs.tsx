@@ -41,7 +41,7 @@ export const ImageUploadTabs = ({
   const handleImageError = useCallback(() => {
     console.log("Error loading image");
     setImageLoadError(true);
-    toast.error("Error loading image");
+    toast.error("Erreur lors du chargement de l'image");
   }, []);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,7 +60,7 @@ export const ImageUploadTabs = ({
   const handleUrlSubmit = async () => {
     const url = form.getValues("imageUrl");
     if (!url) {
-      toast.error("Please enter a URL");
+      toast.error("Veuillez entrer une URL");
       return;
     }
 
@@ -69,7 +69,7 @@ export const ImageUploadTabs = ({
       await onUrlUpload(url);
     } catch (error) {
       console.error("Error with URL:", error);
-      toast.error("Invalid URL or inaccessible image");
+      toast.error("URL invalide ou image inaccessible");
     } finally {
       setIsVerifying(false);
     }
@@ -82,7 +82,7 @@ export const ImageUploadTabs = ({
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="upload">
             <Upload className="h-4 w-4 mr-2" />
-            Gallery
+            Galerie
           </TabsTrigger>
           <TabsTrigger value="camera">
             <Camera className="h-4 w-4 mr-2" />
@@ -118,7 +118,7 @@ export const ImageUploadTabs = ({
             disabled={isUploading}
           >
             <Camera className="h-4 w-4 mr-2" />
-            Take a photo
+            Prendre une photo
           </Button>
         </TabsContent>
 
@@ -135,7 +135,7 @@ export const ImageUploadTabs = ({
               onClick={handleUrlSubmit}
               disabled={isUploading || isVerifying}
             >
-              {isVerifying ? "Verifying..." : "Import"}
+              {isVerifying ? "Vérification..." : "Importer"}
             </Button>
           </div>
         </TabsContent>
@@ -152,14 +152,14 @@ export const ImageUploadTabs = ({
         <div className="mt-4 relative aspect-square w-full max-w-sm mx-auto overflow-hidden rounded-lg border">
           <img
             src={previewUrl}
-            alt="Preview"
+            alt="Aperçu"
             className={`object-cover w-full h-full ${imageLoadError ? 'opacity-50' : ''}`}
             onError={handleImageError}
             onLoad={handleImageLoad}
           />
           {imageLoadError && (
             <div className="absolute inset-0 flex items-center justify-center bg-background/50">
-              <p className="text-destructive">Error loading image</p>
+              <p className="text-destructive">Erreur lors du chargement de l'image</p>
             </div>
           )}
         </div>
