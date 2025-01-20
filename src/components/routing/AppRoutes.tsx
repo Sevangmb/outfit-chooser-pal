@@ -1,25 +1,20 @@
 import { Routes, Route } from "react-router-dom";
+import { Index } from "@/pages/Index";
+import { Auth } from "@/pages/Auth";
+import { Closet } from "@/pages/Closet";
+import { Add } from "@/pages/Add";
+import { Profile } from "@/pages/Profile";
+import { Admin } from "@/pages/Admin";
+import { Contest } from "@/pages/Contest";
+import { Discover } from "@/pages/Discover";
+import { Favorites } from "@/pages/Favorites";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { PublicRoute } from "./PublicRoute";
-import Index from "@/pages/Index";
-import Auth from "@/pages/Auth";
-import Discover from "@/pages/Discover";
-import Closet from "@/pages/Closet";
-import Profile from "@/pages/Profile";
-import LandingPage from "@/pages/LandingPage";
-import Admin from "@/pages/Admin";
 
 export const AppRoutes = () => {
   return (
     <Routes>
-      <Route
-        path="/landing"
-        element={
-          <PublicRoute>
-            <LandingPage />
-          </PublicRoute>
-        }
-      />
+      <Route path="/" element={<Index />} />
       <Route
         path="/auth"
         element={
@@ -29,26 +24,18 @@ export const AppRoutes = () => {
         }
       />
       <Route
-        path="/"
-        element={
-          <ProtectedRoute>
-            <Index />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/discover"
-        element={
-          <ProtectedRoute>
-            <Discover />
-          </ProtectedRoute>
-        }
-      />
-      <Route
         path="/closet"
         element={
           <ProtectedRoute>
             <Closet />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/add"
+        element={
+          <ProtectedRoute>
+            <Add />
           </ProtectedRoute>
         }
       />
@@ -65,6 +52,30 @@ export const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <Admin />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/contest"
+        element={
+          <ProtectedRoute>
+            <Contest />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/discover"
+        element={
+          <ProtectedRoute>
+            <Discover />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/favorites"
+        element={
+          <ProtectedRoute>
+            <Favorites />
           </ProtectedRoute>
         }
       />
