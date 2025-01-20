@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Settings, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 interface Profile {
   id: string;
@@ -23,16 +24,19 @@ const Profile = () => {
   const navigate = useNavigate();
 
   const { data: isAdmin } = useQuery({
-    queryKey: ["userRole"],
+    queryKey: ["userRole", profile?.id],
     queryFn: async () => {
+      if (!profile?.id) return false;
+      
       const { data, error } = await supabase
         .from("user_roles")
         .select("role")
-        .eq("user_id", profile?.id)
-        .single();
+        .eq("user_id", profile.id)
+        .maybeSingle();
 
       if (error) {
         console.error("Error fetching user role:", error);
+        toast.error("Erreur lors de la vérification des droits d'accès");
         return false;
       }
 
@@ -45,34 +49,52 @@ const Profile = () => {
     const fetchProfile = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        if (!session?.user) return;
+        if (!session?.user) {
+          navigate("/auth");
+          return;
+        }
 
         const { data, error } = await supabase
           .from("profiles")
           .select("*")
           .eq("id", session.user.id)
-          .single();
+          .maybeSingle();
 
         if (error) {
           console.error("Error fetching profile:", error);
+          toast.error("Erreur lors du chargement du profil");
+          return;
+        }
+
+        if (!data) {
+          toast.error("Profil non trouvé");
           return;
         }
 
         setProfile(data);
       } catch (error) {
         console.error("Error:", error);
+        toast.error("Une erreur est survenue");
       } finally {
         setLoading(false);
       }
     };
 
     fetchProfile();
-  }, []);
+  }, [navigate]);
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-secondary/30">
         <div className="text-primary animate-pulse">Chargement...</div>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-secondary/30">
+        <div className="text-primary">Profil non trouvé</div>
       </div>
     );
   }
@@ -87,13 +109,13 @@ const Profile = () => {
               <Avatar className="w-20 h-20">
                 <AvatarImage src="https://images.unsplash.com/photo-1527576539890-dfa815648363" />
                 <AvatarFallback>
-                  {profile?.email?.charAt(0).toUpperCase()}
+                  {profile.email?.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <h2 className="text-2xl font-semibold text-primary">{profile?.email}</h2>
+                <h2 className="text-2xl font-semibold text-primary">{profile.email}</h2>
                 <p className="text-sm text-muted-foreground">
-                  Membre depuis le {new Date(profile?.created_at || "").toLocaleDateString()}
+                  Membre depuis le {new Date(profile.created_at).toLocaleDateString()}
                 </p>
               </div>
             </div>
@@ -121,19 +143,17 @@ const Profile = () => {
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
-            {profile && (
-              <>
-                <ProfileStats userId={profile.id} />
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-primary">Mes tenues</h3>
-                  <UserOutfits userId={profile.id} />
-                </div>
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-primary">Abonnements</h3>
-                  <FollowList userId={profile.id} />
-                </div>
-              </>
-            )}
+            <>
+              <ProfileStats userId={profile.id} />
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-primary">Mes tenues</h3>
+                <UserOutfits userId={profile.id} />
+              </div>
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-primary">Abonnements</h3>
+                <FollowList userId={profile.id} />
+              </div>
+            </>
           </CardContent>
         </Card>
       </div>
