@@ -4,7 +4,6 @@ import { PublicRoute } from "./PublicRoute";
 import Index from "@/pages/Index";
 import Auth from "@/pages/Auth";
 import Discover from "@/pages/Discover";
-import Add from "@/pages/Add";
 import Closet from "@/pages/Closet";
 import Profile from "@/pages/Profile";
 import LandingPage from "@/pages/LandingPage";
@@ -42,14 +41,6 @@ export const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <Discover />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/add"
-        element={
-          <ProtectedRoute>
-            <Add />
           </ProtectedRoute>
         }
       />
