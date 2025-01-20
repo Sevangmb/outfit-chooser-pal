@@ -34,7 +34,9 @@ export const OutfitFeed = () => {
           clothes:outfit_clothes(
             clothes(id, name, category, color, image)
           ),
-          creator:profiles!outfits_user_id_fkey(email)
+          creator:user_id(
+            email
+          )
         `)
         .order("created_at", { ascending: false });
 
