@@ -6,62 +6,73 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Box, Shirt } from "lucide-react";
 import { toast } from "sonner";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface CategoryFieldsProps {
   form: UseFormReturn<FormValues>;
 }
 
 export const CategoryFields = ({ form }: CategoryFieldsProps) => {
-  const { data: categories, error: categoriesError } = useQuery({
+  const { data: categories, error: categoriesError, isLoading: isCategoriesLoading } = useQuery({
     queryKey: ['categories'],
     queryFn: async () => {
       console.log("Fetching categories...");
-      const { data, error } = await supabase
-        .from('clothing_categories')
-        .select('*')
-        .is('parent_id', null)
-        .order('name');
-      
-      if (error) {
-        console.error("Error fetching categories:", error);
-        toast.error("Erreur lors du chargement des catégories");
+      try {
+        const { data, error } = await supabase
+          .from('clothing_categories')
+          .select('*')
+          .is('parent_id', null)
+          .order('name');
+        
+        if (error) {
+          console.error("Error fetching categories:", error);
+          toast.error("Erreur lors du chargement des catégories");
+          throw error;
+        }
+        
+        console.log("Categories fetched successfully:", data);
+        return data;
+      } catch (error) {
+        console.error("Failed to fetch categories:", error);
         throw error;
       }
-      
-      console.log("Categories fetched:", data);
-      return data;
     },
     retry: 3,
     retryDelay: 1000,
   });
 
-  const { data: subcategories, error: subcategoriesError } = useQuery({
+  const { data: subcategories, error: subcategoriesError, isLoading: isSubcategoriesLoading } = useQuery({
     queryKey: ['subcategories', form.watch('category')],
     queryFn: async () => {
       if (!form.watch('category')) return [];
       
       console.log("Fetching subcategories for category:", form.watch('category'));
-      const parentCategory = categories?.find(c => c.name === form.watch('category'));
-      
-      if (!parentCategory) {
-        console.log("Parent category not found");
-        return [];
-      }
+      try {
+        const parentCategory = categories?.find(c => c.name === form.watch('category'));
+        
+        if (!parentCategory) {
+          console.log("Parent category not found");
+          return [];
+        }
 
-      const { data, error } = await supabase
-        .from('clothing_categories')
-        .select('*')
-        .eq('parent_id', parentCategory.id)
-        .order('name');
-      
-      if (error) {
-        console.error("Error fetching subcategories:", error);
-        toast.error("Erreur lors du chargement des sous-catégories");
+        const { data, error } = await supabase
+          .from('clothing_categories')
+          .select('*')
+          .eq('parent_id', parentCategory.id)
+          .order('name');
+        
+        if (error) {
+          console.error("Error fetching subcategories:", error);
+          toast.error("Erreur lors du chargement des sous-catégories");
+          throw error;
+        }
+        
+        console.log("Subcategories fetched successfully:", data);
+        return data;
+      } catch (error) {
+        console.error("Failed to fetch subcategories:", error);
         throw error;
       }
-      
-      console.log("Subcategories fetched:", data);
-      return data;
     },
     enabled: !!form.watch('category') && !!categories,
     retry: 3,
@@ -70,10 +81,13 @@ export const CategoryFields = ({ form }: CategoryFieldsProps) => {
 
   if (categoriesError) {
     console.error("Categories error:", categoriesError);
-  }
-
-  if (subcategoriesError) {
-    console.error("Subcategories error:", subcategoriesError);
+    return (
+      <Alert variant="destructive">
+        <AlertDescription>
+          Erreur lors du chargement des catégories. Veuillez réessayer plus tard.
+        </AlertDescription>
+      </Alert>
+    );
   }
 
   return (
@@ -90,7 +104,7 @@ export const CategoryFields = ({ form }: CategoryFieldsProps) => {
             <Select onValueChange={field.onChange} defaultValue={field.value}>
               <FormControl>
                 <SelectTrigger>
-                  <SelectValue placeholder="Sélectionnez une catégorie" />
+                  <SelectValue placeholder={isCategoriesLoading ? "Chargement..." : "Sélectionnez une catégorie"} />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
@@ -118,11 +132,11 @@ export const CategoryFields = ({ form }: CategoryFieldsProps) => {
             <Select 
               onValueChange={field.onChange} 
               defaultValue={field.value} 
-              disabled={!form.watch('category')}
+              disabled={!form.watch('category') || isSubcategoriesLoading}
             >
               <FormControl>
                 <SelectTrigger>
-                  <SelectValue placeholder="Sélectionnez une sous-catégorie" />
+                  <SelectValue placeholder={isSubcategoriesLoading ? "Chargement..." : "Sélectionnez une sous-catégorie"} />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
