@@ -8,12 +8,28 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
+import { Check } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
 
 interface BasicFieldsProps {
   form: UseFormReturn<FormValues>;
 }
 
 export const BasicFields = ({ form }: BasicFieldsProps) => {
+  const [open, setOpen] = useState(false);
+  const brands = ["Nike", "Adidas", "Puma", "Reebok", "Under Armour", "New Balance"];
+
   return (
     <div className="space-y-4">
       <FormField
@@ -36,9 +52,48 @@ export const BasicFields = ({ form }: BasicFieldsProps) => {
         render={({ field }) => (
           <FormItem>
             <FormLabel>Marque (optionnel)</FormLabel>
-            <FormControl>
-              <Input placeholder="Ex: Nike" {...field} />
-            </FormControl>
+            <Popover open={open} onOpenChange={setOpen}>
+              <PopoverTrigger asChild>
+                <FormControl>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={open}
+                    className="w-full justify-between"
+                  >
+                    {field.value || "Sélectionner une marque"}
+                  </Button>
+                </FormControl>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0">
+                <Command>
+                  <CommandInput placeholder="Rechercher une marque..." />
+                  <CommandList>
+                    <CommandEmpty>Aucune marque trouvée.</CommandEmpty>
+                    <CommandGroup>
+                      {brands.map((brand) => (
+                        <CommandItem
+                          key={brand}
+                          value={brand}
+                          onSelect={() => {
+                            form.setValue("brand", brand);
+                            setOpen(false);
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              field.value === brand ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          {brand}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
             <FormMessage />
           </FormItem>
         )}
