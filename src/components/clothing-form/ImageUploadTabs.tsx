@@ -31,6 +31,7 @@ export const ImageUploadTabs = ({
 }: ImageUploadTabsProps) => {
   const [imageLoadError, setImageLoadError] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const handleImageLoad = useCallback(() => {
     console.log("Image loaded successfully");
@@ -47,6 +48,7 @@ export const ImageUploadTabs = ({
     const file = e.target.files?.[0];
     if (file) {
       console.log("File selected:", file.name);
+      setSelectedFile(file);
       const imageUrl = await onFileUpload(file);
       if (imageUrl) {
         console.log("Setting image URL in form:", imageUrl);
@@ -101,6 +103,11 @@ export const ImageUploadTabs = ({
               disabled={isUploading}
             />
           </FormControl>
+          {selectedFile && (
+            <div className="mt-2 text-sm text-muted-foreground">
+              Fichier sélectionné: {selectedFile.name} ({Math.round(selectedFile.size / 1024)} KB)
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="camera">

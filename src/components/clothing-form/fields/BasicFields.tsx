@@ -1,8 +1,13 @@
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
 import { FormValues } from "@/types/clothing";
-import { Tag } from "lucide-react";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 
 interface BasicFieldsProps {
   form: UseFormReturn<FormValues>;
@@ -10,18 +15,15 @@ interface BasicFieldsProps {
 
 export const BasicFields = ({ form }: BasicFieldsProps) => {
   return (
-    <>
+    <div className="space-y-4">
       <FormField
         control={form.control}
         name="name"
         render={({ field }) => (
           <FormItem>
-            <FormLabel className="flex items-center gap-2">
-              <Tag className="h-4 w-4" />
-              Nom
-            </FormLabel>
+            <FormLabel>Nom</FormLabel>
             <FormControl>
-              <Input placeholder="T-shirt blanc" {...field} />
+              <Input placeholder="Ex: T-shirt blanc" {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -33,17 +35,28 @@ export const BasicFields = ({ form }: BasicFieldsProps) => {
         name="brand"
         render={({ field }) => (
           <FormItem>
-            <FormLabel className="flex items-center gap-2">
-              <Tag className="h-4 w-4" />
-              Marque
-            </FormLabel>
+            <FormLabel>Marque (optionnel)</FormLabel>
             <FormControl>
-              <Input placeholder="Nike, Zara, etc." {...field} />
+              <Input placeholder="Ex: Nike" {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
         )}
       />
-    </>
+
+      <FormField
+        control={form.control}
+        name="image"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>URL de l'image</FormLabel>
+            <FormControl>
+              <Input readOnly value={field.value || ''} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+    </div>
   );
 };
