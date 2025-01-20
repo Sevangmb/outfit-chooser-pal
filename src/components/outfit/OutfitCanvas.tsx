@@ -42,30 +42,22 @@ export const OutfitCanvas = ({ selectedTop, selectedBottom, selectedShoes, cloth
       try {
         canvas.clear();
         
-        await new Promise((resolve, reject) => {
-          FabricImage.fromURL(clothing.image, (img) => {
-            if (!img) {
-              reject(new Error("Failed to load image"));
-              return;
-            }
+        const img = await FabricImage.fromURL(clothing.image);
+        if (!img) return;
 
-            const scale = Math.min(200 / img.width!, 200 / img.height!);
-            img.scale(scale);
-            img.set({
-              left: 100,
-              top: position.top,
-              cornerStyle: 'circle',
-              cornerColor: '#0EA5E9',
-              cornerStrokeColor: '#fff',
-              cornerSize: 12,
-              transparentCorners: false,
-            });
-
-            canvas.add(img);
-            resolve(img);
-          });
+        const scale = Math.min(200 / img.width!, 200 / img.height!);
+        img.scale(scale);
+        img.set({
+          left: 100,
+          top: position.top,
+          cornerStyle: 'circle',
+          cornerColor: '#0EA5E9',
+          cornerStrokeColor: '#fff',
+          cornerSize: 12,
+          transparentCorners: false,
         });
 
+        canvas.add(img);
         canvas.renderAll();
       } catch (error) {
         console.error("Error adding clothing item:", error);
