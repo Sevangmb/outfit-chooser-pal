@@ -34,10 +34,8 @@ export const useImageUpload = () => {
       setPreviewUrl(localPreviewUrl);
 
       const publicUrl = await uploadImageToSupabase(optimizedFile);
+      console.log("Image uploaded to Supabase, public URL:", publicUrl);
       
-      // Clean up local preview
-      URL.revokeObjectURL(localPreviewUrl);
-
       if (!publicUrl) {
         setUploadError("Erreur lors du téléchargement de l'image");
         toast.error("Erreur lors du téléchargement de l'image");

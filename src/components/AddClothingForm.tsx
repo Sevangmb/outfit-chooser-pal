@@ -20,8 +20,8 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
     try {
       console.log("Form submitted with values:", values);
       
-      if (!values.image || values.image.startsWith('blob:')) {
-        toast.error("L'image n'a pas été téléchargée correctement");
+      if (!values.image) {
+        toast.error("Une image est requise");
         return;
       }
 
