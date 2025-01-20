@@ -64,10 +64,26 @@ export const ContentModeration = () => {
       if (outfitsResponse.error) throw outfitsResponse.error;
       if (commentsResponse.error) throw commentsResponse.error;
 
-      const flaggedContent = [
-        ...(outfitsResponse.data || []).map(item => ({ ...item, type: 'outfit' as const })),
-        ...(commentsResponse.data || []).map(item => ({ ...item, type: 'comment' as const }))
-      ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      const flaggedOutfits = (outfitsResponse.data || []).map(item => ({
+        id: item.id,
+        type: 'outfit' as const,
+        content: item.content,
+        flag_reason: item.flag_reason,
+        created_at: item.created_at,
+        user: item.profiles
+      }));
+
+      const flaggedComments = (commentsResponse.data || []).map(item => ({
+        id: item.id,
+        type: 'comment' as const,
+        content: item.content,
+        flag_reason: item.flag_reason,
+        created_at: item.created_at,
+        user: item.profiles
+      }));
+
+      const flaggedContent = [...flaggedOutfits, ...flaggedComments]
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
       console.log('Flagged content:', flaggedContent);
       setContent(flaggedContent);
