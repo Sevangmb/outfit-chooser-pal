@@ -65,6 +65,6 @@ export const useClothingForm = (onSuccess?: () => void) => {
 
   return {
     form,
-    onSubmit: form.handleSubmit(onSubmit),
+    onSubmit,
   };
 };
