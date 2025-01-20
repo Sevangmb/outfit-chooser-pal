@@ -14,10 +14,9 @@ export const ColorFields = ({ form }: ColorFieldsProps) => {
     const subscription = form.watch((value, { name }) => {
       if (name === "color") {
         console.log("Color changed to:", value.color);
-        form.setValue("color", value.color, { shouldValidate: true });
       }
     });
-    return () => subscription.unsubscribe?.();
+    return () => subscription.unsubscribe();
   }, [form]);
 
   return (
@@ -66,7 +65,7 @@ export const ColorFields = ({ form }: ColorFieldsProps) => {
           <FormItem>
             <FormLabel className="flex items-center gap-2">
               <Palette className="h-4 w-4" />
-              Couleur secondaire
+              Couleur secondaire (optionnelle)
             </FormLabel>
             <FormControl>
               <div className="flex gap-2">

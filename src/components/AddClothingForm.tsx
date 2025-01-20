@@ -37,6 +37,7 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
       const imageUrl = await handleImageUpload(file);
       if (imageUrl) {
         form.setValue("image", imageUrl);
+        toast.success("Image capturée avec succès");
       }
     } catch (error) {
       console.error("Error capturing image:", error);
@@ -53,6 +54,7 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
       if (imageUrl) {
         form.setValue("image", imageUrl);
         form.setValue("imageUrl", "");
+        toast.success("Image téléchargée avec succès");
       }
     } catch (error) {
       console.error("Error downloading image from URL:", error);
@@ -62,7 +64,7 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
 
   return (
     <Form {...form}>
-      <form onSubmit={onSubmit} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <ImageUploadTabs
           form={form}
           isUploading={isUploading}
