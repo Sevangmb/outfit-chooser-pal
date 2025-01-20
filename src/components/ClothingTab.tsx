@@ -1,6 +1,8 @@
 import { AddClothingDialog } from "./AddClothingDialog";
 import { ClothingSection } from "./ClothingSection";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Clothing {
   id: number;
@@ -16,8 +18,32 @@ interface ClothingTabProps {
   showFriendsClothes?: boolean;
 }
 
-export const ClothingTab = ({ clothes, showFriendsClothes = false }: ClothingTabProps) => {
+export const ClothingTab = ({ showFriendsClothes = false }: ClothingTabProps) => {
   const isMobile = useIsMobile();
+
+  const { data: clothes = [], isLoading } = useQuery({
+    queryKey: ["userClothes"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.error("No authenticated user found");
+        return [];
+      }
+
+      const { data, error } = await supabase
+        .from("clothes")
+        .select("*")
+        .eq("user_id", user.id);
+
+      if (error) {
+        console.error("Error fetching clothes:", error);
+        return [];
+      }
+
+      console.log("Fetched clothes for user:", user.id, data);
+      return data || [];
+    }
+  });
 
   const tops = clothes.filter(item => 
     item.category.toLowerCase().includes("haut") || 
@@ -38,6 +64,14 @@ export const ClothingTab = ({ clothes, showFriendsClothes = false }: ClothingTab
     item.category.toLowerCase().includes("basket") ||
     item.category.toLowerCase().includes("botte")
   );
+
+  if (isLoading) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-muted-foreground">Chargement de votre garde-robe...</p>
+      </div>
+    );
+  }
 
   return (
     <>
