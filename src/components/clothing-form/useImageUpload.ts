@@ -49,7 +49,11 @@ export const useImageUpload = () => {
   const verifyImageAccessibility = useCallback(async (url: string): Promise<boolean> => {
     console.log("Verifying image accessibility:", url);
     try {
-      const response = await fetch(url);
+      // Ensure the URL is properly formatted
+      const cleanUrl = url.replace(/([^:]\/)\/+/g, "$1");
+      console.log("Cleaned URL:", cleanUrl);
+
+      const response = await fetch(cleanUrl);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -121,6 +125,10 @@ export const useImageUpload = () => {
         .from('clothes')
         .getPublicUrl(filePath);
 
+      // Clean up the URL to ensure proper format
+      const cleanPublicUrl = publicUrl.replace(/([^:]\/)\/+/g, "$1");
+      console.log("Clean public URL:", cleanPublicUrl);
+
       // Verify the uploaded image is accessible with retries
       let isAccessible = false;
       let retryCount = 0;
@@ -129,7 +137,7 @@ export const useImageUpload = () => {
       
       while (!isAccessible && retryCount < maxRetries) {
         console.log(`Verifying image accessibility (attempt ${retryCount + 1}/${maxRetries})`);
-        isAccessible = await verifyImageAccessibility(publicUrl);
+        isAccessible = await verifyImageAccessibility(cleanPublicUrl);
         if (!isAccessible && retryCount < maxRetries - 1) {
           console.log(`Waiting ${retryDelay}ms before next retry...`);
           await new Promise(resolve => setTimeout(resolve, retryDelay));
@@ -155,9 +163,9 @@ export const useImageUpload = () => {
         return null;
       }
 
-      setPreviewUrl(publicUrl);
+      setPreviewUrl(cleanPublicUrl);
       toast.success("Image téléchargée avec succès");
-      return publicUrl;
+      return cleanPublicUrl;
     } catch (error) {
       console.error("Unexpected error during upload:", error);
       setUploadError("Erreur inattendue lors du téléchargement");
