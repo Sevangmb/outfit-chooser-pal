@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Home, Heart, Trophy, User } from "lucide-react";
+import { Home, Search, PlusCircle, ShoppingBag, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
@@ -7,8 +7,9 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 export const Navigation = () => {
   const links = [
     { to: "/", icon: Home, label: "Accueil" },
-    { to: "/favorites", icon: Heart, label: "Favoris" },
-    { to: "/contest", icon: Trophy, label: "Concours" },
+    { to: "/discover", icon: Search, label: "Découvrir" },
+    { to: "/add", icon: PlusCircle, label: "Ajouter" },
+    { to: "/closet", icon: ShoppingBag, label: "Placard" },
     { to: "/profile", icon: User, label: "Profil" },
   ];
 
@@ -34,6 +35,7 @@ export const Navigation = () => {
                     className="relative"
                   >
                     <Icon className="h-5 w-5" />
+                    <span className="sr-only">{label}</span>
                   </Button>
                 </NavLink>
               </TooltipTrigger>

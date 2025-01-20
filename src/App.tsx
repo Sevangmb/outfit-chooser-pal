@@ -7,10 +7,11 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
-import Favorites from "./pages/Favorites";
-import Contest from "./pages/Contest";
-import LandingPage from "./pages/LandingPage";
+import Discover from "./pages/Discover";
+import Add from "./pages/Add";
+import Closet from "./pages/Closet";
 import Profile from "./pages/Profile";
+import LandingPage from "./pages/LandingPage";
 
 const queryClient = new QueryClient();
 
@@ -56,18 +57,26 @@ const App = () => (
             }
           />
           <Route
-            path="/favorites"
+            path="/discover"
             element={
               <ProtectedRoute>
-                <Favorites />
+                <Discover />
               </ProtectedRoute>
             }
           />
           <Route
-            path="/contest"
+            path="/add"
             element={
               <ProtectedRoute>
-                <Contest />
+                <Add />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/closet"
+            element={
+              <ProtectedRoute>
+                <Closet />
               </ProtectedRoute>
             }
           />
