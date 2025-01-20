@@ -162,8 +162,10 @@ export const OutfitFeed = () => {
     <ReactPullToRefresh
       onRefresh={handleRefresh}
       className="relative min-h-screen"
-      pullDownThreshold={70}
-      resistance={2.5}
+      style={{
+        textAlign: 'center',
+        position: 'relative'
+      }}
     >
       <div className="relative">
         {/* Pull to refresh indicator */}
