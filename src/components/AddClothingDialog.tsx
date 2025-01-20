@@ -3,6 +3,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { AddClothingButton } from "./AddClothingButton";
 import { AddClothingForm } from "./AddClothingForm";
