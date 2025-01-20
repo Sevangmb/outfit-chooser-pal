@@ -9,6 +9,11 @@ export const useImageUpload = () => {
   const handleImageUpload = async (file: File) => {
     try {
       setIsUploading(true);
+      
+      // Create a local preview URL
+      const localPreviewUrl = URL.createObjectURL(file);
+      setPreviewUrl(localPreviewUrl);
+
       const fileExt = file.name.split('.').pop();
       const fileName = `${Math.random()}.${fileExt}`;
       const filePath = `${fileName}`;
@@ -27,7 +32,10 @@ export const useImageUpload = () => {
         .from('clothes')
         .getPublicUrl(filePath);
 
+      // Clean up the local preview URL
+      URL.revokeObjectURL(localPreviewUrl);
       setPreviewUrl(publicUrl);
+      
       return publicUrl;
     } catch (error) {
       console.error("Error uploading image:", error);
@@ -39,6 +47,9 @@ export const useImageUpload = () => {
   };
 
   const resetPreview = () => {
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
     setPreviewUrl(null);
   };
 

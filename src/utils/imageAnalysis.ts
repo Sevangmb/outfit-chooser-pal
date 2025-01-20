@@ -19,7 +19,7 @@ export const analyzeImage = async (imageUrl: string) => {
 
     // Get the most likely category
     const topResult = Array.isArray(results) ? results[0] : results;
-    const topCategory = (topResult as ImageClassificationResult).label?.toLowerCase() || '';
+    const label = (topResult as ImageClassificationResult).label?.toLowerCase() || '';
 
     // Map the model's category to our application's categories
     const categoryMapping: Record<string, string> = {
@@ -41,11 +41,10 @@ export const analyzeImage = async (imageUrl: string) => {
       'skirt': 'Jupe',
       'shorts': 'Pantalon',
       'jeans': 'Pantalon',
-      // Add more mappings as needed
     };
 
     return {
-      category: categoryMapping[topCategory] || '',
+      category: categoryMapping[label] || '',
       confidence: (topResult as ImageClassificationResult).score || 0,
     };
   } catch (error) {
@@ -56,38 +55,49 @@ export const analyzeImage = async (imageUrl: string) => {
 
 export const extractDominantColor = async (imageUrl: string): Promise<string> => {
   try {
+    // Create a new image element
     const img = new Image();
     img.crossOrigin = "Anonymous";
+    
+    // Wait for the image to load
     await new Promise((resolve, reject) => {
       img.onload = resolve;
       img.onerror = reject;
       img.src = imageUrl;
     });
 
+    // Create a canvas element
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     if (!ctx) throw new Error('Could not get canvas context');
 
+    // Set canvas dimensions to match image
     canvas.width = img.width;
     canvas.height = img.height;
+    
+    // Draw image onto canvas
     ctx.drawImage(img, 0, 0);
 
+    // Get image data
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const data = imageData.data;
 
     // Calculate the average color
     let r = 0, g = 0, b = 0;
+    const pixelCount = data.length / 4;
+    
     for (let i = 0; i < data.length; i += 4) {
       r += data[i];
       g += data[i + 1];
       b += data[i + 2];
     }
 
-    const pixelCount = data.length / 4;
+    // Calculate average values
     r = Math.round(r / pixelCount);
     g = Math.round(g / pixelCount);
     b = Math.round(b / pixelCount);
 
+    // Convert to hex
     return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
   } catch (error) {
     console.error('Error extracting dominant color:', error);
