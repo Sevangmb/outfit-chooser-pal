@@ -34,9 +34,7 @@ export const OutfitFeed = () => {
           clothes:outfit_clothes(
             clothes(id, name, category, color, image)
           ),
-          creator:user_id(
-            email
-          )
+          creator:profiles(email)
         `)
         .order("created_at", { ascending: false });
 
@@ -47,7 +45,7 @@ export const OutfitFeed = () => {
 
       const formattedOutfits = outfits.map((outfit: any) => ({
         ...outfit,
-        user_email: outfit.creator?.email,
+        user_email: outfit.creator?.[0]?.email,
         clothes: outfit.clothes.map((item: any) => ({
           clothes: item.clothes,
         })),
