@@ -6,9 +6,12 @@ import { useNavigate } from "react-router-dom";
 import { FormValidationErrors } from "./clothing-form/FormValidationErrors";
 import { ImageUploadTabs } from "./clothing-form/ImageUploadTabs";
 import { ImageAnalysisButton } from "./clothing-form/ImageAnalysisButton";
-import { ClothingFormFields } from "./clothing-form/ClothingFormFields";
 import { Button } from "./ui/button";
 import { Loader2 } from "lucide-react";
+import { BasicFields } from "./clothing-form/fields/BasicFields";
+import { CategoryFields } from "./clothing-form/fields/CategoryFields";
+import { ColorFields } from "./clothing-form/fields/ColorFields";
+import { DetailsFields } from "./clothing-form/fields/DetailsFields";
 
 interface AddClothingFormProps {
   onSuccess?: () => void;
@@ -129,9 +132,12 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
             </div>
           )}
 
-          <ClothingFormFields form={form} step="basic" />
-          <ClothingFormFields form={form} step="colors" />
-          <ClothingFormFields form={form} step="details" />
+          <div className="space-y-8 bg-background/50 backdrop-blur-sm rounded-lg border border-border p-6">
+            <BasicFields form={form} />
+            <CategoryFields form={form} />
+            <ColorFields form={form} />
+            <DetailsFields form={form} />
+          </div>
         </div>
 
         <Button 
