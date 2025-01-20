@@ -9,6 +9,51 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      admin_messages: {
+        Row: {
+          admin_id: string | null
+          content: string
+          created_at: string | null
+          id: string
+          read_at: string | null
+          subject: string
+          user_id: string | null
+        }
+        Insert: {
+          admin_id?: string | null
+          content: string
+          created_at?: string | null
+          id?: string
+          read_at?: string | null
+          subject: string
+          user_id?: string | null
+        }
+        Update: {
+          admin_id?: string | null
+          content?: string
+          created_at?: string | null
+          id?: string
+          read_at?: string | null
+          subject?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_messages_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_messages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action_details: Json | null
@@ -267,18 +312,24 @@ export type Database = {
           email: string
           has_completed_onboarding: boolean | null
           id: string
+          last_login: string | null
+          status: string | null
         }
         Insert: {
           created_at?: string
           email: string
           has_completed_onboarding?: boolean | null
           id: string
+          last_login?: string | null
+          status?: string | null
         }
         Update: {
           created_at?: string
           email?: string
           has_completed_onboarding?: boolean | null
           id?: string
+          last_login?: string | null
+          status?: string | null
         }
         Relationships: []
       }
@@ -400,6 +451,13 @@ export type Database = {
         }
         Returns: undefined
       }
+      update_user_status: {
+        Args: {
+          user_id: string
+          new_status: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       admin_action_type:
@@ -412,6 +470,7 @@ export type Database = {
         | "update_outfit"
         | "delete_outfit"
         | "moderate_comment"
+        | "send_message"
       app_role: "admin" | "user"
     }
     CompositeTypes: {
