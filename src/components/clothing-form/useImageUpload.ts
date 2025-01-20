@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import { validateImageFile } from "@/utils/imageValidation";
 import { uploadImageToSupabase } from "@/services/imageUploadService";
+import { optimizeImage } from "@/utils/imageOptimization";
 
 export const useImageUpload = () => {
   const [isUploading, setIsUploading] = useState(false);
@@ -21,11 +22,18 @@ export const useImageUpload = () => {
         return null;
       }
 
+      // Optimize image before upload
+      const optimizedFile = await optimizeImage(file);
+      console.log("Image optimized:", {
+        originalSize: file.size,
+        optimizedSize: optimizedFile.size
+      });
+
       // Create a local preview URL
-      const localPreviewUrl = URL.createObjectURL(file);
+      const localPreviewUrl = URL.createObjectURL(optimizedFile);
       setPreviewUrl(localPreviewUrl);
 
-      const publicUrl = await uploadImageToSupabase(file);
+      const publicUrl = await uploadImageToSupabase(optimizedFile);
       
       // Clean up local preview
       URL.revokeObjectURL(localPreviewUrl);

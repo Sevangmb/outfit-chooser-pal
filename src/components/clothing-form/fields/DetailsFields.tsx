@@ -7,18 +7,39 @@ import { FormValues } from "@/types/clothing";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Ruler, Scissors } from "lucide-react";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
+import { Check, ChevronsUpDown } from "lucide-react";
 
 interface DetailsFieldsProps {
   form: UseFormReturn<FormValues>;
 }
 
 export const DetailsFields = ({ form }: DetailsFieldsProps) => {
-  const { data: materials } = useQuery({
+  const [openBrand, setOpenBrand] = useState(false);
+  const [openMaterial, setOpenMaterial] = useState(false);
+
+  const { data: materials, isLoading: materialsLoading } = useQuery({
     queryKey: ['materials'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('clothing_materials')
-        .select('*');
+        .select('*')
+        .order('name');
+      if (error) throw error;
+      return data;
+    }
+  });
+
+  const { data: brands, isLoading: brandsLoading } = useQuery({
+    queryKey: ['brands'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('clothing_brands')
+        .select('*')
+        .order('name');
       if (error) throw error;
       return data;
     }
@@ -45,6 +66,60 @@ export const DetailsFields = ({ form }: DetailsFieldsProps) => {
 
       <FormField
         control={form.control}
+        name="brand"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Marque</FormLabel>
+            <Popover open={openBrand} onOpenChange={setOpenBrand}>
+              <PopoverTrigger asChild>
+                <FormControl>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={openBrand}
+                    className="w-full justify-between"
+                  >
+                    {field.value
+                      ? brands?.find((brand) => brand.name === field.value)?.name
+                      : "Sélectionner une marque"}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </FormControl>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0">
+                <Command>
+                  <CommandInput placeholder="Rechercher une marque..." />
+                  <CommandEmpty>Aucune marque trouvée.</CommandEmpty>
+                  <CommandGroup>
+                    {brands?.map((brand) => (
+                      <CommandItem
+                        key={brand.id}
+                        value={brand.name}
+                        onSelect={() => {
+                          form.setValue("brand", brand.name);
+                          setOpenBrand(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            field.value === brand.name ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        {brand.name}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </Command>
+              </PopoverContent>
+            </Popover>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
         name="material"
         render={({ field }) => (
           <FormItem>
@@ -52,20 +127,49 @@ export const DetailsFields = ({ form }: DetailsFieldsProps) => {
               <Scissors className="h-4 w-4" />
               Matière
             </FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionnez une matière" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                {materials?.map((material) => (
-                  <SelectItem key={material.id} value={material.name}>
-                    {material.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Popover open={openMaterial} onOpenChange={setOpenMaterial}>
+              <PopoverTrigger asChild>
+                <FormControl>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={openMaterial}
+                    className="w-full justify-between"
+                  >
+                    {field.value
+                      ? materials?.find((material) => material.name === field.value)?.name
+                      : "Sélectionner une matière"}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </FormControl>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0">
+                <Command>
+                  <CommandInput placeholder="Rechercher une matière..." />
+                  <CommandEmpty>Aucune matière trouvée.</CommandEmpty>
+                  <CommandGroup>
+                    {materials?.map((material) => (
+                      <CommandItem
+                        key={material.id}
+                        value={material.name}
+                        onSelect={() => {
+                          form.setValue("material", material.name);
+                          setOpenMaterial(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            field.value === material.name ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        {material.name}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </Command>
+              </PopoverContent>
+            </Popover>
             <FormMessage />
           </FormItem>
         )}
