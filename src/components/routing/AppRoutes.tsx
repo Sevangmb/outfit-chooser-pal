@@ -1,13 +1,13 @@
 import { Routes, Route } from "react-router-dom";
-import { Index } from "@/pages/Index";
-import { Auth } from "@/pages/Auth";
-import { Closet } from "@/pages/Closet";
-import { Add } from "@/pages/Add";
-import { Profile } from "@/pages/Profile";
-import { Admin } from "@/pages/Admin";
-import { Contest } from "@/pages/Contest";
-import { Discover } from "@/pages/Discover";
-import { Favorites } from "@/pages/Favorites";
+import Index from "@/pages/Index";
+import Auth from "@/pages/Auth";
+import Closet from "@/pages/Closet";
+import Add from "@/pages/Add";
+import Profile from "@/pages/Profile";
+import Admin from "@/pages/Admin";
+import Contest from "@/pages/Contest";
+import Discover from "@/pages/Discover";
+import Favorites from "@/pages/Favorites";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { PublicRoute } from "./PublicRoute";
 
