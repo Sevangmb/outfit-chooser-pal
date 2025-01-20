@@ -5,7 +5,7 @@ import { FormControl, FormItem, FormLabel, FormMessage } from "@/components/ui/f
 import { UseFormReturn } from "react-hook-form";
 import { FormValues } from "@/types/clothing";
 import { toast } from "sonner";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 
@@ -29,6 +29,16 @@ export const ImageUploadTabs = ({
 }: ImageUploadTabsProps) => {
   const [imageLoadError, setImageLoadError] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [displayUrl, setDisplayUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const imageValue = form.getValues("image");
+    console.log("Image value changed:", imageValue);
+    if (imageValue) {
+      setDisplayUrl(imageValue);
+      setImageLoadError(false);
+    }
+  }, [form.getValues("image")]);
 
   const handleImageLoad = useCallback(() => {
     console.log("Image chargée avec succès");
@@ -39,8 +49,7 @@ export const ImageUploadTabs = ({
     console.log("Erreur lors du chargement de l'image");
     setImageLoadError(true);
     toast.error("Erreur lors du chargement de l'image");
-    form.setValue("image", null);
-  }, [form]);
+  }, []);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -65,6 +74,7 @@ export const ImageUploadTabs = ({
         if (imageUrl) {
           console.log("Setting image URL in form:", imageUrl);
           form.setValue("image", imageUrl, { shouldValidate: true });
+          setDisplayUrl(imageUrl);
           setImageLoadError(false);
         } else {
           throw new Error("URL de l'image non reçue");
@@ -74,12 +84,10 @@ export const ImageUploadTabs = ({
         toast.error("Erreur lors du téléchargement de l'image");
         setSelectedFile(null);
         form.setValue("image", null);
+        setDisplayUrl(null);
       }
     }
   };
-
-  const imageUrl = form.getValues("image");
-  console.log("Current image URL:", imageUrl);
 
   return (
     <FormItem>
@@ -118,10 +126,10 @@ export const ImageUploadTabs = ({
           </Alert>
         )}
 
-        {imageUrl && (
+        {displayUrl && (
           <div className="relative aspect-square w-full max-w-sm mx-auto overflow-hidden rounded-lg border">
             <img
-              src={imageUrl}
+              src={displayUrl}
               alt="Aperçu"
               className={`object-cover w-full h-full ${imageLoadError ? 'opacity-50' : ''}`}
               onError={handleImageError}
