@@ -32,6 +32,11 @@ interface UserPreference {
   created_at: string;
 }
 
+interface PageData {
+  outfits: Outfit[];
+  nextPage: number | null;
+}
+
 const ITEMS_PER_PAGE = 6;
 
 export const RecommendedOutfits = () => {
@@ -64,7 +69,7 @@ export const RecommendedOutfits = () => {
     fetchNextPage, 
     hasNextPage,
     isFetchingNextPage 
-  } = useInfiniteQuery({
+  } = useInfiniteQuery<PageData>({
     queryKey: ["recommended-outfits", userPreferences],
     queryFn: async ({ pageParam = 0 }) => {
       if (!userPreferences?.length) return { outfits: [], nextPage: null };
@@ -73,7 +78,7 @@ export const RecommendedOutfits = () => {
       const preferredCategories = userPreferences.map((pref) => pref.category);
       const preferredColors = userPreferences.map((pref) => pref.color);
 
-      const from = pageParam * ITEMS_PER_PAGE;
+      const from = Number(pageParam) * ITEMS_PER_PAGE;
       const to = from + ITEMS_PER_PAGE - 1;
 
       const { data: outfitsData, error: outfitsError } = await supabase
@@ -130,9 +135,10 @@ export const RecommendedOutfits = () => {
 
       return {
         outfits: sortedOutfits,
-        nextPage: hasMore ? pageParam + 1 : null,
+        nextPage: hasMore ? Number(pageParam) + 1 : null,
       };
     },
+    initialPageParam: 0,
     getNextPageParam: (lastPage) => lastPage.nextPage,
     enabled: !!userPreferences?.length,
     staleTime: 2 * 60 * 1000, // 2 minutes
