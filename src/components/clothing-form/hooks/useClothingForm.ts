@@ -23,7 +23,14 @@ export const useClothingForm = (onSuccess?: () => void) => {
       image: null,
       imageUrl: "",
     },
-    mode: "onChange", // Validation en temps réel
+    mode: "onChange",
+  });
+
+  console.log("Form state:", {
+    isValid: form.formState.isValid,
+    isDirty: form.formState.isDirty,
+    errors: form.formState.errors,
+    values: form.getValues()
   });
 
   const onSubmit = async (values: FormValues) => {
@@ -73,7 +80,7 @@ export const useClothingForm = (onSuccess?: () => void) => {
   return {
     form,
     onSubmit,
-    isValid: form.formState.isValid,
+    isValid: form.formState.isDirty && Object.keys(form.formState.errors).length === 0,
     isSubmitting: form.formState.isSubmitting,
     errors: form.formState.errors,
   };

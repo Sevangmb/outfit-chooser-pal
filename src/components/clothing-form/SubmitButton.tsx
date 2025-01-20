@@ -8,7 +8,7 @@ interface SubmitButtonProps {
 }
 
 export const SubmitButton = ({ isUploading, isSubmitting, isValid }: SubmitButtonProps) => {
-  const isDisabled = isUploading || isSubmitting || !isValid;
+  const isDisabled = isUploading || isSubmitting;
   
   let buttonText = "Ajouter";
   if (isUploading) buttonText = "Téléchargement...";
