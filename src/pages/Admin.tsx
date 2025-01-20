@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Shield, Users, List, Ban, Settings } from "lucide-react";
+import { Shield, Users, List, Ban, Settings, HelpCircle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserManagement } from "@/components/admin/UserManagement";
@@ -10,6 +10,12 @@ import { ContentModeration } from "@/components/admin/ContentModeration";
 import { GeneralSettings } from "@/components/admin/GeneralSettings";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -68,6 +74,25 @@ const Admin = () => {
     );
   }
 
+  const TabHeader = ({ icon: Icon, title, description }: { icon: any, title: string, description: string }) => (
+    <div className="flex items-center gap-2">
+      <Icon className="h-5 w-5" />
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="flex items-center gap-1">
+              {title}
+              <HelpCircle className="h-4 w-4 text-muted-foreground ml-1" />
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p className="max-w-xs text-sm">{description}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    </div>
+  );
+
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="flex items-center gap-2 mb-8">
@@ -76,30 +101,45 @@ const Admin = () => {
       </div>
 
       <Tabs defaultValue="users" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="users" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            Utilisateurs
+        <TabsList className="grid grid-cols-2 md:flex md:space-x-2 gap-2 md:gap-0">
+          <TabsTrigger value="users">
+            <TabHeader 
+              icon={Users} 
+              title="Utilisateurs" 
+              description="Gérez les utilisateurs, leurs rôles et leurs permissions"
+            />
           </TabsTrigger>
-          <TabsTrigger value="moderation" className="flex items-center gap-2">
-            <Ban className="h-4 w-4" />
-            Modération
+          <TabsTrigger value="moderation">
+            <TabHeader 
+              icon={Ban} 
+              title="Modération" 
+              description="Modérez le contenu signalé et gérez les infractions"
+            />
           </TabsTrigger>
-          <TabsTrigger value="banned-words" className="flex items-center gap-2">
-            <Ban className="h-4 w-4" />
-            Mots bannis
+          <TabsTrigger value="banned-words">
+            <TabHeader 
+              icon={Ban} 
+              title="Mots bannis" 
+              description="Gérez la liste des mots interdits sur la plateforme"
+            />
           </TabsTrigger>
-          <TabsTrigger value="logs" className="flex items-center gap-2">
-            <List className="h-4 w-4" />
-            Logs d'audit
+          <TabsTrigger value="logs">
+            <TabHeader 
+              icon={List} 
+              title="Logs" 
+              description="Consultez l'historique des actions administratives"
+            />
           </TabsTrigger>
-          <TabsTrigger value="settings" className="flex items-center gap-2">
-            <Settings className="h-4 w-4" />
-            Paramètres
+          <TabsTrigger value="settings">
+            <TabHeader 
+              icon={Settings} 
+              title="Paramètres" 
+              description="Configurez les paramètres généraux de l'application"
+            />
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="users">
+        <TabsContent value="users" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>Gestion des utilisateurs</CardTitle>
