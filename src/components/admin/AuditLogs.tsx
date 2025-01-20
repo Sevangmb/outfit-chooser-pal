@@ -25,19 +25,24 @@ export const AuditLogs = () => {
 
   const fetchLogs = async () => {
     try {
+      console.log('Fetching audit logs...');
       const { data: logsData, error: logsError } = await supabase
         .from('audit_logs')
         .select(`
           *,
-          profiles!audit_logs_admin_id_fkey(email)
+          admin:admin_id (
+            email:profiles!inner(email)
+          )
         `)
         .order('created_at', { ascending: false });
 
       if (logsError) throw logsError;
 
+      console.log('Audit logs data:', logsData);
+
       const formattedLogs = logsData.map((log: any) => ({
         ...log,
-        admin_email: log.profiles?.email
+        admin_email: log.admin?.email
       }));
 
       setLogs(formattedLogs);
