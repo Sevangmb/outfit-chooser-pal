@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 
 interface HeaderProps {
-  onLogout: () => void;
   className?: string;
 }
 
