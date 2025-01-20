@@ -17,15 +17,19 @@ interface AddClothingFormProps {
 
 export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
   const navigate = useNavigate();
+  
   const { form, onSubmit, isValid, isSubmitting, errors } = useClothingForm(async (values) => {
     try {
       console.log("Form submitted with values:", values);
+      
+      // Validate image URL
+      if (!values.image || values.image.startsWith('blob:')) {
+        toast.error("L'image n'a pas été téléchargée correctement");
+        return;
+      }
+
       toast.success(`Le vêtement "${values.name}" a été ajouté à votre garde-robe`);
-      
-      // Attendre un peu pour que l'utilisateur voie le message de succès
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Rediriger vers la garde-robe
       navigate("/closet");
       onSuccess?.();
     } catch (error) {
@@ -67,18 +71,24 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
       const canvas = document.createElement('canvas');
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
-      canvas.getContext('2d')?.drawImage(video, 0, 0);
-
+      const context = canvas.getContext('2d');
+      
+      if (!context) {
+        throw new Error("Impossible de créer le contexte canvas");
+      }
+      
+      context.drawImage(video, 0, 0);
       stream.getTracks().forEach(track => track.stop());
 
       const blob = await new Promise<Blob>((resolve) => 
-        canvas.toBlob((blob) => resolve(blob!), 'image/jpeg')
+        canvas.toBlob((blob) => resolve(blob!), 'image/jpeg', 0.8)
       );
       
       const file = new File([blob], "camera-capture.jpg", { type: "image/jpeg" });
       const imageUrl = await handleImageUpload(file);
+      
       if (imageUrl) {
-        form.setValue("image", imageUrl);
+        form.setValue("image", imageUrl, { shouldValidate: true });
         toast.success("Image capturée avec succès");
       }
     } catch (error) {
@@ -90,11 +100,20 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
   const handleUrlImage = async (url: string) => {
     try {
       const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Erreur HTTP: ${response.status}`);
+      }
+      
       const blob = await response.blob();
+      if (!blob.type.startsWith('image/')) {
+        throw new Error("Le fichier n'est pas une image valide");
+      }
+      
       const file = new File([blob], "url-image.jpg", { type: blob.type });
       const imageUrl = await handleImageUpload(file);
+      
       if (imageUrl) {
-        form.setValue("image", imageUrl);
+        form.setValue("image", imageUrl, { shouldValidate: true });
         form.setValue("imageUrl", "");
         toast.success("Image téléchargée avec succès");
       }

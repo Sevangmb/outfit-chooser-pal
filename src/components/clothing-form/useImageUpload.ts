@@ -6,37 +6,6 @@ export const useImageUpload = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  const verifyImageUrl = async (url: string): Promise<boolean> => {
-    try {
-      console.log("Verifying image URL:", url);
-      
-      // Pour les URLs blob, on les considère valides car créées localement
-      if (url.startsWith('blob:')) {
-        console.log("URL blob détectée, considérée comme valide");
-        return true;
-      }
-
-      // Pour les URLs Supabase Storage, on les considère valides
-      if (url.includes('supabase.co/storage')) {
-        console.log("URL Supabase Storage détectée, considérée comme valide");
-        return true;
-      }
-
-      // Pour les autres URLs, on vérifie le format
-      try {
-        new URL(url);
-      } catch (e) {
-        console.error("Format d'URL invalide:", e);
-        return false;
-      }
-
-      return true;
-    } catch (error) {
-      console.error("Erreur lors de la vérification de l'URL:", error);
-      return false;
-    }
-  };
-
   const handleImageUpload = async (file: File) => {
     try {
       setIsUploading(true);
@@ -54,24 +23,27 @@ export const useImageUpload = () => {
         toast.error("L'image ne doit pas dépasser 5MB");
         return null;
       }
-      
+
       // Create a local preview URL
       const localPreviewUrl = URL.createObjectURL(file);
       setPreviewUrl(localPreviewUrl);
 
+      // Prepare file for upload
       const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random()}.${fileExt}`;
-      const filePath = `${fileName}`;
-
-      console.log("Uploading file:", filePath);
+      const safeFileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      
+      console.log("Uploading file:", safeFileName);
       
       // Upload to Supabase Storage
       const { error: uploadError, data } = await supabase.storage
         .from('clothes')
-        .upload(filePath, file, {
+        .upload(safeFileName, file, {
           cacheControl: '3600',
           upsert: false
         });
+
+      // Clean up local preview
+      URL.revokeObjectURL(localPreviewUrl);
 
       if (uploadError) {
         console.error("Error uploading file:", uploadError);
@@ -84,12 +56,9 @@ export const useImageUpload = () => {
       // Get the public URL
       const { data: { publicUrl } } = supabase.storage
         .from('clothes')
-        .getPublicUrl(filePath);
+        .getPublicUrl(safeFileName);
 
-      // Clean up the local preview URL
-      URL.revokeObjectURL(localPreviewUrl);
       setPreviewUrl(publicUrl);
-      
       toast.success("Image téléchargée avec succès");
       return publicUrl;
     } catch (error) {
@@ -102,7 +71,7 @@ export const useImageUpload = () => {
   };
 
   const resetPreview = () => {
-    if (previewUrl && previewUrl.startsWith('blob:')) {
+    if (previewUrl?.startsWith('blob:')) {
       URL.revokeObjectURL(previewUrl);
     }
     setPreviewUrl(null);
@@ -113,6 +82,5 @@ export const useImageUpload = () => {
     previewUrl,
     handleImageUpload,
     resetPreview,
-    verifyImageUrl,
   };
 };

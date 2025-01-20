@@ -6,7 +6,7 @@ import { FormControl, FormItem, FormLabel, FormMessage } from "@/components/ui/f
 import { UseFormReturn } from "react-hook-form";
 import { FormValues } from "@/types/clothing";
 import { toast } from "sonner";
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useState } from "react";
 
 interface ImageUploadTabsProps {
   form: UseFormReturn<FormValues>;
@@ -28,45 +28,6 @@ export const ImageUploadTabs = ({
   const [imageLoadError, setImageLoadError] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
 
-  const verifyImageUrl = async (url: string): Promise<boolean> => {
-    try {
-      console.log("Verifying image URL:", url);
-      setIsVerifying(true);
-      
-      // Pour les URLs blob, on les considère valides car créées localement
-      if (url.startsWith('blob:')) {
-        console.log("URL blob détectée, considérée comme valide");
-        return true;
-      }
-
-      // Pour les URLs normales, on vérifie le format
-      try {
-        new URL(url);
-      } catch (e) {
-        console.error("Format d'URL invalide:", e);
-        toast.error("Format d'URL invalide");
-        return false;
-      }
-
-      // Pour les URLs normales, on essaie de les vérifier
-      try {
-        await fetch(url, {
-          method: 'HEAD',
-          mode: 'no-cors'
-        });
-        return true;
-      } catch (error) {
-        console.error("Erreur lors de la vérification de l'URL:", error);
-        return false;
-      }
-    } catch (error) {
-      console.error("Erreur lors de la vérification de l'URL:", error);
-      return false;
-    } finally {
-      setIsVerifying(false);
-    }
-  };
-
   const handleImageLoad = useCallback(() => {
     console.log("Image chargée avec succès");
     setImageLoadError(false);
@@ -78,23 +39,36 @@ export const ImageUploadTabs = ({
     toast.error("Erreur lors du chargement de l'image");
   }, []);
 
-  useEffect(() => {
-    if (previewUrl) {
-      console.log("Vérification de l'URL de prévisualisation:", previewUrl);
-      verifyImageUrl(previewUrl).then(isValid => {
-        if (!isValid) {
-          setImageLoadError(true);
-          toast.error("L'image n'a pas pu être chargée correctement");
-        } else {
-          setImageLoadError(false);
-          form.setValue("image", previewUrl, { shouldValidate: true });
-          console.log("URL de l'image définie dans le formulaire:", previewUrl);
-        }
-      });
-    } else {
-      setImageLoadError(false);
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      console.log("Fichier sélectionné:", file.name);
+      const imageUrl = await onFileUpload(file);
+      if (imageUrl) {
+        console.log("URL de l'image définie dans le formulaire:", imageUrl);
+        form.setValue("image", imageUrl, { shouldValidate: true });
+      }
     }
-  }, [previewUrl, form]);
+  };
+
+  const handleUrlSubmit = async () => {
+    const url = form.getValues("imageUrl");
+    if (!url) {
+      toast.error("Veuillez entrer une URL");
+      return;
+    }
+
+    try {
+      setIsVerifying(true);
+      new URL(url); // Validate URL format
+      await onUrlUpload(url);
+    } catch (error) {
+      console.error("Error with URL:", error);
+      toast.error("URL invalide");
+    } finally {
+      setIsVerifying(false);
+    }
+  };
 
   return (
     <FormItem>
@@ -120,17 +94,7 @@ export const ImageUploadTabs = ({
             <Input
               type="file"
               accept="image/*"
-              onChange={async (e) => {
-                const file = e.target.files?.[0];
-                if (file) {
-                  console.log("Fichier sélectionné:", file.name);
-                  const imageUrl = await onFileUpload(file);
-                  if (imageUrl) {
-                    console.log("URL de l'image définie dans le formulaire:", imageUrl);
-                    form.setValue("image", imageUrl, { shouldValidate: true });
-                  }
-                }
-              }}
+              onChange={handleFileChange}
               disabled={isUploading}
             />
           </FormControl>
@@ -158,17 +122,7 @@ export const ImageUploadTabs = ({
             />
             <Button
               type="button"
-              onClick={async () => {
-                const url = form.getValues("imageUrl");
-                if (url) {
-                  const isValid = await verifyImageUrl(url);
-                  if (isValid) {
-                    onUrlUpload(url);
-                  } else {
-                    toast.error("L'URL ne pointe pas vers une image valide");
-                  }
-                }
-              }}
+              onClick={handleUrlSubmit}
               disabled={isUploading || isVerifying}
             >
               {isVerifying ? "Vérification..." : "Importer"}
