@@ -4,7 +4,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Navigation } from "@/components/Navigation";
 import { FollowList } from "@/components/social/FollowList";
-import { useQuery } from "@tanstack/react-query";
+import { ProfileStats } from "@/components/social/ProfileStats";
+import { UserOutfits } from "@/components/social/UserOutfits";
+import { Button } from "@/components/ui/button";
+import { Settings } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface Profile {
   id: string;
@@ -15,30 +19,7 @@ interface Profile {
 const Profile = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
-
-  const { data: followStats } = useQuery({
-    queryKey: ["followStats", profile?.id],
-    queryFn: async () => {
-      if (!profile?.id) return { followers_count: 0, following_count: 0 };
-
-      const [followers, following] = await Promise.all([
-        supabase
-          .from("followers")
-          .select("*", { count: "exact" })
-          .eq("following_id", profile.id),
-        supabase
-          .from("followers")
-          .select("*", { count: "exact" })
-          .eq("follower_id", profile.id)
-      ]);
-
-      return {
-        followers_count: followers.count || 0,
-        following_count: following.count || 0
-      };
-    },
-    enabled: !!profile?.id
-  });
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -81,32 +62,45 @@ const Profile = () => {
       <Navigation />
       <div className="container py-8 px-4 mx-auto mt-16">
         <Card className="max-w-2xl mx-auto">
-          <CardHeader className="flex flex-col items-center space-y-4">
-            <Avatar className="w-32 h-32">
-              <AvatarImage src="https://images.unsplash.com/photo-1527576539890-dfa815648363" />
-              <AvatarFallback>
-                {profile?.email?.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <div className="text-center">
-              <h2 className="text-2xl font-semibold text-primary">{profile?.email}</h2>
-              <p className="text-muted-foreground">
-                Membre depuis le {new Date(profile?.created_at || "").toLocaleDateString()}
-              </p>
-              <div className="flex gap-4 justify-center mt-2">
-                <div className="text-center">
-                  <div className="text-lg font-semibold">{followStats?.followers_count}</div>
-                  <div className="text-sm text-muted-foreground">Abonnés</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-lg font-semibold">{followStats?.following_count}</div>
-                  <div className="text-sm text-muted-foreground">Abonnements</div>
-                </div>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Avatar className="w-20 h-20">
+                <AvatarImage src="https://images.unsplash.com/photo-1527576539890-dfa815648363" />
+                <AvatarFallback>
+                  {profile?.email?.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <h2 className="text-2xl font-semibold text-primary">{profile?.email}</h2>
+                <p className="text-sm text-muted-foreground">
+                  Membre depuis le {new Date(profile?.created_at || "").toLocaleDateString()}
+                </p>
               </div>
             </div>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => navigate("/settings")}
+              className="border-primary/20 hover:bg-primary/10"
+            >
+              <Settings className="h-4 w-4" />
+              <span className="sr-only">Paramètres</span>
+            </Button>
           </CardHeader>
-          <CardContent>
-            {profile && <FollowList userId={profile.id} />}
+          <CardContent className="space-y-6">
+            {profile && (
+              <>
+                <ProfileStats userId={profile.id} />
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-primary">Mes tenues</h3>
+                  <UserOutfits userId={profile.id} />
+                </div>
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-primary">Abonnements</h3>
+                  <FollowList userId={profile.id} />
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>
