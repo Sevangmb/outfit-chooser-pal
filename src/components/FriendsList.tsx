@@ -15,15 +15,6 @@ interface Friend {
   friend_email?: string;
 }
 
-interface Clothing {
-  id: number;
-  name: string;
-  category: string;
-  color: string;
-  image?: string;
-  user_id: string;
-}
-
 export const FriendsList = () => {
   const { data: friends = [], refetch: refetchFriends } = useQuery({
     queryKey: ["friends"],
@@ -32,22 +23,41 @@ export const FriendsList = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("No session");
 
-      const { data: friendships, error } = await supabase
+      // First get all friendships
+      const { data: friendships, error: friendshipsError } = await supabase
         .from("friendships")
-        .select(`
-          *,
-          friend:profiles!friendships_friend_id_fkey(email)
-        `);
+        .select("*");
 
-      if (error) {
-        console.error("Error fetching friends:", error);
-        throw error;
+      if (friendshipsError) {
+        console.error("Error fetching friendships:", friendshipsError);
+        throw friendshipsError;
       }
 
-      const friendsWithEmails = friendships.map((friendship: any) => ({
-        ...friendship,
-        friend_email: friendship.friend?.email
-      }));
+      // Then get the email for each friend from profiles table
+      const friendsWithEmails = await Promise.all(
+        friendships.map(async (friendship) => {
+          const friendId = friendship.friend_id;
+          
+          const { data: profiles, error: profilesError } = await supabase
+            .from("profiles")
+            .select("email")
+            .eq("id", friendId)
+            .single();
+
+          if (profilesError) {
+            console.error("Error fetching friend profile:", profilesError);
+            return {
+              ...friendship,
+              friend_email: "Unknown user"
+            };
+          }
+
+          return {
+            ...friendship,
+            friend_email: profiles?.email
+          };
+        })
+      );
 
       console.log("Fetched friends:", friendsWithEmails);
       return friendsWithEmails;
@@ -70,7 +80,7 @@ export const FriendsList = () => {
         throw error;
       }
 
-      return data as Clothing[];
+      return data;
     },
     enabled: friends.length > 0,
   });
