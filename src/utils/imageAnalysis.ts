@@ -9,9 +9,9 @@ export const analyzeImage = async (imageUrl: string) => {
   try {
     console.log('Starting image analysis...');
     
-    // Initialize the image classification pipeline
-    const classifier = await pipeline('image-classification', 'microsoft/resnet-50', {
-      device: 'webgpu',
+    // Initialize the image classification pipeline with a compatible model
+    const classifier = await pipeline('image-classification', 'Xenova/vit-base-patch16-224', {
+      quantized: true, // Use quantized model for better performance
     });
 
     // Analyze the image
@@ -20,7 +20,6 @@ export const analyzeImage = async (imageUrl: string) => {
     console.log('Classification results:', results);
 
     // Get the most likely category
-    // The results are always an array of objects with label and score
     const topResult = Array.isArray(results) ? results[0] : results;
     const topCategory = (topResult as ImageClassificationResult).label?.toLowerCase() || '';
 
@@ -34,6 +33,16 @@ export const analyzeImage = async (imageUrl: string) => {
       'coat': 'Manteau',
       'shoe': 'Chaussures',
       'sneaker': 'Chaussures',
+      'suit': 'Costume',
+      'tie': 'Accessoire',
+      'sandal': 'Chaussures',
+      'boot': 'Chaussures',
+      'blouse': 'Haut',
+      'sweater': 'Haut',
+      'hoodie': 'Haut',
+      'skirt': 'Jupe',
+      'shorts': 'Pantalon',
+      'jeans': 'Pantalon',
       // Add more mappings as needed
     };
 
