@@ -33,7 +33,13 @@ export const ImageUploadTabs = ({
       console.log("Verifying image URL:", url);
       setIsVerifying(true);
       
-      // Validate URL format
+      // If it's a blob URL, we'll consider it valid since it was created locally
+      if (url.startsWith('blob:')) {
+        console.log("Blob URL detected, considering valid");
+        return true;
+      }
+
+      // For regular URLs, validate the format
       try {
         new URL(url);
       } catch (e) {
@@ -42,20 +48,17 @@ export const ImageUploadTabs = ({
         return false;
       }
 
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-      const response = await fetch(url, {
-        signal: controller.signal,
-        method: 'HEAD',
-        mode: 'no-cors' // Add this to handle CORS issues
-      });
-
-      clearTimeout(timeoutId);
-
-      // Since we're using no-cors, we won't get status or headers
-      // We'll consider it a success if we get here without errors
-      return true;
+      // For regular URLs, try to verify them
+      try {
+        const response = await fetch(url, {
+          method: 'HEAD',
+          mode: 'no-cors'
+        });
+        return true;
+      } catch (error) {
+        console.error("Error fetching URL:", error);
+        return false;
+      }
     } catch (error) {
       console.error("Error verifying image URL:", error);
       return false;
