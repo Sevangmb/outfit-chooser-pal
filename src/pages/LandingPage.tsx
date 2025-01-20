@@ -1,9 +1,40 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/components/ui/use-toast";
 
 const LandingPage = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error("Error checking session:", error);
+          toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: "Impossible de vérifier votre session"
+          });
+        }
+        if (session) {
+          navigate("/");
+        }
+      } catch (error) {
+        console.error("Error in checkSession:", error);
+      }
+    };
+
+    checkSession();
+  }, [navigate]);
+
+  const handleAuthClick = () => {
+    console.log("Navigating to auth page");
+    navigate("/auth");
+  };
 
   return (
     <main 
@@ -40,7 +71,7 @@ const LandingPage = () => {
           transition={{ duration: 0.5, delay: 0.4 }}
         >
           <Button 
-            onClick={() => navigate("/auth")}
+            onClick={handleAuthClick}
             className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-lg font-medium shadow-lg hover:shadow-xl transition-all duration-300 focus:ring-2 focus:ring-primary/50 focus:outline-none"
             aria-label="Commencer l'aventure et créer votre compte"
           >
