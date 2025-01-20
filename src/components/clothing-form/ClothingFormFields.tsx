@@ -1,5 +1,5 @@
 import { UseFormReturn } from "react-hook-form";
-import { FormValues } from "../AddClothingForm";
+import { FormValues } from "@/types/clothing";
 import { BasicFields } from "./fields/BasicFields";
 import { CategoryFields } from "./fields/CategoryFields";
 import { ColorFields } from "./fields/ColorFields";
