@@ -53,9 +53,27 @@ const Profile = () => {
         throw error;
       }
 
+      if (!data) {
+        console.log("No profile found, creating one...");
+        const { data: newProfile, error: createError } = await supabase
+          .from("profiles")
+          .insert([{ id: session.user.id, email: session.user.email }])
+          .select()
+          .single();
+
+        if (createError) {
+          console.error("Error creating profile:", createError);
+          toast.error("Erreur lors de la création du profil");
+          throw createError;
+        }
+
+        return newProfile;
+      }
+
       return data;
     },
     enabled: !!session?.user?.id,
+    retry: 1,
   });
 
   const { data: isAdmin } = useQuery({
