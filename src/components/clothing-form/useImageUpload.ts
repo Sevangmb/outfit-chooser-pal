@@ -49,14 +49,25 @@ export const useImageUpload = () => {
   const verifyImageAccessibility = useCallback(async (url: string): Promise<boolean> => {
     console.log("Verifying image accessibility:", url);
     try {
-      const response = await fetch(url, { method: 'HEAD' });
+      const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const contentType = response.headers.get('content-type');
-      if (!contentType?.startsWith('image/')) {
+      
+      const blob = await response.blob();
+      if (!blob.type.startsWith('image/')) {
         throw new Error('Not an image');
       }
+
+      const objectUrl = URL.createObjectURL(blob);
+      await new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = objectUrl;
+      });
+      URL.revokeObjectURL(objectUrl);
+      
       return true;
     } catch (error) {
       console.error("Error verifying image accessibility:", error);
@@ -114,20 +125,33 @@ export const useImageUpload = () => {
       let isAccessible = false;
       let retryCount = 0;
       const maxRetries = 3;
+      const retryDelay = 2000; // 2 seconds between retries
       
       while (!isAccessible && retryCount < maxRetries) {
         console.log(`Verifying image accessibility (attempt ${retryCount + 1}/${maxRetries})`);
         isAccessible = await verifyImageAccessibility(publicUrl);
-        if (!isAccessible) {
-          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second before retrying
-          retryCount++;
+        if (!isAccessible && retryCount < maxRetries - 1) {
+          console.log(`Waiting ${retryDelay}ms before next retry...`);
+          await new Promise(resolve => setTimeout(resolve, retryDelay));
         }
+        retryCount++;
       }
 
       if (!isAccessible) {
         console.error("Image verification failed after retries");
         setUploadError("L'image téléchargée n'est pas accessible");
         toast.error("L'image téléchargée n'est pas accessible");
+        
+        // Try to delete the failed upload
+        try {
+          await supabase.storage
+            .from('clothes')
+            .remove([filePath]);
+          console.log("Cleaned up failed upload");
+        } catch (cleanupError) {
+          console.error("Error cleaning up failed upload:", cleanupError);
+        }
+        
         return null;
       }
 
