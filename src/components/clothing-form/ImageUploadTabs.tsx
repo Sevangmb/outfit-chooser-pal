@@ -66,12 +66,14 @@ export const ImageUploadTabs = ({
           toast.error("L'image n'a pas pu être chargée correctement");
         } else {
           setImageLoadError(false);
+          // Set the image value in the form when we have a valid preview URL
+          form.setValue("image", previewUrl, { shouldValidate: true });
         }
       });
     } else {
       setImageLoadError(false);
     }
-  }, [previewUrl]);
+  }, [previewUrl, form]);
 
   return (
     <FormItem>
@@ -100,9 +102,11 @@ export const ImageUploadTabs = ({
               onChange={async (e) => {
                 const file = e.target.files?.[0];
                 if (file) {
+                  console.log("File selected:", file.name);
                   const imageUrl = await onFileUpload(file);
                   if (imageUrl) {
-                    form.setValue("image", imageUrl);
+                    console.log("Setting image URL in form:", imageUrl);
+                    form.setValue("image", imageUrl, { shouldValidate: true });
                   }
                 }
               }}
