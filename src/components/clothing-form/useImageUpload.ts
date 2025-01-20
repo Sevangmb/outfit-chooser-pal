@@ -49,29 +49,16 @@ export const useImageUpload = () => {
   const verifyImageAccessibility = useCallback(async (url: string): Promise<boolean> => {
     console.log("Verifying image accessibility:", url);
     try {
-      // Ensure the URL is properly formatted
-      const cleanUrl = url.replace(/([^:]\/)\/+/g, "$1");
-      console.log("Cleaned URL:", cleanUrl);
-
-      const response = await fetch(cleanUrl);
+      const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      const blob = await response.blob();
-      if (!blob.type.startsWith('image/')) {
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.startsWith('image/')) {
         throw new Error('Not an image');
       }
 
-      const objectUrl = URL.createObjectURL(blob);
-      await new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = resolve;
-        img.onerror = reject;
-        img.src = objectUrl;
-      });
-      URL.revokeObjectURL(objectUrl);
-      
       return true;
     } catch (error) {
       console.error("Error verifying image accessibility:", error);
@@ -125,28 +112,10 @@ export const useImageUpload = () => {
         .from('clothes')
         .getPublicUrl(filePath);
 
-      // Clean up the URL to ensure proper format
-      const cleanPublicUrl = publicUrl.replace(/([^:]\/)\/+/g, "$1");
-      console.log("Clean public URL:", cleanPublicUrl);
-
-      // Verify the uploaded image is accessible with retries
-      let isAccessible = false;
-      let retryCount = 0;
-      const maxRetries = 3;
-      const retryDelay = 2000; // 2 seconds between retries
-      
-      while (!isAccessible && retryCount < maxRetries) {
-        console.log(`Verifying image accessibility (attempt ${retryCount + 1}/${maxRetries})`);
-        isAccessible = await verifyImageAccessibility(cleanPublicUrl);
-        if (!isAccessible && retryCount < maxRetries - 1) {
-          console.log(`Waiting ${retryDelay}ms before next retry...`);
-          await new Promise(resolve => setTimeout(resolve, retryDelay));
-        }
-        retryCount++;
-      }
-
+      // Verify the uploaded image is accessible
+      const isAccessible = await verifyImageAccessibility(publicUrl);
       if (!isAccessible) {
-        console.error("Image verification failed after retries");
+        console.error("Image verification failed");
         setUploadError("L'image téléchargée n'est pas accessible");
         toast.error("L'image téléchargée n'est pas accessible");
         
@@ -163,9 +132,9 @@ export const useImageUpload = () => {
         return null;
       }
 
-      setPreviewUrl(cleanPublicUrl);
+      setPreviewUrl(publicUrl);
       toast.success("Image téléchargée avec succès");
-      return cleanPublicUrl;
+      return publicUrl;
     } catch (error) {
       console.error("Unexpected error during upload:", error);
       setUploadError("Erreur inattendue lors du téléchargement");
