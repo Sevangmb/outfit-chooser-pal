@@ -1,43 +1,20 @@
 import { Form } from "@/components/ui/form";
-import { ClothingFormFields } from "./clothing-form/ClothingFormFields";
-import { ImageUploadTabs } from "./clothing-form/ImageUploadTabs";
 import { useImageUpload } from "./clothing-form/useImageUpload";
-import { ImageAnalysisButton } from "./clothing-form/ImageAnalysisButton";
-import { SubmitButton } from "./clothing-form/SubmitButton";
 import { useClothingForm } from "./clothing-form/hooks/useClothingForm";
 import { toast } from "sonner";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
 import { WizardNavigation } from "./clothing-form/WizardNavigation";
+import { FormValidationErrors } from "./clothing-form/FormValidationErrors";
+import { WizardStepContent } from "./clothing-form/WizardStepContent";
+import { useWizardNavigation } from "./clothing-form/hooks/useWizardNavigation";
 
 interface AddClothingFormProps {
   onSuccess?: () => void;
 }
 
-const STEPS = [
-  {
-    title: "Image",
-    isComplete: (values: any) => !!values.image && !values.image.startsWith('blob:'),
-  },
-  {
-    title: "Informations de base",
-    isComplete: (values: any) => !!values.name && !!values.category,
-  },
-  {
-    title: "Couleurs",
-    isComplete: (values: any) => !!values.color,
-  },
-  {
-    title: "Détails additionnels",
-    isComplete: () => true, // Optional step
-  },
-];
-
 export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
   const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState(0);
   
   const { form, onSubmit, isValid, isSubmitting, errors } = useClothingForm(async (values) => {
     try {
@@ -59,27 +36,13 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
   });
   
   const { isUploading, previewUrl, uploadError, handleImageUpload, resetPreview } = useImageUpload();
+  const { currentStep, totalSteps, handleNext, handlePrevious } = useWizardNavigation(form.getValues());
 
   useEffect(() => {
     if (Object.keys(errors).length > 0) {
       console.log("Form validation errors:", errors);
     }
   }, [errors]);
-
-  const getRequiredFieldsErrors = () => {
-    const requiredFields = {
-      name: "le nom",
-      category: "la catégorie",
-      color: "la couleur",
-      image: "l'image"
-    };
-    
-    return Object.entries(errors)
-      .filter(([key]) => key in requiredFields)
-      .map(([key]) => requiredFields[key as keyof typeof requiredFields]);
-  };
-
-  const missingFields = getRequiredFieldsErrors();
 
   const handleCameraCapture = async () => {
     try {
@@ -143,73 +106,30 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
     }
   };
 
-  const handleNext = () => {
-    const currentStepData = STEPS[currentStep];
-    if (currentStepData.isComplete(form.getValues())) {
-      setCurrentStep((prev) => Math.min(prev + 1, STEPS.length - 1));
-    } else {
-      toast.error("Veuillez remplir tous les champs requis avant de continuer");
-    }
-  };
-
-  const handlePrevious = () => {
-    setCurrentStep((prev) => Math.max(prev - 1, 0));
-  };
-
-  const renderStepContent = () => {
-    switch (currentStep) {
-      case 0:
-        return (
-          <>
-            <ImageUploadTabs
-              form={form}
-              isUploading={isUploading}
-              previewUrl={previewUrl}
-              uploadError={uploadError}
-              onFileUpload={handleImageUpload}
-              onCameraCapture={handleCameraCapture}
-              onUrlUpload={handleUrlImage}
-            />
-            <ImageAnalysisButton
-              form={form}
-              previewUrl={previewUrl}
-              isUploading={isUploading}
-            />
-          </>
-        );
-      case 1:
-        return <ClothingFormFields form={form} step="basic" />;
-      case 2:
-        return <ClothingFormFields form={form} step="colors" />;
-      case 3:
-        return <ClothingFormFields form={form} step="details" />;
-      default:
-        return null;
-    }
-  };
-
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        {missingFields.length > 0 && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              Champs requis manquants : {missingFields.join(", ")}
-            </AlertDescription>
-          </Alert>
-        )}
+        <FormValidationErrors errors={errors} />
 
         <div className="space-y-4">
-          {renderStepContent()}
+          <WizardStepContent
+            currentStep={currentStep}
+            form={form}
+            isUploading={isUploading}
+            previewUrl={previewUrl}
+            uploadError={uploadError}
+            onImageUpload={handleImageUpload}
+            onCameraCapture={handleCameraCapture}
+            onUrlUpload={handleUrlImage}
+          />
         </div>
 
         <WizardNavigation
           currentStep={currentStep}
-          totalSteps={STEPS.length}
-          onNext={currentStep === STEPS.length - 1 ? form.handleSubmit(onSubmit) : handleNext}
+          totalSteps={totalSteps}
+          onNext={currentStep === totalSteps - 1 ? form.handleSubmit(onSubmit) : handleNext}
           onPrevious={handlePrevious}
-          isNextDisabled={currentStep === STEPS.length - 1 ? isSubmitting || !isValid : false}
+          isNextDisabled={currentStep === totalSteps - 1 ? isSubmitting || !isValid : false}
         />
       </form>
     </Form>
