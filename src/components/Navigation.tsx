@@ -9,13 +9,21 @@ export const Navigation = () => {
   const navigate = useNavigate();
   const [unreadCount, setUnreadCount] = useState(0);
 
-  // Fetch notifications count
+  // Fetch notifications count with better error handling
   const { data: notificationsCount } = useQuery({
     queryKey: ["unread-notifications"],
     queryFn: async () => {
+      console.log("Fetching notifications count...");
+      
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return 0;
+      console.log("Current session:", session);
+      
+      if (!session) {
+        console.log("No session found, returning 0");
+        return 0;
+      }
 
+      console.log("Fetching unread messages for user:", session.user.id);
       const { count, error } = await supabase
         .from("admin_messages")
         .select("*", { count: "exact" })
@@ -27,8 +35,10 @@ export const Navigation = () => {
         return 0;
       }
 
+      console.log("Unread messages count:", count);
       return count || 0;
-    }
+    },
+    retry: false
   });
 
   return (
