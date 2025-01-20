@@ -71,7 +71,8 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
 
       // Extract dominant color
       const dominantColor = await extractDominantColor(previewUrl);
-      if (dominantColor) {
+      if (dominantColor && dominantColor !== '#000000') {
+        console.log('Setting color to:', dominantColor);
         form.setValue("color", dominantColor);
         toast.success("Couleur principale détectée");
       }

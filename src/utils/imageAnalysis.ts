@@ -9,10 +9,8 @@ export const analyzeImage = async (imageUrl: string) => {
   try {
     console.log('Starting image analysis...');
     
-    // Initialize the image classification pipeline with a compatible model
     const classifier = await pipeline('image-classification', 'Xenova/vit-base-patch16-224');
 
-    // Analyze the image
     console.log('Analyzing image:', imageUrl);
     const results = await classifier(imageUrl);
     console.log('Classification results:', results);
@@ -98,7 +96,9 @@ export const extractDominantColor = async (imageUrl: string): Promise<string> =>
     b = Math.round(b / pixelCount);
 
     // Convert to hex
-    return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+    const color = `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+    console.log('Extracted color:', color);
+    return color;
   } catch (error) {
     console.error('Error extracting dominant color:', error);
     return '#000000';

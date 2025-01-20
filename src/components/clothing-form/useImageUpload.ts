@@ -32,8 +32,7 @@ export const useImageUpload = () => {
         .from('clothes')
         .getPublicUrl(filePath);
 
-      // Clean up the local preview URL
-      URL.revokeObjectURL(localPreviewUrl);
+      // Ne pas révoquer l'URL locale tant que l'upload n'est pas terminé
       setPreviewUrl(publicUrl);
       
       return publicUrl;
@@ -47,7 +46,7 @@ export const useImageUpload = () => {
   };
 
   const resetPreview = () => {
-    if (previewUrl) {
+    if (previewUrl && previewUrl.startsWith('blob:')) {
       URL.revokeObjectURL(previewUrl);
     }
     setPreviewUrl(null);
