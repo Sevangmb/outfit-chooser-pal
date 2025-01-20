@@ -27,7 +27,9 @@ export const OutfitFeed = () => {
     queryKey: ["outfits-feed"],
     queryFn: async () => {
       console.log("Fetching outfits for feed...");
-      const { data: outfits, error } = await supabase
+      
+      // First, fetch outfits with their clothes
+      const { data: outfitsData, error: outfitsError } = await supabase
         .from("outfits")
         .select(`
           *,
@@ -37,13 +39,15 @@ export const OutfitFeed = () => {
         `)
         .order("created_at", { ascending: false });
 
-      if (error) {
-        console.error("Error fetching outfits:", error);
-        throw error;
+      if (outfitsError) {
+        console.error("Error fetching outfits:", outfitsError);
+        throw outfitsError;
       }
 
-      // Fetch user emails in a separate query
-      const userIds = outfits.map((outfit: any) => outfit.user_id);
+      console.log("Fetched outfits:", outfitsData);
+
+      // Then, fetch profiles for all user_ids
+      const userIds = outfitsData.map((outfit: any) => outfit.user_id);
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
         .select("id, email")
@@ -54,10 +58,13 @@ export const OutfitFeed = () => {
         throw profilesError;
       }
 
+      console.log("Fetched profiles:", profiles);
+
       // Create a map of user_id to email
       const emailMap = new Map(profiles?.map((p) => [p.id, p.email]));
 
-      const formattedOutfits = outfits.map((outfit: any) => ({
+      // Combine the data
+      const formattedOutfits = outfitsData.map((outfit: any) => ({
         ...outfit,
         user_email: emailMap.get(outfit.user_id),
         clothes: outfit.clothes.map((item: any) => ({
@@ -65,7 +72,7 @@ export const OutfitFeed = () => {
         })),
       }));
 
-      console.log("Fetched outfits:", formattedOutfits);
+      console.log("Formatted outfits:", formattedOutfits);
       return formattedOutfits;
     },
   });
