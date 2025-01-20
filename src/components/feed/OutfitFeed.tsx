@@ -33,9 +33,6 @@ export const OutfitFeed = () => {
           *,
           clothes:outfit_clothes(
             clothes(id, name, category, color, image)
-          ),
-          creator:user_id(
-            profiles!profiles_id_fkey(email)
           )
         `)
         .order("created_at", { ascending: false });
@@ -45,9 +42,24 @@ export const OutfitFeed = () => {
         throw error;
       }
 
+      // Fetch user emails in a separate query
+      const userIds = outfits.map((outfit: any) => outfit.user_id);
+      const { data: profiles, error: profilesError } = await supabase
+        .from("profiles")
+        .select("id, email")
+        .in("id", userIds);
+
+      if (profilesError) {
+        console.error("Error fetching profiles:", profilesError);
+        throw profilesError;
+      }
+
+      // Create a map of user_id to email
+      const emailMap = new Map(profiles?.map((p) => [p.id, p.email]));
+
       const formattedOutfits = outfits.map((outfit: any) => ({
         ...outfit,
-        user_email: outfit.creator?.profiles?.[0]?.email,
+        user_email: emailMap.get(outfit.user_id),
         clothes: outfit.clothes.map((item: any) => ({
           clothes: item.clothes,
         })),
