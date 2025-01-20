@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { clothingFormSchema, FormValues } from "@/types/clothing";
 
-export const useClothingForm = (onSuccess?: () => void) => {
+export const useClothingForm = (onSuccess?: (values: FormValues) => void) => {
   const queryClient = useQueryClient();
   
   const form = useForm<FormValues>({
@@ -67,10 +67,9 @@ export const useClothingForm = (onSuccess?: () => void) => {
       }
 
       console.log("Successfully added clothing item");
-      toast.success("Vêtement ajouté avec succès");
       queryClient.invalidateQueries({ queryKey: ["clothes"] });
       form.reset();
-      onSuccess?.();
+      onSuccess?.(values);
     } catch (error) {
       console.error("Error adding clothing:", error);
       toast.error("Erreur lors de l'ajout du vêtement");

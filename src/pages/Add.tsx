@@ -14,7 +14,9 @@ const Add = () => {
           
           <div className="bg-card rounded-lg shadow-sm p-6">
             <AddClothingForm onSuccess={() => {
-              navigate("/closet");
+              setTimeout(() => {
+                navigate("/closet");
+              }, 1000); // Délai pour laisser le temps de voir le message de succès
             }} />
           </div>
 

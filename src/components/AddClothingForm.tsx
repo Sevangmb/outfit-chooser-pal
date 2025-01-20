@@ -13,10 +13,13 @@ interface AddClothingFormProps {
 }
 
 export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
-  const { form, onSubmit, isValid, isSubmitting, errors } = useClothingForm(onSuccess);
+  const { form, onSubmit, isValid, isSubmitting, errors } = useClothingForm((values) => {
+    toast.success(`Le vêtement "${values.name}" a été ajouté à votre garde-robe`);
+    onSuccess?.();
+  });
+  
   const { isUploading, previewUrl, handleImageUpload, resetPreview } = useImageUpload();
 
-  // Afficher les erreurs de validation en temps réel
   useEffect(() => {
     if (Object.keys(errors).length > 0) {
       console.log("Form validation errors:", errors);
