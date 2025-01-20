@@ -6,10 +6,11 @@ import { Form } from "@/components/ui/form";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { Loader2, Wand2 } from "lucide-react";
 import { ClothingFormFields } from "./clothing-form/ClothingFormFields";
 import { ImageUploadTabs } from "./clothing-form/ImageUploadTabs";
 import { useImageUpload } from "./clothing-form/useImageUpload";
+import { analyzeImage, extractDominantColor } from "@/utils/imageAnalysis";
 
 export const formSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
@@ -51,6 +52,34 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
       imageUrl: "",
     },
   });
+
+  const analyzeUploadedImage = async () => {
+    if (!previewUrl) {
+      toast.error("Veuillez d'abord télécharger une image");
+      return;
+    }
+
+    try {
+      toast.info("Analyse de l'image en cours...");
+      
+      // Analyze image for category
+      const analysis = await analyzeImage(previewUrl);
+      if (analysis?.category) {
+        form.setValue("category", analysis.category);
+        toast.success(`Catégorie détectée : ${analysis.category}`);
+      }
+
+      // Extract dominant color
+      const dominantColor = await extractDominantColor(previewUrl);
+      if (dominantColor) {
+        form.setValue("color", dominantColor);
+        toast.success("Couleur principale détectée");
+      }
+    } catch (error) {
+      console.error("Error analyzing image:", error);
+      toast.error("Erreur lors de l'analyse de l'image");
+    }
+  };
 
   const handleCameraCapture = async () => {
     try {
@@ -139,8 +168,6 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <ClothingFormFields form={form} />
-        
         <ImageUploadTabs
           form={form}
           isUploading={isUploading}
@@ -149,6 +176,21 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
           onCameraCapture={handleCameraCapture}
           onUrlUpload={handleUrlImage}
         />
+
+        {previewUrl && (
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={analyzeUploadedImage}
+            disabled={isUploading}
+          >
+            <Wand2 className="mr-2 h-4 w-4" />
+            Analyser l'image
+          </Button>
+        )}
+
+        <ClothingFormFields form={form} />
 
         <Button type="submit" className="w-full" disabled={isUploading}>
           {isUploading ? (
