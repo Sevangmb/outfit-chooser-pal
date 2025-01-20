@@ -162,16 +162,19 @@ export type Database = {
         Row: {
           created_at: string
           email: string
+          has_completed_onboarding: boolean | null
           id: string
         }
         Insert: {
           created_at?: string
           email: string
+          has_completed_onboarding?: boolean | null
           id: string
         }
         Update: {
           created_at?: string
           email?: string
+          has_completed_onboarding?: boolean | null
           id?: string
         }
         Relationships: []
