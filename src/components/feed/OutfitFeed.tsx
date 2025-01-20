@@ -43,7 +43,8 @@ export const OutfitFeed = () => {
   } = useInfiniteQuery<PageData>({
     queryKey: ["outfits-feed"],
     initialPageParam: 0,
-    queryFn: async ({ pageParam }) => {
+    queryFn: async (context) => {
+      const pageParam = context.pageParam as number;
       console.log("Fetching outfits for feed, page:", pageParam);
       
       try {
