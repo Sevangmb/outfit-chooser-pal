@@ -4,6 +4,7 @@ import { OutfitCard } from "./OutfitCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect } from "react";
 import { useInView } from "react-intersection-observer";
+import { Loader2 } from "lucide-react";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -39,7 +40,9 @@ export const OutfitFeed = () => {
     isLoading,
     fetchNextPage,
     hasNextPage,
-    isFetchingNextPage
+    isFetchingNextPage,
+    refetch,
+    isRefetching
   } = useInfiniteQuery<PageData>({
     queryKey: ["outfits-feed"],
     initialPageParam: 0,
@@ -48,7 +51,6 @@ export const OutfitFeed = () => {
       console.log("Fetching outfits for feed, page:", pageParam);
       
       try {
-        // First, fetch outfits with their clothes
         const { data: outfitsData, error: outfitsError } = await supabase
           .from("outfits")
           .select(`
@@ -72,7 +74,6 @@ export const OutfitFeed = () => {
           };
         }
 
-        // Then, fetch profiles for all user_ids
         const userIds = outfitsData.map((outfit: any) => outfit.user_id);
         const { data: profiles, error: profilesError } = await supabase
           .from("profiles")
@@ -84,10 +85,8 @@ export const OutfitFeed = () => {
           throw profilesError;
         }
 
-        // Create a map of user_id to email
         const emailMap = new Map(profiles?.map((p) => [p.id, p.email]));
 
-        // Combine the data
         const formattedOutfits = outfitsData.map((outfit: any) => ({
           ...outfit,
           user_email: emailMap.get(outfit.user_id),
@@ -114,6 +113,7 @@ export const OutfitFeed = () => {
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
+  // Initial loading state
   if (isLoading) {
     return (
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -126,6 +126,7 @@ export const OutfitFeed = () => {
 
   const outfits = data?.pages.flatMap((page) => page.outfits) ?? [];
 
+  // Empty state
   if (outfits.length === 0) {
     return (
       <div className="text-center py-8">
@@ -140,18 +141,29 @@ export const OutfitFeed = () => {
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {outfits.map((outfit) => (
-        <OutfitCard key={outfit.id} outfit={outfit} />
-      ))}
-      <div ref={ref} className="col-span-full h-20 flex items-center justify-center">
-        {isFetchingNextPage && (
-          <div className="grid grid-cols-3 gap-4 w-full">
-            {[...Array(3)].map((_, i) => (
-              <Skeleton key={i} className="h-[400px] rounded-xl" />
-            ))}
-          </div>
-        )}
+    <div className="relative">
+      {/* Pull to refresh indicator */}
+      {isRefetching && !isFetchingNextPage && (
+        <div className="absolute top-0 left-0 right-0 flex justify-center py-4 bg-background/80 backdrop-blur-sm z-10">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        </div>
+      )}
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {outfits.map((outfit) => (
+          <OutfitCard key={outfit.id} outfit={outfit} />
+        ))}
+        
+        {/* Infinite scroll loading indicator */}
+        <div ref={ref} className="col-span-full h-20 flex items-center justify-center">
+          {isFetchingNextPage && (
+            <div className="grid grid-cols-3 gap-4 w-full">
+              {[...Array(3)].map((_, i) => (
+                <Skeleton key={i} className="h-[400px] rounded-xl" />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
