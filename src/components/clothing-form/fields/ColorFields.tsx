@@ -40,6 +40,7 @@ export const ColorFields = ({ form }: ColorFieldsProps) => {
                   onChange={(e) => {
                     console.log("Color picker changed to:", e.target.value);
                     field.onChange(e.target.value);
+                    form.setValue("color", e.target.value, { shouldValidate: true });
                   }}
                 />
                 <Input 
@@ -50,6 +51,7 @@ export const ColorFields = ({ form }: ColorFieldsProps) => {
                   onChange={(e) => {
                     console.log("Text input changed to:", e.target.value);
                     field.onChange(e.target.value);
+                    form.setValue("color", e.target.value, { shouldValidate: true });
                   }}
                 />
               </div>
@@ -74,14 +76,20 @@ export const ColorFields = ({ form }: ColorFieldsProps) => {
                   type="color" 
                   className="w-12 h-10 p-1 cursor-pointer" 
                   value={field.value || "#000000"}
-                  onChange={(e) => field.onChange(e.target.value)}
+                  onChange={(e) => {
+                    field.onChange(e.target.value);
+                    form.setValue("secondary_color", e.target.value, { shouldValidate: true });
+                  }}
                 />
                 <Input 
                   type="text"
                   placeholder="Optionnel" 
                   className="flex-1"
                   value={field.value || ""}
-                  onChange={(e) => field.onChange(e.target.value)}
+                  onChange={(e) => {
+                    field.onChange(e.target.value);
+                    form.setValue("secondary_color", e.target.value, { shouldValidate: true });
+                  }}
                 />
               </div>
             </FormControl>
