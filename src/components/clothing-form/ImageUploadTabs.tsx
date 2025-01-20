@@ -33,23 +33,23 @@ export const ImageUploadTabs = ({
   const [isVerifying, setIsVerifying] = useState(false);
 
   const handleImageLoad = useCallback(() => {
-    console.log("Image chargée avec succès");
+    console.log("Image loaded successfully");
     setImageLoadError(false);
   }, []);
 
   const handleImageError = useCallback(() => {
-    console.log("Erreur lors du chargement de l'image");
+    console.log("Error loading image");
     setImageLoadError(true);
-    toast.error("Erreur lors du chargement de l'image");
+    toast.error("Error loading image");
   }, []);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      console.log("Fichier sélectionné:", file.name);
+      console.log("File selected:", file.name);
       const imageUrl = await onFileUpload(file);
       if (imageUrl) {
-        console.log("URL de l'image définie dans le formulaire:", imageUrl);
+        console.log("Setting image URL in form:", imageUrl);
         form.setValue("image", imageUrl, { shouldValidate: true });
       }
     }
@@ -58,7 +58,7 @@ export const ImageUploadTabs = ({
   const handleUrlSubmit = async () => {
     const url = form.getValues("imageUrl");
     if (!url) {
-      toast.error("Veuillez entrer une URL");
+      toast.error("Please enter a URL");
       return;
     }
 
@@ -78,7 +78,7 @@ export const ImageUploadTabs = ({
       await onUrlUpload(url);
     } catch (error) {
       console.error("Error with URL:", error);
-      toast.error("URL invalide ou image inaccessible");
+      toast.error("Invalid URL or inaccessible image");
     } finally {
       setIsVerifying(false);
     }
@@ -91,7 +91,7 @@ export const ImageUploadTabs = ({
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="upload">
             <Upload className="h-4 w-4 mr-2" />
-            Galerie
+            Gallery
           </TabsTrigger>
           <TabsTrigger value="camera">
             <Camera className="h-4 w-4 mr-2" />
@@ -122,7 +122,7 @@ export const ImageUploadTabs = ({
             disabled={isUploading}
           >
             <Camera className="h-4 w-4 mr-2" />
-            Prendre une photo
+            Take a photo
           </Button>
         </TabsContent>
 
@@ -139,7 +139,7 @@ export const ImageUploadTabs = ({
               onClick={handleUrlSubmit}
               disabled={isUploading || isVerifying}
             >
-              {isVerifying ? "Vérification..." : "Importer"}
+              {isVerifying ? "Verifying..." : "Import"}
             </Button>
           </div>
         </TabsContent>
@@ -156,14 +156,14 @@ export const ImageUploadTabs = ({
         <div className="mt-4 relative aspect-square w-full max-w-sm mx-auto overflow-hidden rounded-lg border">
           <img
             src={previewUrl}
-            alt="Aperçu"
+            alt="Preview"
             className={`object-cover w-full h-full ${imageLoadError ? 'opacity-50' : ''}`}
             onError={handleImageError}
             onLoad={handleImageLoad}
           />
           {imageLoadError && (
             <div className="absolute inset-0 flex items-center justify-center bg-background/50">
-              <p className="text-destructive">Erreur de chargement de l'image</p>
+              <p className="text-destructive">Error loading image</p>
             </div>
           )}
         </div>
