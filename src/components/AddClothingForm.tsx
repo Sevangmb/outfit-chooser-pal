@@ -6,17 +6,38 @@ import { ImageAnalysisButton } from "./clothing-form/ImageAnalysisButton";
 import { SubmitButton } from "./clothing-form/SubmitButton";
 import { useClothingForm } from "./clothing-form/hooks/useClothingForm";
 import { toast } from "sonner";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { WizardNavigation } from "./clothing-form/WizardNavigation";
 
 interface AddClothingFormProps {
   onSuccess?: () => void;
 }
 
+const STEPS = [
+  {
+    title: "Image",
+    isComplete: (values: any) => !!values.image && !values.image.startsWith('blob:'),
+  },
+  {
+    title: "Informations de base",
+    isComplete: (values: any) => !!values.name && !!values.category,
+  },
+  {
+    title: "Couleurs",
+    isComplete: (values: any) => !!values.color,
+  },
+  {
+    title: "Détails additionnels",
+    isComplete: () => true, // Optional step
+  },
+];
+
 export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
   const navigate = useNavigate();
+  const [currentStep, setCurrentStep] = useState(0);
   
   const { form, onSubmit, isValid, isSubmitting, errors } = useClothingForm(async (values) => {
     try {
@@ -122,6 +143,51 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
     }
   };
 
+  const handleNext = () => {
+    const currentStepData = STEPS[currentStep];
+    if (currentStepData.isComplete(form.getValues())) {
+      setCurrentStep((prev) => Math.min(prev + 1, STEPS.length - 1));
+    } else {
+      toast.error("Veuillez remplir tous les champs requis avant de continuer");
+    }
+  };
+
+  const handlePrevious = () => {
+    setCurrentStep((prev) => Math.max(prev - 1, 0));
+  };
+
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 0:
+        return (
+          <>
+            <ImageUploadTabs
+              form={form}
+              isUploading={isUploading}
+              previewUrl={previewUrl}
+              uploadError={uploadError}
+              onFileUpload={handleImageUpload}
+              onCameraCapture={handleCameraCapture}
+              onUrlUpload={handleUrlImage}
+            />
+            <ImageAnalysisButton
+              form={form}
+              previewUrl={previewUrl}
+              isUploading={isUploading}
+            />
+          </>
+        );
+      case 1:
+        return <ClothingFormFields form={form} step="basic" />;
+      case 2:
+        return <ClothingFormFields form={form} step="colors" />;
+      case 3:
+        return <ClothingFormFields form={form} step="details" />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -134,28 +200,16 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
           </Alert>
         )}
 
-        <ImageUploadTabs
-          form={form}
-          isUploading={isUploading}
-          previewUrl={previewUrl}
-          uploadError={uploadError}
-          onFileUpload={handleImageUpload}
-          onCameraCapture={handleCameraCapture}
-          onUrlUpload={handleUrlImage}
-        />
+        <div className="space-y-4">
+          {renderStepContent()}
+        </div>
 
-        <ImageAnalysisButton
-          form={form}
-          previewUrl={previewUrl}
-          isUploading={isUploading}
-        />
-
-        <ClothingFormFields form={form} />
-
-        <SubmitButton 
-          isUploading={isUploading} 
-          isSubmitting={isSubmitting}
-          isValid={isValid}
+        <WizardNavigation
+          currentStep={currentStep}
+          totalSteps={STEPS.length}
+          onNext={currentStep === STEPS.length - 1 ? form.handleSubmit(onSubmit) : handleNext}
+          onPrevious={handlePrevious}
+          isNextDisabled={currentStep === STEPS.length - 1 ? isSubmitting || !isValid : false}
         />
       </form>
     </Form>

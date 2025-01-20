@@ -7,15 +7,23 @@ import { DetailsFields } from "./fields/DetailsFields";
 
 interface ClothingFormFieldsProps {
   form: UseFormReturn<FormValues>;
+  step: "basic" | "colors" | "details";
 }
 
-export const ClothingFormFields = ({ form }: ClothingFormFieldsProps) => {
-  return (
-    <>
-      <BasicFields form={form} />
-      <CategoryFields form={form} />
-      <ColorFields form={form} />
-      <DetailsFields form={form} />
-    </>
-  );
+export const ClothingFormFields = ({ form, step }: ClothingFormFieldsProps) => {
+  switch (step) {
+    case "basic":
+      return (
+        <>
+          <BasicFields form={form} />
+          <CategoryFields form={form} />
+        </>
+      );
+    case "colors":
+      return <ColorFields form={form} />;
+    case "details":
+      return <DetailsFields form={form} />;
+    default:
+      return null;
+  }
 };
