@@ -1,72 +1,58 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AuthError, AuthApiError } from "@supabase/supabase-js";
+import { toast } from "@/components/ui/use-toast";
 
 const Auth = () => {
   const navigate = useNavigate();
-  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    // Check if user is already logged in
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        navigate("/");
+    const checkSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error("Error checking session:", error);
+          toast({
+            variant: "destructive",
+            title: "Erreur d'authentification",
+            description: "Impossible de vérifier votre session"
+          });
+        }
+        if (session) {
+          console.log("Session exists, redirecting to home");
+          navigate("/");
+        }
+      } catch (error) {
+        console.error("Error in checkSession:", error);
       }
     };
-    checkUser();
 
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event);
-      if (event === "SIGNED_IN" && session) {
+    checkSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state changed:", event, session);
+      if (event === 'SIGNED_IN') {
+        console.log("User signed in, redirecting to home");
         navigate("/");
-      }
-      if (event === "USER_UPDATED") {
-        const { error } = await supabase.auth.getSession();
-        if (error) {
-          setErrorMessage(getErrorMessage(error));
-        }
-      }
-      if (event === "SIGNED_OUT") {
-        setErrorMessage("");
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [navigate]);
 
-  const getErrorMessage = (error: AuthError) => {
-    if (error instanceof AuthApiError) {
-      switch (error.code) {
-        case "invalid_credentials":
-          return "Email ou mot de passe invalide. Veuillez vérifier vos identifiants.";
-        case "email_not_confirmed":
-          return "Veuillez vérifier votre adresse email avant de vous connecter.";
-        case "user_not_found":
-          return "Aucun utilisateur trouvé avec ces identifiants.";
-        case "invalid_grant":
-          return "Identifiants de connexion invalides.";
-        default:
-          return error.message;
-      }
-    }
-    return error.message;
-  };
-
   return (
-    <div className="container max-w-md mx-auto py-8 px-4">
-      <h1 className="text-2xl font-bold mb-6 text-center">Connexion</h1>
-      {errorMessage && (
-        <Alert variant="destructive" className="mb-4">
-          <AlertDescription>{errorMessage}</AlertDescription>
-        </Alert>
-      )}
-      <div className="bg-card p-6 rounded-lg shadow-md">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="w-full max-w-md space-y-4">
+        <div className="text-center space-y-2">
+          <h1 className="text-2xl font-bold tracking-tight">Bienvenue</h1>
+          <p className="text-muted-foreground">
+            Connectez-vous ou créez un compte pour continuer
+          </p>
+        </div>
         <SupabaseAuth
           supabaseClient={supabase}
           appearance={{
@@ -74,26 +60,19 @@ const Auth = () => {
             variables: {
               default: {
                 colors: {
-                  brand: '#000000',
-                  brandAccent: '#666666',
+                  brand: 'hsl(var(--primary))',
+                  brandAccent: 'hsl(var(--primary))',
                 }
               }
+            },
+            className: {
+              container: 'space-y-4',
+              button: 'w-full px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90',
+              input: 'w-full px-3 py-2 border rounded-md',
             }
           }}
-          localization={{
-            variables: {
-              sign_in: {
-                email_label: "Adresse email",
-                password_label: "Mot de passe",
-                button_label: "Se connecter",
-              },
-              sign_up: {
-                email_label: "Adresse email",
-                password_label: "Mot de passe",
-                button_label: "S'inscrire",
-              },
-            },
-          }}
+          providers={["google"]}
+          redirectTo={`${window.location.origin}/`}
         />
       </div>
     </div>
