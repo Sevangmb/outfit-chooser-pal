@@ -1,30 +1,27 @@
-import { Button } from "@/components/ui/button";
-import { Plus, Search } from "lucide-react";
+import { AddClothingForm } from "@/components/AddClothingForm";
 import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Search } from "lucide-react";
 
 const Add = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-secondary/30">
+    <div className="min-h-screen bg-background">
       <div className="container py-8 px-4 mx-auto mt-16">
-        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6">
-          <div className="rounded-full bg-primary/10 p-6">
-            <Plus className="h-12 w-12 text-primary" />
+        <div className="max-w-xl mx-auto">
+          <h1 className="text-2xl font-bold text-foreground mb-6">Ajouter un vêtement</h1>
+          
+          <div className="bg-card rounded-lg shadow-sm p-6">
+            <AddClothingForm onSuccess={() => {
+              navigate("/closet");
+            }} />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">Créer une tenue</h1>
-          <p className="text-muted-foreground max-w-md">
-            Commencez par ajouter des vêtements à votre garde-robe, puis créez des tenues uniques qui reflètent votre style.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Button 
-              onClick={() => navigate("/closet")}
-              variant="default"
-              className="gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              Ajouter des vêtements
-            </Button>
+
+          <div className="mt-8 text-center">
+            <p className="text-muted-foreground mb-4">
+              Ou explorez les tenues de la communauté
+            </p>
             <Button 
               onClick={() => navigate("/discover")}
               variant="outline"
