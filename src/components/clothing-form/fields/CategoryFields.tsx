@@ -19,7 +19,8 @@ export const CategoryFields = ({ form }: CategoryFieldsProps) => {
       const { data, error } = await supabase
         .from('clothing_categories')
         .select('*')
-        .is('parent_id', null);
+        .is('parent_id', null)
+        .order('name');
       
       if (error) {
         console.error("Error fetching categories:", error);
@@ -29,7 +30,9 @@ export const CategoryFields = ({ form }: CategoryFieldsProps) => {
       
       console.log("Categories fetched:", data);
       return data;
-    }
+    },
+    retry: 3,
+    retryDelay: 1000,
   });
 
   const { data: subcategories, error: subcategoriesError } = useQuery({
@@ -48,7 +51,8 @@ export const CategoryFields = ({ form }: CategoryFieldsProps) => {
       const { data, error } = await supabase
         .from('clothing_categories')
         .select('*')
-        .eq('parent_id', parentCategory.id);
+        .eq('parent_id', parentCategory.id)
+        .order('name');
       
       if (error) {
         console.error("Error fetching subcategories:", error);
@@ -59,7 +63,9 @@ export const CategoryFields = ({ form }: CategoryFieldsProps) => {
       console.log("Subcategories fetched:", data);
       return data;
     },
-    enabled: !!form.watch('category') && !!categories
+    enabled: !!form.watch('category') && !!categories,
+    retry: 3,
+    retryDelay: 1000,
   });
 
   if (categoriesError) {
@@ -71,7 +77,7 @@ export const CategoryFields = ({ form }: CategoryFieldsProps) => {
   }
 
   return (
-    <>
+    <div className="space-y-4">
       <FormField
         control={form.control}
         name="category"
@@ -109,7 +115,11 @@ export const CategoryFields = ({ form }: CategoryFieldsProps) => {
               <Box className="h-4 w-4" />
               Sous-catégorie
             </FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!form.watch('category')}>
+            <Select 
+              onValueChange={field.onChange} 
+              defaultValue={field.value} 
+              disabled={!form.watch('category')}
+            >
               <FormControl>
                 <SelectTrigger>
                   <SelectValue placeholder="Sélectionnez une sous-catégorie" />
@@ -127,6 +137,6 @@ export const CategoryFields = ({ form }: CategoryFieldsProps) => {
           </FormItem>
         )}
       />
-    </>
+    </div>
   );
 };
