@@ -54,6 +54,47 @@ export type Database = {
           },
         ]
       }
+      app_settings: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          key: string
+          type: Database["public"]["Enums"]["setting_type"]
+          updated_at: string
+          updated_by: string | null
+          value: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          key: string
+          type: Database["public"]["Enums"]["setting_type"]
+          updated_at?: string
+          updated_by?: string | null
+          value?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          key?: string
+          type?: Database["public"]["Enums"]["setting_type"]
+          updated_at?: string
+          updated_by?: string | null
+          value?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "app_settings_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action_details: Json | null
@@ -541,6 +582,13 @@ export type Database = {
         }
         Returns: undefined
       }
+      update_app_setting: {
+        Args: {
+          p_key: string
+          p_value: string
+        }
+        Returns: undefined
+      }
       update_user_status: {
         Args: {
           user_id: string
@@ -564,7 +612,9 @@ export type Database = {
         | "moderate_outfit"
         | "add_banned_word"
         | "remove_banned_word"
+        | "update_setting"
       app_role: "admin" | "user"
+      setting_type: "general" | "notification" | "legal"
     }
     CompositeTypes: {
       [_ in never]: never
