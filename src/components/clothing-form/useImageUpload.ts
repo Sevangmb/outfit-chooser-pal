@@ -6,6 +6,23 @@ export const useImageUpload = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
+  const verifyImageUrl = async (url: string): Promise<boolean> => {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Image not accessible: ${response.status}`);
+      }
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.startsWith("image/")) {
+        throw new Error("URL does not point to a valid image");
+      }
+      return true;
+    } catch (error) {
+      console.error("Error verifying image URL:", error);
+      return false;
+    }
+  };
+
   const handleImageUpload = async (file: File) => {
     try {
       setIsUploading(true);
@@ -33,6 +50,12 @@ export const useImageUpload = () => {
       const { data: { publicUrl } } = supabase.storage
         .from('clothes')
         .getPublicUrl(filePath);
+
+      // Verify the uploaded image is accessible
+      const isValid = await verifyImageUrl(publicUrl);
+      if (!isValid) {
+        throw new Error("Uploaded image is not accessible");
+      }
 
       // Keep the local preview until we confirm the upload is successful
       URL.revokeObjectURL(localPreviewUrl);

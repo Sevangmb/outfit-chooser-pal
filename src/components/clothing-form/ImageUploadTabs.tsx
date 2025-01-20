@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { FormControl, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { UseFormReturn } from "react-hook-form";
 import { FormValues } from "@/types/clothing";
+import { toast } from "sonner";
+import { useEffect, useState } from "react";
 
 interface ImageUploadTabsProps {
   form: UseFormReturn<FormValues>;
@@ -23,6 +25,38 @@ export const ImageUploadTabs = ({
   onCameraCapture,
   onUrlUpload,
 }: ImageUploadTabsProps) => {
+  const [imageLoadError, setImageLoadError] = useState(false);
+
+  const verifyImageUrl = async (url: string) => {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Image not accessible: ${response.status}`);
+      }
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.startsWith("image/")) {
+        throw new Error("URL does not point to a valid image");
+      }
+      return true;
+    } catch (error) {
+      console.error("Error verifying image URL:", error);
+      return false;
+    }
+  };
+
+  useEffect(() => {
+    if (previewUrl) {
+      verifyImageUrl(previewUrl).then(isValid => {
+        if (!isValid) {
+          setImageLoadError(true);
+          toast.error("L'image n'a pas pu être chargée correctement");
+        } else {
+          setImageLoadError(false);
+        }
+      });
+    }
+  }, [previewUrl]);
+
   return (
     <FormItem>
       <FormLabel>Image</FormLabel>
@@ -81,9 +115,16 @@ export const ImageUploadTabs = ({
             />
             <Button
               type="button"
-              onClick={() => {
+              onClick={async () => {
                 const url = form.getValues("imageUrl");
-                if (url) onUrlUpload(url);
+                if (url) {
+                  const isValid = await verifyImageUrl(url);
+                  if (isValid) {
+                    onUrlUpload(url);
+                  } else {
+                    toast.error("L'URL ne pointe pas vers une image valide");
+                  }
+                }
               }}
               disabled={isUploading}
             >
@@ -98,8 +139,21 @@ export const ImageUploadTabs = ({
           <img
             src={previewUrl}
             alt="Aperçu"
-            className="object-cover w-full h-full"
+            className={`object-cover w-full h-full ${imageLoadError ? 'opacity-50' : ''}`}
+            onError={() => {
+              setImageLoadError(true);
+              toast.error("Erreur lors du chargement de l'image");
+            }}
+            onLoad={() => {
+              setImageLoadError(false);
+              toast.success("Image chargée avec succès");
+            }}
           />
+          {imageLoadError && (
+            <div className="absolute inset-0 flex items-center justify-center bg-background/50">
+              <p className="text-destructive">Erreur de chargement de l'image</p>
+            </div>
+          )}
         </div>
       )}
       <FormMessage />
