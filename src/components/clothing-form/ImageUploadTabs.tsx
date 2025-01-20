@@ -39,7 +39,6 @@ export const ImageUploadTabs = ({
     console.log("Erreur lors du chargement de l'image");
     setImageLoadError(true);
     toast.error("Erreur lors du chargement de l'image");
-    // Réinitialiser le champ image du formulaire
     form.setValue("image", null);
   }, [form]);
 
@@ -58,19 +57,30 @@ export const ImageUploadTabs = ({
 
       console.log("Fichier sélectionné:", file.name);
       setSelectedFile(file);
+      
       try {
         const imageUrl = await onFileUpload(file);
+        console.log("Image URL received:", imageUrl); // Debug log
+        
         if (imageUrl) {
-          console.log("URL de l'image enregistrée:", imageUrl);
+          console.log("Setting image URL in form:", imageUrl);
           form.setValue("image", imageUrl, { shouldValidate: true });
+          setImageLoadError(false);
+        } else {
+          throw new Error("URL de l'image non reçue");
         }
       } catch (error) {
         console.error("Erreur lors du téléchargement:", error);
         toast.error("Erreur lors du téléchargement de l'image");
         setSelectedFile(null);
+        form.setValue("image", null);
       }
     }
   };
+
+  // Log current form values for debugging
+  console.log("Current form values:", form.getValues());
+  console.log("Current preview URL:", previewUrl);
 
   return (
     <FormItem>
@@ -109,10 +119,10 @@ export const ImageUploadTabs = ({
           </Alert>
         )}
 
-        {previewUrl && (
+        {form.getValues("image") && (
           <div className="relative aspect-square w-full max-w-sm mx-auto overflow-hidden rounded-lg border">
             <img
-              src={previewUrl}
+              src={form.getValues("image")}
               alt="Aperçu"
               className={`object-cover w-full h-full ${imageLoadError ? 'opacity-50' : ''}`}
               onError={handleImageError}
