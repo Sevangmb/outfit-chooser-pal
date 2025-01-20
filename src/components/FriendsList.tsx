@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { AddFriendForm } from "./AddFriendForm";
-import { FriendCard } from "./FriendCard";
+import { AddFriendForm } from "@/components/friends/AddFriendForm";
+import { FriendCard } from "@/components/friends/FriendCard";
 import { ClothingTab } from "./ClothingTab";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 
