@@ -29,9 +29,21 @@ export const useImageUpload = () => {
       });
 
       const publicUrl = await uploadImageToSupabase(optimizedFile);
+      console.log("URL publique reçue:", publicUrl);
+      
       if (!publicUrl) {
         setUploadError("Erreur lors du téléchargement de l'image");
         toast.error("Erreur lors du téléchargement de l'image");
+        return null;
+      }
+
+      // Create a new URL object to validate the URL
+      try {
+        new URL(publicUrl);
+      } catch (e) {
+        console.error("URL invalide reçue:", publicUrl);
+        setUploadError("URL de l'image invalide");
+        toast.error("URL de l'image invalide");
         return null;
       }
 

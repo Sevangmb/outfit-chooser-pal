@@ -45,7 +45,7 @@ export const ImageUploadTabs = ({
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB max
+      if (file.size > 5 * 1024 * 1024) {
         toast.error("L'image est trop volumineuse (max 5MB)");
         return;
       }
@@ -60,7 +60,7 @@ export const ImageUploadTabs = ({
       
       try {
         const imageUrl = await onFileUpload(file);
-        console.log("Image URL received:", imageUrl); // Debug log
+        console.log("Image URL received:", imageUrl);
         
         if (imageUrl) {
           console.log("Setting image URL in form:", imageUrl);
@@ -78,9 +78,8 @@ export const ImageUploadTabs = ({
     }
   };
 
-  // Log current form values for debugging
-  console.log("Current form values:", form.getValues());
-  console.log("Current preview URL:", previewUrl);
+  const imageUrl = form.getValues("image");
+  console.log("Current image URL:", imageUrl);
 
   return (
     <FormItem>
@@ -119,10 +118,10 @@ export const ImageUploadTabs = ({
           </Alert>
         )}
 
-        {form.getValues("image") && (
+        {imageUrl && (
           <div className="relative aspect-square w-full max-w-sm mx-auto overflow-hidden rounded-lg border">
             <img
-              src={form.getValues("image")}
+              src={imageUrl}
               alt="Aperçu"
               className={`object-cover w-full h-full ${imageLoadError ? 'opacity-50' : ''}`}
               onError={handleImageError}
