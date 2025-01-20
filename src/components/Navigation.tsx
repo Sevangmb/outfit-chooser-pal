@@ -1,65 +1,92 @@
-import { NavLink } from "react-router-dom";
-import { Home, Search, PlusCircle, ShoppingBag, User } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Button } from "./ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Search, Bell, User, Home } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Navigation = () => {
-  const links = [
-    { to: "/", icon: Home, label: "Accueil", description: "Fil d'actualité" },
-    { to: "/discover", icon: Search, label: "Découvrir", description: "Explorer les tendances" },
-    { to: "/add", icon: PlusCircle, label: "Ajouter", description: "Créer une tenue" },
-    { to: "/closet", icon: ShoppingBag, label: "Placard", description: "Gérer vos vêtements" },
-    { to: "/profile", icon: User, label: "Profil", description: "Voir votre profil" },
-  ];
+  const navigate = useNavigate();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  // Fetch notifications count
+  const { data: notificationsCount } = useQuery({
+    queryKey: ["unread-notifications"],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return 0;
+
+      const { count, error } = await supabase
+        .from("admin_messages")
+        .select("*", { count: "exact" })
+        .eq("user_id", session.user.id)
+        .is("read_at", null);
+
+      if (error) {
+        console.error("Error fetching notifications:", error);
+        return 0;
+      }
+
+      return count || 0;
+    }
+  });
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-t border-border md:top-0 md:bottom-auto">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border">
       <div className="container mx-auto px-4">
-        <div className="flex justify-around md:justify-end items-center h-16 gap-2">
-          {links.map(({ to, icon: Icon, label, description }) => (
-            <Tooltip key={to} delayDuration={300}>
-              <TooltipTrigger asChild>
-                <NavLink
-                  to={to}
-                  className={({ isActive }) =>
-                    cn(
-                      "relative transition-colors hover:text-primary",
-                      isActive ? "text-primary" : "text-muted-foreground"
-                    )
-                  }
-                >
-                  {({ isActive }) => (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="relative"
-                    >
-                      <Icon className="h-5 w-5" />
-                      {isActive && (
-                        <motion.div
-                          layoutId="activeTab"
-                          className="absolute -bottom-[1.5px] left-0 right-0 h-0.5 bg-primary"
-                          initial={false}
-                          transition={{
-                            type: "spring",
-                            stiffness: 500,
-                            damping: 30,
-                          }}
-                        />
-                      )}
-                      <span className="sr-only">{label}</span>
-                    </Button>
-                  )}
-                </NavLink>
-              </TooltipTrigger>
-              <TooltipContent side="top" className="flex flex-col items-start">
-                <p className="font-medium">{label}</p>
-                <p className="text-xs text-muted-foreground">{description}</p>
-              </TooltipContent>
-            </Tooltip>
-          ))}
+        <div className="flex items-center justify-between h-16">
+          {/* Logo/Home - Refreshes feed */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="hover:bg-accent"
+            onClick={() => {
+              navigate("/");
+              window.location.reload();
+            }}
+          >
+            <Home className="h-5 w-5" />
+          </Button>
+
+          {/* Right side icons */}
+          <div className="flex items-center space-x-2">
+            {/* Search - Redirects to Discover page */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hover:bg-accent"
+              onClick={() => navigate("/discover")}
+            >
+              <Search className="h-5 w-5" />
+            </Button>
+
+            {/* Notifications */}
+            <div className="relative">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="hover:bg-accent"
+                onClick={() => navigate("/notifications")}
+              >
+                <Bell className="h-5 w-5" />
+                {notificationsCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {notificationsCount > 9 ? "9+" : notificationsCount}
+                  </span>
+                )}
+              </Button>
+            </div>
+
+            {/* Profile */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hover:bg-accent"
+              onClick={() => navigate("/profile")}
+            >
+              <User className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
       </div>
     </nav>
