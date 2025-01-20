@@ -9,10 +9,12 @@ export const useImageUpload = () => {
   const handleImageUpload = async (file: File) => {
     try {
       setIsUploading(true);
+      toast.info("Téléchargement de l'image en cours...");
       
       // Create a local preview URL
       const localPreviewUrl = URL.createObjectURL(file);
       setPreviewUrl(localPreviewUrl);
+      toast.info("Aperçu de l'image généré");
 
       const fileExt = file.name.split('.').pop();
       const fileName = `${Math.random()}.${fileExt}`;
@@ -36,6 +38,7 @@ export const useImageUpload = () => {
       URL.revokeObjectURL(localPreviewUrl);
       setPreviewUrl(publicUrl);
       
+      toast.success("Image téléchargée avec succès");
       return publicUrl;
     } catch (error) {
       console.error("Error uploading image:", error);
