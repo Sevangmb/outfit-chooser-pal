@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search } from "lucide-react";
 import { OutfitCard } from "@/components/feed/OutfitCard";
+import { RecommendedOutfits } from "@/components/discover/RecommendedOutfits";
 
 interface Outfit {
   id: number;
@@ -126,7 +127,9 @@ const Discover = () => {
       <div className="container py-8 px-4 mx-auto mt-16">
         <h1 className="text-2xl font-bold mb-6">Découvrir</h1>
 
-        <div className="relative mb-8">
+        <RecommendedOutfits />
+
+        <div className="relative mb-8 mt-12">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
           <Input
             type="search"
