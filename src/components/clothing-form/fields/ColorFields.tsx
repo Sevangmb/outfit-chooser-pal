@@ -31,7 +31,7 @@ export const ColorFields = ({ form }: ColorFieldsProps) => {
               Couleur principale
             </FormLabel>
             <FormControl>
-              <div className="flex gap-2">
+              <div className="flex gap-2 items-center">
                 <Input 
                   type="color" 
                   className="w-12 h-10 p-1 cursor-pointer" 
@@ -51,6 +51,13 @@ export const ColorFields = ({ form }: ColorFieldsProps) => {
                     field.onChange(e.target.value);
                   }}
                 />
+                {field.value && (
+                  <div 
+                    className="w-8 h-8 rounded-full border"
+                    style={{ backgroundColor: field.value }}
+                    title="Couleur détectée"
+                  />
+                )}
               </div>
             </FormControl>
             <FormMessage />
@@ -68,7 +75,7 @@ export const ColorFields = ({ form }: ColorFieldsProps) => {
               Couleur secondaire (optionnelle)
             </FormLabel>
             <FormControl>
-              <div className="flex gap-2">
+              <div className="flex gap-2 items-center">
                 <Input 
                   type="color" 
                   className="w-12 h-10 p-1 cursor-pointer" 
@@ -82,6 +89,13 @@ export const ColorFields = ({ form }: ColorFieldsProps) => {
                   value={field.value || ""}
                   onChange={(e) => field.onChange(e.target.value)}
                 />
+                {field.value && (
+                  <div 
+                    className="w-8 h-8 rounded-full border"
+                    style={{ backgroundColor: field.value }}
+                    title="Couleur secondaire"
+                  />
+                )}
               </div>
             </FormControl>
             <FormMessage />

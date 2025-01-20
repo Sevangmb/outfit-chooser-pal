@@ -92,12 +92,13 @@ export const ImageUploadTabs = ({
           </div>
         </TabsContent>
       </Tabs>
+
       {previewUrl && (
-        <div className="mt-2">
+        <div className="mt-4 relative aspect-square w-full max-w-sm mx-auto overflow-hidden rounded-lg border">
           <img
             src={previewUrl}
             alt="Aperçu"
-            className="max-w-full h-auto rounded-lg"
+            className="object-cover w-full h-full"
           />
         </div>
       )}
