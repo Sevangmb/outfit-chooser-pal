@@ -1,5 +1,6 @@
 import { AddClothingDialog } from "./AddClothingDialog";
 import { ClothingSection } from "./ClothingSection";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Clothing {
   id: number;
@@ -12,9 +13,12 @@ interface Clothing {
 
 interface ClothingTabProps {
   clothes: Clothing[];
+  showFriendsClothes?: boolean;
 }
 
-export const ClothingTab = ({ clothes }: ClothingTabProps) => {
+export const ClothingTab = ({ clothes, showFriendsClothes = false }: ClothingTabProps) => {
+  const isMobile = useIsMobile();
+
   const tops = clothes.filter(item => 
     item.category.toLowerCase().includes("haut") || 
     item.category.toLowerCase().includes("t-shirt") ||
@@ -39,14 +43,18 @@ export const ClothingTab = ({ clothes }: ClothingTabProps) => {
     <>
       {clothes.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-muted-foreground mb-4">Aucun vêtement dans votre garde-robe</p>
-          <AddClothingDialog />
+          <p className="text-muted-foreground mb-4">
+            {showFriendsClothes 
+              ? "Aucun vêtement partagé par vos amis"
+              : "Aucun vêtement dans votre garde-robe"}
+          </p>
+          {!showFriendsClothes && <AddClothingDialog />}
         </div>
       ) : (
-        <div className="space-y-8">
-          <ClothingSection title="Hauts" items={tops} />
-          <ClothingSection title="Bas" items={bottoms} />
-          <ClothingSection title="Chaussures" items={shoes} />
+        <div className={`space-y-8 ${isMobile ? 'px-2' : ''}`}>
+          <ClothingSection title="Hauts" items={tops} isMobile={isMobile} />
+          <ClothingSection title="Bas" items={bottoms} isMobile={isMobile} />
+          <ClothingSection title="Chaussures" items={shoes} isMobile={isMobile} />
         </div>
       )}
     </>
