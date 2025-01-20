@@ -44,7 +44,7 @@ export const OutfitFeed = () => {
     queryKey: ["outfits-feed"],
     initialPageParam: 0,
     queryFn: async (context) => {
-      const pageParam = context.pageParam as number;
+      const pageParam = Number(context.pageParam);
       console.log("Fetching outfits for feed, page:", pageParam);
       
       try {
@@ -125,6 +125,19 @@ export const OutfitFeed = () => {
   }
 
   const outfits = data?.pages.flatMap((page) => page.outfits) ?? [];
+
+  if (outfits.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-lg text-muted-foreground mb-4">
+          Aucune tenue à afficher pour le moment
+        </p>
+        <p className="text-sm text-muted-foreground">
+          Commencez à suivre d'autres utilisateurs ou explorez la section "Découvrir"
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
