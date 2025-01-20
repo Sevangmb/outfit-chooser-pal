@@ -1,13 +1,20 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Search, Bell, User, Home } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { User, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export const Navigation = () => {
   const navigate = useNavigate();
-  const [unreadCount, setUnreadCount] = useState(0);
 
   // Fetch notifications count with better error handling and retry
   const { data: notificationsCount } = useQuery({
@@ -50,10 +57,10 @@ export const Navigation = () => {
   });
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-t border-border">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          {/* Logo/Home - Refreshes feed */}
+          {/* Home - Refreshes feed */}
           <Button
             variant="ghost"
             size="icon"
@@ -66,45 +73,29 @@ export const Navigation = () => {
             <Home className="h-5 w-5" />
           </Button>
 
-          {/* Right side icons */}
-          <div className="flex items-center space-x-2">
-            {/* Search - Redirects to Discover page */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="hover:bg-accent"
-              onClick={() => navigate("/discover")}
-            >
-              <Search className="h-5 w-5" />
-            </Button>
-
-            {/* Notifications */}
-            <div className="relative">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="hover:bg-accent"
-                onClick={() => navigate("/notifications")}
-              >
-                <Bell className="h-5 w-5" />
+          {/* Profile Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="hover:bg-accent relative">
+                <User className="h-5 w-5" />
                 {notificationsCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
                     {notificationsCount > 9 ? "9+" : notificationsCount}
                   </span>
                 )}
               </Button>
-            </div>
-
-            {/* Profile */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="hover:bg-accent"
-              onClick={() => navigate("/profile")}
-            >
-              <User className="h-5 w-5" />
-            </Button>
-          </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Mon compte</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => navigate("/profile")}>
+                Profil
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/notifications")}>
+                Notifications {notificationsCount > 0 && `(${notificationsCount})`}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </nav>
