@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Navigation } from "@/components/Navigation";
 import { FollowList } from "@/components/social/FollowList";
 import { ProfileStats } from "@/components/social/ProfileStats";
 import { UserOutfits } from "@/components/social/UserOutfits";
@@ -11,12 +10,6 @@ import { Settings, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-
-interface Profile {
-  id: string;
-  email: string;
-  created_at: string;
-}
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -123,7 +116,6 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-secondary/30">
-      <Navigation />
       <div className="container py-8 px-4 mx-auto mt-16">
         <Card className="max-w-2xl mx-auto">
           <CardHeader className="flex flex-row items-center justify-between">
