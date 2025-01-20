@@ -2,26 +2,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Form } from "@/components/ui/form";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { Loader2, Camera, Upload, Link } from "lucide-react";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Loader2 } from "lucide-react";
+import { ClothingFormFields } from "./clothing-form/ClothingFormFields";
+import { ImageUploadTabs } from "./clothing-form/ImageUploadTabs";
+import { useImageUpload } from "./clothing-form/useImageUpload";
 
 const formSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
@@ -31,13 +19,7 @@ const formSchema = z.object({
   imageUrl: z.string().url().optional(),
 });
 
-type FormValues = {
-  name: string;
-  category: string;
-  color: string;
-  image: string | null;
-  imageUrl?: string;
-};
+type FormValues = z.infer<typeof formSchema>;
 
 interface AddClothingFormProps {
   onSuccess?: () => void;
@@ -45,8 +27,7 @@ interface AddClothingFormProps {
 
 export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
   const queryClient = useQueryClient();
-  const [isUploading, setIsUploading] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const { isUploading, previewUrl, handleImageUpload, resetPreview } = useImageUpload();
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -58,38 +39,6 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
       imageUrl: "",
     },
   });
-
-  const handleImageUpload = async (file: File) => {
-    try {
-      setIsUploading(true);
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random()}.${fileExt}`;
-      const filePath = `${fileName}`;
-
-      console.log("Uploading file:", filePath);
-      const { error: uploadError, data } = await supabase.storage
-        .from('clothes')
-        .upload(filePath, file);
-
-      if (uploadError) {
-        throw uploadError;
-      }
-
-      console.log("File uploaded successfully:", data);
-      const { data: { publicUrl } } = supabase.storage
-        .from('clothes')
-        .getPublicUrl(filePath);
-
-      setPreviewUrl(publicUrl);
-      return publicUrl;
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      toast.error("Erreur lors du téléchargement de l'image");
-      return null;
-    } finally {
-      setIsUploading(false);
-    }
-  };
 
   const handleCameraCapture = async () => {
     try {
@@ -122,7 +71,6 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
 
   const handleUrlImage = async (url: string) => {
     try {
-      setIsUploading(true);
       const response = await fetch(url);
       const blob = await response.blob();
       const file = new File([blob], "url-image.jpg", { type: blob.type });
@@ -134,8 +82,6 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
     } catch (error) {
       console.error("Error downloading image from URL:", error);
       toast.error("Erreur lors du téléchargement de l'image depuis l'URL");
-    } finally {
-      setIsUploading(false);
     }
   };
 
@@ -164,7 +110,7 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
       toast.success("Vêtement ajouté avec succès");
       queryClient.invalidateQueries({ queryKey: ["clothes"] });
       form.reset();
-      setPreviewUrl(null);
+      resetPreview();
       onSuccess?.();
     } catch (error) {
       console.error("Error adding clothing:", error);
@@ -175,132 +121,15 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nom</FormLabel>
-              <FormControl>
-                <Input placeholder="T-shirt blanc" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="category"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Catégorie</FormLabel>
-              <FormControl>
-                <Input placeholder="Haut" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="color"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Couleur</FormLabel>
-              <FormControl>
-                <Input placeholder="Blanc" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="image"
-          render={({ field: { onChange, value } }) => (
-            <FormItem>
-              <FormLabel>Image</FormLabel>
-              <Tabs defaultValue="upload" className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="upload">
-                    <Upload className="h-4 w-4 mr-2" />
-                    Galerie
-                  </TabsTrigger>
-                  <TabsTrigger value="camera">
-                    <Camera className="h-4 w-4 mr-2" />
-                    Photo
-                  </TabsTrigger>
-                  <TabsTrigger value="url">
-                    <Link className="h-4 w-4 mr-2" />
-                    URL
-                  </TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="upload">
-                  <FormControl>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          const imageUrl = await handleImageUpload(file);
-                          if (imageUrl) {
-                            onChange(imageUrl);
-                          }
-                        }
-                      }}
-                    />
-                  </FormControl>
-                </TabsContent>
-
-                <TabsContent value="camera">
-                  <Button
-                    type="button"
-                    onClick={handleCameraCapture}
-                    className="w-full"
-                    disabled={isUploading}
-                  >
-                    <Camera className="h-4 w-4 mr-2" />
-                    Prendre une photo
-                  </Button>
-                </TabsContent>
-
-                <TabsContent value="url">
-                  <div className="flex gap-2">
-                    <Input
-                      type="url"
-                      placeholder="https://example.com/image.jpg"
-                      onChange={(e) => form.setValue("imageUrl", e.target.value)}
-                    />
-                    <Button
-                      type="button"
-                      onClick={() => {
-                        const url = form.getValues("imageUrl");
-                        if (url) handleUrlImage(url);
-                      }}
-                      disabled={isUploading}
-                    >
-                      Importer
-                    </Button>
-                  </div>
-                </TabsContent>
-              </Tabs>
-              {previewUrl && (
-                <div className="mt-2">
-                  <img
-                    src={previewUrl}
-                    alt="Aperçu"
-                    className="max-w-full h-auto rounded-lg"
-                  />
-                </div>
-              )}
-              <FormMessage />
-            </FormItem>
-          )}
+        <ClothingFormFields form={form} />
+        
+        <ImageUploadTabs
+          form={form}
+          isUploading={isUploading}
+          previewUrl={previewUrl}
+          onFileUpload={handleImageUpload}
+          onCameraCapture={handleCameraCapture}
+          onUrlUpload={handleUrlImage}
         />
 
         <Button type="submit" className="w-full" disabled={isUploading}>
