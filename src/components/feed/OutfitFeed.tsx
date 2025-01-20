@@ -43,7 +43,7 @@ export const OutfitFeed = () => {
   } = useInfiniteQuery<PageData>({
     queryKey: ["outfits-feed"],
     initialPageParam: 0,
-    queryFn: async ({ pageParam }) => {
+    queryFn: async ({ pageParam }: { pageParam: number }) => {
       console.log("Fetching outfits for feed, page:", pageParam);
       
       try {
@@ -97,7 +97,7 @@ export const OutfitFeed = () => {
 
         return {
           outfits: formattedOutfits,
-          nextPage: outfitsData.length === ITEMS_PER_PAGE ? (pageParam as number) + 1 : null,
+          nextPage: outfitsData.length === ITEMS_PER_PAGE ? pageParam + 1 : null,
         };
       } catch (error) {
         console.error("Error in queryFn:", error);
