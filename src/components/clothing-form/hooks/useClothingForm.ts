@@ -3,29 +3,13 @@ import { useForm } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import * as z from "zod";
-
-export const formSchema = z.object({
-  name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
-  category: z.string().min(2, "La catégorie est requise"),
-  subcategory: z.string().optional(),
-  brand: z.string().optional(),
-  color: z.string().min(2, "La couleur principale est requise"),
-  secondary_color: z.string().optional(),
-  size: z.string().optional(),
-  material: z.string().optional(),
-  notes: z.string().optional(),
-  image: z.string().nullable().optional(),
-  imageUrl: z.string().url().optional(),
-});
-
-export type FormValues = z.infer<typeof formSchema>;
+import { clothingFormSchema, FormValues } from "@/types/clothing";
 
 export const useClothingForm = (onSuccess?: () => void) => {
   const queryClient = useQueryClient();
   
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(clothingFormSchema),
     defaultValues: {
       name: "",
       category: "",

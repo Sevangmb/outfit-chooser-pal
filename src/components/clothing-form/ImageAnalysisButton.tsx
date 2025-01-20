@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Wand2 } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
-import { FormValues } from "./hooks/useClothingForm";
+import { FormValues } from "@/types/clothing";
 import { analyzeImage, extractDominantColor } from "@/utils/imageAnalysis";
 import { toast } from "sonner";
 

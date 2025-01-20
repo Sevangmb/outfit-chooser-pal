@@ -5,6 +5,7 @@ import { useImageUpload } from "./clothing-form/useImageUpload";
 import { ImageAnalysisButton } from "./clothing-form/ImageAnalysisButton";
 import { SubmitButton } from "./clothing-form/SubmitButton";
 import { useClothingForm } from "./clothing-form/hooks/useClothingForm";
+import { toast } from "sonner";
 
 interface AddClothingFormProps {
   onSuccess?: () => void;
