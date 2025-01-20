@@ -33,34 +33,34 @@ export const ImageUploadTabs = ({
       console.log("Verifying image URL:", url);
       setIsVerifying(true);
       
-      // If it's a blob URL, we'll consider it valid since it was created locally
+      // Pour les URLs blob, on les considère valides car créées localement
       if (url.startsWith('blob:')) {
-        console.log("Blob URL detected, considering valid");
+        console.log("URL blob détectée, considérée comme valide");
         return true;
       }
 
-      // For regular URLs, validate the format
+      // Pour les URLs normales, on vérifie le format
       try {
         new URL(url);
       } catch (e) {
-        console.error("Invalid URL format:", e);
+        console.error("Format d'URL invalide:", e);
         toast.error("Format d'URL invalide");
         return false;
       }
 
-      // For regular URLs, try to verify them
+      // Pour les URLs normales, on essaie de les vérifier
       try {
-        const response = await fetch(url, {
+        await fetch(url, {
           method: 'HEAD',
           mode: 'no-cors'
         });
         return true;
       } catch (error) {
-        console.error("Error fetching URL:", error);
+        console.error("Erreur lors de la vérification de l'URL:", error);
         return false;
       }
     } catch (error) {
-      console.error("Error verifying image URL:", error);
+      console.error("Erreur lors de la vérification de l'URL:", error);
       return false;
     } finally {
       setIsVerifying(false);
@@ -68,25 +68,27 @@ export const ImageUploadTabs = ({
   };
 
   const handleImageLoad = useCallback(() => {
+    console.log("Image chargée avec succès");
     setImageLoadError(false);
-    toast.success("Image chargée avec succès");
   }, []);
 
   const handleImageError = useCallback(() => {
+    console.log("Erreur lors du chargement de l'image");
     setImageLoadError(true);
     toast.error("Erreur lors du chargement de l'image");
   }, []);
 
   useEffect(() => {
     if (previewUrl) {
+      console.log("Vérification de l'URL de prévisualisation:", previewUrl);
       verifyImageUrl(previewUrl).then(isValid => {
         if (!isValid) {
           setImageLoadError(true);
           toast.error("L'image n'a pas pu être chargée correctement");
         } else {
           setImageLoadError(false);
-          // Set the image value in the form when we have a valid preview URL
           form.setValue("image", previewUrl, { shouldValidate: true });
+          console.log("URL de l'image définie dans le formulaire:", previewUrl);
         }
       });
     } else {
@@ -121,10 +123,10 @@ export const ImageUploadTabs = ({
               onChange={async (e) => {
                 const file = e.target.files?.[0];
                 if (file) {
-                  console.log("File selected:", file.name);
+                  console.log("Fichier sélectionné:", file.name);
                   const imageUrl = await onFileUpload(file);
                   if (imageUrl) {
-                    console.log("Setting image URL in form:", imageUrl);
+                    console.log("URL de l'image définie dans le formulaire:", imageUrl);
                     form.setValue("image", imageUrl, { shouldValidate: true });
                   }
                 }
