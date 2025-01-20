@@ -13,6 +13,7 @@ import Closet from "./pages/Closet";
 import Profile from "./pages/Profile";
 import LandingPage from "./pages/LandingPage";
 import Admin from "./pages/Admin";
+import { BottomNav } from "./components/BottomNav";
 
 const queryClient = new QueryClient();
 
@@ -59,7 +60,12 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/landing" replace />;
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      <BottomNav />
+    </>
+  );
 };
 
 const App = () => (
