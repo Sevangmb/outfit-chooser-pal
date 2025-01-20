@@ -120,6 +120,38 @@ export type Database = {
           },
         ]
       }
+      outfit_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: number
+          outfit_id: number | null
+          user_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: number
+          outfit_id?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: number
+          outfit_id?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outfit_comments_outfit_id_fkey"
+            columns: ["outfit_id"]
+            isOneToOne: false
+            referencedRelation: "outfits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       outfit_votes: {
         Row: {
           created_at: string

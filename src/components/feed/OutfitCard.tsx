@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ThumbsUp, MessageSquare, Share2 } from "lucide-react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -35,6 +35,19 @@ interface OutfitCardProps {
 export const OutfitCard = ({ outfit }: OutfitCardProps) => {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const queryClient = useQueryClient();
+
+  const { data: commentCount = 0 } = useQuery({
+    queryKey: ["outfit-comment-count", outfit.id],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("outfit_comments")
+        .select("*", { count: "exact", head: true })
+        .eq("outfit_id", outfit.id);
+
+      if (error) throw error;
+      return count || 0;
+    },
+  });
 
   const voteMutation = useMutation({
     mutationFn: async () => {
@@ -101,13 +114,12 @@ export const OutfitCard = ({ outfit }: OutfitCardProps) => {
             className="flex items-center gap-1"
           >
             <MessageSquare className="h-4 w-4" />
-            <span>Détails</span>
+            <span>{commentCount}</span>
           </Button>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => {
-              // Implement sharing functionality
               toast.info("Fonctionnalité de partage à venir");
             }}
           >
