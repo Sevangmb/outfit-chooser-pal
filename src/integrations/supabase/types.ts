@@ -161,31 +161,114 @@ export type Database = {
       }
       clothes: {
         Row: {
+          brand: string | null
           category: string
           color: string
           created_at: string
           id: number
           image: string | null
+          material: string | null
           name: string
+          notes: string | null
+          secondary_color: string | null
+          size: string | null
+          subcategory: string | null
           user_id: string | null
         }
         Insert: {
+          brand?: string | null
           category: string
           color: string
           created_at?: string
           id?: never
           image?: string | null
+          material?: string | null
           name: string
+          notes?: string | null
+          secondary_color?: string | null
+          size?: string | null
+          subcategory?: string | null
           user_id?: string | null
         }
         Update: {
+          brand?: string | null
           category?: string
           color?: string
           created_at?: string
           id?: never
           image?: string | null
+          material?: string | null
           name?: string
+          notes?: string | null
+          secondary_color?: string | null
+          size?: string | null
+          subcategory?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      clothing_brands: {
+        Row: {
+          created_at: string
+          id: number
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          name?: string
+        }
+        Relationships: []
+      }
+      clothing_categories: {
+        Row: {
+          created_at: string
+          id: number
+          name: string
+          parent_id: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          name: string
+          parent_id?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          name?: string
+          parent_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clothing_categories_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "clothing_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clothing_materials: {
+        Row: {
+          created_at: string
+          id: number
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          name?: string
         }
         Relationships: []
       }

@@ -13,8 +13,14 @@ import { useImageUpload } from "./clothing-form/useImageUpload";
 
 export const formSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
-  category: z.string().min(2, "La catégorie doit contenir au moins 2 caractères"),
-  color: z.string().min(2, "La couleur doit contenir au moins 2 caractères"),
+  category: z.string().min(2, "La catégorie est requise"),
+  subcategory: z.string().optional(),
+  brand: z.string().optional(),
+  color: z.string().min(2, "La couleur principale est requise"),
+  secondary_color: z.string().optional(),
+  size: z.string().optional(),
+  material: z.string().optional(),
+  notes: z.string().optional(),
   image: z.string().nullable().optional(),
   imageUrl: z.string().url().optional(),
 });
@@ -34,7 +40,13 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
     defaultValues: {
       name: "",
       category: "",
+      subcategory: "",
+      brand: "",
       color: "",
+      secondary_color: "",
+      size: "",
+      material: "",
+      notes: "",
       image: null,
       imageUrl: "",
     },
@@ -99,7 +111,13 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
       const { error } = await supabase.from("clothes").insert({
         name: values.name,
         category: values.category,
+        subcategory: values.subcategory,
+        brand: values.brand,
         color: values.color,
+        secondary_color: values.secondary_color,
+        size: values.size,
+        material: values.material,
+        notes: values.notes,
         image: values.image,
         user_id: user.id,
       });
