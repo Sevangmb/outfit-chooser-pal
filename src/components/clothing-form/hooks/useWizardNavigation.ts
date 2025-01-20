@@ -12,6 +12,10 @@ export const WIZARD_STEPS: Step[] = [
     isComplete: (values: any) => !!values.image && !values.image.startsWith('blob:'),
   },
   {
+    title: "Analyse",
+    isComplete: () => true, // Optional step
+  },
+  {
     title: "Informations de base",
     isComplete: (values: any) => !!values.name && !!values.category,
   },

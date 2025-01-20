@@ -28,28 +28,40 @@ export const WizardStepContent = ({
   switch (currentStep) {
     case 0:
       return (
-        <>
-          <ImageUploadTabs
-            form={form}
-            isUploading={isUploading}
-            previewUrl={previewUrl}
-            uploadError={uploadError}
-            onFileUpload={onImageUpload}
-            onCameraCapture={onCameraCapture}
-            onUrlUpload={onUrlUpload}
-          />
+        <ImageUploadTabs
+          form={form}
+          isUploading={isUploading}
+          previewUrl={previewUrl}
+          uploadError={uploadError}
+          onFileUpload={onImageUpload}
+          onCameraCapture={onCameraCapture}
+          onUrlUpload={onUrlUpload}
+        />
+      );
+    case 1:
+      return (
+        <div className="space-y-4">
+          {previewUrl && (
+            <div className="aspect-square w-full max-w-sm mx-auto overflow-hidden rounded-lg border">
+              <img
+                src={previewUrl}
+                alt="Preview"
+                className="object-cover w-full h-full"
+              />
+            </div>
+          )}
           <ImageAnalysisButton
             form={form}
             previewUrl={previewUrl}
             isUploading={isUploading}
           />
-        </>
+        </div>
       );
-    case 1:
-      return <ClothingFormFields form={form} step="basic" />;
     case 2:
-      return <ClothingFormFields form={form} step="colors" />;
+      return <ClothingFormFields form={form} step="basic" />;
     case 3:
+      return <ClothingFormFields form={form} step="colors" />;
+    case 4:
       return <ClothingFormFields form={form} step="details" />;
     default:
       return null;
