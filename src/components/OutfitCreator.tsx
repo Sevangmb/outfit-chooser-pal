@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ClothingCarousel } from "./outfit/ClothingCarousel";
 import { SaveOutfitButton } from "./outfit/SaveOutfitButton";
+import { OutfitCanvas } from "./outfit/OutfitCanvas";
 
 interface Clothing {
   id: number;
@@ -41,33 +42,44 @@ export const OutfitCreator = ({ clothes }: OutfitCreatorProps) => {
   );
 
   return (
-    <div className="space-y-8 py-8">
-      <ClothingCarousel
-        items={tops}
-        selectedId={selectedTop}
-        onSelect={setSelectedTop}
-        title="Haut"
-      />
+    <div className="grid md:grid-cols-2 gap-8 py-8">
+      <div className="space-y-8">
+        <ClothingCarousel
+          items={tops}
+          selectedId={selectedTop}
+          onSelect={setSelectedTop}
+          title="Haut"
+        />
 
-      <ClothingCarousel
-        items={bottoms}
-        selectedId={selectedBottom}
-        onSelect={setSelectedBottom}
-        title="Bas"
-      />
+        <ClothingCarousel
+          items={bottoms}
+          selectedId={selectedBottom}
+          onSelect={setSelectedBottom}
+          title="Bas"
+        />
 
-      <ClothingCarousel
-        items={shoes}
-        selectedId={selectedShoes}
-        onSelect={setSelectedShoes}
-        title="Chaussures"
-      />
+        <ClothingCarousel
+          items={shoes}
+          selectedId={selectedShoes}
+          onSelect={setSelectedShoes}
+          title="Chaussures"
+        />
 
-      <div className="flex justify-center pt-4">
-        <SaveOutfitButton
+        <div className="flex justify-center pt-4">
+          <SaveOutfitButton
+            selectedTop={selectedTop}
+            selectedBottom={selectedBottom}
+            selectedShoes={selectedShoes}
+          />
+        </div>
+      </div>
+
+      <div className="sticky top-24">
+        <OutfitCanvas
           selectedTop={selectedTop}
           selectedBottom={selectedBottom}
           selectedShoes={selectedShoes}
+          clothes={clothes}
         />
       </div>
     </div>
