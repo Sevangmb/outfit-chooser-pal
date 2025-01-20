@@ -12,6 +12,7 @@ import Add from "./pages/Add";
 import Closet from "./pages/Closet";
 import Profile from "./pages/Profile";
 import LandingPage from "./pages/LandingPage";
+import Admin from "./pages/Admin";
 
 const queryClient = new QueryClient();
 
@@ -111,6 +112,14 @@ const App = () => (
             element={
               <ProtectedRoute>
                 <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <Admin />
               </ProtectedRoute>
             }
           />

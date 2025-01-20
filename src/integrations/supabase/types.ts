@@ -9,6 +9,33 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action_details: Json | null
+          action_type: Database["public"]["Enums"]["admin_action_type"]
+          admin_id: string | null
+          created_at: string
+          id: number
+          ip_address: string | null
+        }
+        Insert: {
+          action_details?: Json | null
+          action_type: Database["public"]["Enums"]["admin_action_type"]
+          admin_id?: string | null
+          created_at?: string
+          id?: number
+          ip_address?: string | null
+        }
+        Update: {
+          action_details?: Json | null
+          action_type?: Database["public"]["Enums"]["admin_action_type"]
+          admin_id?: string | null
+          created_at?: string
+          id?: number
+          ip_address?: string | null
+        }
+        Relationships: []
+      }
       clothes: {
         Row: {
           category: string
@@ -288,8 +315,25 @@ export type Database = {
         }
         Returns: boolean
       }
+      log_admin_action: {
+        Args: {
+          action: Database["public"]["Enums"]["admin_action_type"]
+          details?: Json
+        }
+        Returns: undefined
+      }
     }
     Enums: {
+      admin_action_type:
+        | "login"
+        | "logout"
+        | "create_user"
+        | "update_user"
+        | "delete_user"
+        | "create_outfit"
+        | "update_outfit"
+        | "delete_outfit"
+        | "moderate_comment"
       app_role: "admin" | "user"
     }
     CompositeTypes: {
