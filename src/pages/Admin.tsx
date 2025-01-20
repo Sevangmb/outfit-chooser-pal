@@ -15,13 +15,32 @@ const Admin = () => {
   useEffect(() => {
     const checkAdminStatus = async () => {
       try {
-        const { data: roles } = await supabase
+        console.log("Checking admin status...");
+        const { data: user } = await supabase.auth.getUser();
+        if (!user.user) {
+          console.log("No user found");
+          toast.error("Accès non autorisé");
+          navigate('/');
+          return;
+        }
+
+        const { data: roles, error } = await supabase
           .from('user_roles')
           .select('role')
-          .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
-          .single();
+          .eq('user_id', user.user.id)
+          .maybeSingle();
 
+        console.log("Roles response:", roles, "Error:", error);
+
+        if (error) {
+          console.error('Error checking admin status:', error);
+          toast.error("Erreur lors de la vérification des droits d'accès");
+          navigate('/');
+          return;
+        }
+        
         if (!roles || roles.role !== 'admin') {
+          console.log("User is not admin:", roles);
           toast.error("Accès non autorisé");
           navigate('/');
           return;
