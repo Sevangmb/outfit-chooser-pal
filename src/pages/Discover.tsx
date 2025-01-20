@@ -1,4 +1,3 @@
-import { Navigation } from "@/components/Navigation";
 import { BottomNav } from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
 import { Compass, Users } from "lucide-react";
@@ -9,8 +8,7 @@ const Discover = () => {
 
   return (
     <div className="min-h-screen bg-secondary/30 pb-16">
-      <Navigation />
-      <div className="container py-8 px-4 mx-auto mt-16">
+      <div className="container py-8 px-4 mx-auto">
         <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6">
           <div className="rounded-full bg-primary/10 p-6">
             <Compass className="h-12 w-12 text-primary" />
