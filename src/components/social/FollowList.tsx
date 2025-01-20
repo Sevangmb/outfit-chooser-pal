@@ -13,32 +13,44 @@ export const FollowList = ({ userId }: FollowListProps) => {
   const { data: followers = [], refetch: refetchFollowers } = useQuery({
     queryKey: ["followers", userId],
     queryFn: async () => {
+      console.log("Fetching followers for user:", userId);
       const { data, error } = await supabase
         .from("followers")
         .select(`
           *,
-          profile:profiles!followers_follower_id_fkey(id, email)
+          profile:profiles(id, email)
         `)
-        .eq("following_id", userId);
+        .eq("following_id", userId)
+        .returns<Follower[]>();
 
-      if (error) throw error;
-      return data as Follower[];
+      if (error) {
+        console.error("Error fetching followers:", error);
+        throw error;
+      }
+      console.log("Fetched followers:", data);
+      return data;
     },
   });
 
   const { data: following = [], refetch: refetchFollowing } = useQuery({
     queryKey: ["following", userId],
     queryFn: async () => {
+      console.log("Fetching following for user:", userId);
       const { data, error } = await supabase
         .from("followers")
         .select(`
           *,
-          profile:profiles!followers_following_id_fkey(id, email)
+          profile:profiles(id, email)
         `)
-        .eq("follower_id", userId);
+        .eq("follower_id", userId)
+        .returns<Follower[]>();
 
-      if (error) throw error;
-      return data as Follower[];
+      if (error) {
+        console.error("Error fetching following:", error);
+        throw error;
+      }
+      console.log("Fetched following:", data);
+      return data;
     },
   });
 
