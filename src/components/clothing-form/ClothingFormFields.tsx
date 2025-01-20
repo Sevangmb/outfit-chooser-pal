@@ -1,14 +1,7 @@
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
-
-interface FormValues {
-  name: string;
-  category: string;
-  color: string;
-  image: string | null;
-  imageUrl?: string;
-}
+import { FormValues } from "../AddClothingForm";
 
 interface ClothingFormFieldsProps {
   form: UseFormReturn<FormValues>;

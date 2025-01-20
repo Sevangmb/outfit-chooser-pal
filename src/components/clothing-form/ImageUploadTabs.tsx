@@ -4,15 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormControl, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { UseFormReturn } from "react-hook-form";
-import { useState } from "react";
-
-interface FormValues {
-  name: string;
-  category: string;
-  color: string;
-  image: string | null;
-  imageUrl?: string;
-}
+import { FormValues } from "../AddClothingForm";
 
 interface ImageUploadTabsProps {
   form: UseFormReturn<FormValues>;

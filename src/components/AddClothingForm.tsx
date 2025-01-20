@@ -11,7 +11,7 @@ import { ClothingFormFields } from "./clothing-form/ClothingFormFields";
 import { ImageUploadTabs } from "./clothing-form/ImageUploadTabs";
 import { useImageUpload } from "./clothing-form/useImageUpload";
 
-const formSchema = z.object({
+export const formSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
   category: z.string().min(2, "La catégorie doit contenir au moins 2 caractères"),
   color: z.string().min(2, "La couleur doit contenir au moins 2 caractères"),
@@ -19,7 +19,7 @@ const formSchema = z.object({
   imageUrl: z.string().url().optional(),
 });
 
-type FormValues = z.infer<typeof formSchema>;
+export type FormValues = z.infer<typeof formSchema>;
 
 interface AddClothingFormProps {
   onSuccess?: () => void;
