@@ -57,6 +57,53 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
 
   const missingFields = getRequiredFieldsErrors();
 
+  const handleCameraCapture = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const video = document.createElement('video');
+      video.srcObject = stream;
+      await video.play();
+
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext('2d')?.drawImage(video, 0, 0);
+
+      stream.getTracks().forEach(track => track.stop());
+
+      const blob = await new Promise<Blob>((resolve) => 
+        canvas.toBlob((blob) => resolve(blob!), 'image/jpeg')
+      );
+      
+      const file = new File([blob], "camera-capture.jpg", { type: "image/jpeg" });
+      const imageUrl = await handleImageUpload(file);
+      if (imageUrl) {
+        form.setValue("image", imageUrl);
+        toast.success("Image capturée avec succès");
+      }
+    } catch (error) {
+      console.error("Error capturing image:", error);
+      toast.error("Erreur lors de la capture de l'image");
+    }
+  };
+
+  const handleUrlImage = async (url: string) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const file = new File([blob], "url-image.jpg", { type: blob.type });
+      const imageUrl = await handleImageUpload(file);
+      if (imageUrl) {
+        form.setValue("image", imageUrl);
+        form.setValue("imageUrl", "");
+        toast.success("Image téléchargée avec succès");
+      }
+    } catch (error) {
+      console.error("Error downloading image from URL:", error);
+      toast.error("Erreur lors du téléchargement de l'image depuis l'URL");
+    }
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
