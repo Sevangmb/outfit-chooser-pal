@@ -4,7 +4,10 @@ import { OutfitCard } from "./OutfitCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect } from "react";
 import { useInView } from "react-intersection-observer";
-import { Loader2 } from "lucide-react";
+import { Loader2, Search, Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import ReactPullToRefresh from "react-pull-to-refresh";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -34,6 +37,7 @@ interface PageData {
 
 export const OutfitFeed = () => {
   const { ref, inView } = useInView();
+  const navigate = useNavigate();
 
   const {
     data,
@@ -113,6 +117,12 @@ export const OutfitFeed = () => {
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
+  const handleRefresh = async () => {
+    console.log("Refreshing feed...");
+    await refetch();
+    return Promise.resolve();
+  };
+
   // Initial loading state
   if (isLoading) {
     return (
@@ -129,42 +139,57 @@ export const OutfitFeed = () => {
   // Empty state
   if (outfits.length === 0) {
     return (
-      <div className="text-center py-8">
-        <p className="text-lg text-muted-foreground mb-4">
-          Aucune tenue à afficher pour le moment
-        </p>
-        <p className="text-sm text-muted-foreground">
-          Commencez à suivre d'autres utilisateurs ou explorez la section "Découvrir"
-        </p>
+      <div className="text-center py-12 space-y-6">
+        <div className="flex flex-col items-center gap-4">
+          <Users className="h-12 w-12 text-muted-foreground" />
+          <h2 className="text-xl font-semibold">Aucune tenue à afficher</h2>
+          <p className="text-muted-foreground max-w-sm">
+            Commencez à suivre d'autres utilisateurs ou explorez de nouvelles tenues pour personnaliser votre fil d'actualité
+          </p>
+        </div>
+        <Button 
+          onClick={() => navigate("/discover")}
+          className="gap-2"
+        >
+          <Search className="h-4 w-4" />
+          Explorer les tenues
+        </Button>
       </div>
     );
   }
 
   return (
-    <div className="relative">
-      {/* Pull to refresh indicator */}
-      {isRefetching && !isFetchingNextPage && (
-        <div className="absolute top-0 left-0 right-0 flex justify-center py-4 bg-background/80 backdrop-blur-sm z-10">
-          <Loader2 className="h-6 w-6 animate-spin text-primary" />
-        </div>
-      )}
+    <ReactPullToRefresh
+      onRefresh={handleRefresh}
+      className="relative min-h-screen"
+      pullDownThreshold={70}
+      resistance={2.5}
+    >
+      <div className="relative">
+        {/* Pull to refresh indicator */}
+        {isRefetching && !isFetchingNextPage && (
+          <div className="absolute top-0 left-0 right-0 flex justify-center py-4 bg-background/80 backdrop-blur-sm z-10">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          </div>
+        )}
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {outfits.map((outfit) => (
-          <OutfitCard key={outfit.id} outfit={outfit} />
-        ))}
-        
-        {/* Infinite scroll loading indicator */}
-        <div ref={ref} className="col-span-full h-20 flex items-center justify-center">
-          {isFetchingNextPage && (
-            <div className="grid grid-cols-3 gap-4 w-full">
-              {[...Array(3)].map((_, i) => (
-                <Skeleton key={i} className="h-[400px] rounded-xl" />
-              ))}
-            </div>
-          )}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {outfits.map((outfit) => (
+            <OutfitCard key={outfit.id} outfit={outfit} />
+          ))}
+          
+          {/* Infinite scroll loading indicator */}
+          <div ref={ref} className="col-span-full h-20 flex items-center justify-center">
+            {isFetchingNextPage && (
+              <div className="grid grid-cols-3 gap-4 w-full">
+                {[...Array(3)].map((_, i) => (
+                  <Skeleton key={i} className="h-[400px] rounded-xl" />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </ReactPullToRefresh>
   );
 };
