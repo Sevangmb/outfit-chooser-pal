@@ -13,7 +13,7 @@ export const useImageUpload = () => {
     try {
       setIsUploading(true);
       setUploadError(null);
-      console.log("Starting image upload process for:", file.name);
+      console.log("Début du processus d'upload pour:", file.name);
 
       const isValid = await validateImageFile(file);
       if (!isValid) {
@@ -22,35 +22,25 @@ export const useImageUpload = () => {
         return null;
       }
 
-      // Optimize image before upload
       const optimizedFile = await optimizeImage(file);
-      console.log("Image optimized:", {
-        originalSize: file.size,
-        optimizedSize: optimizedFile.size
+      console.log("Image optimisée:", {
+        tailleOriginale: file.size,
+        tailleOptimisée: optimizedFile.size
       });
 
-      // Create a local preview URL
-      const localPreviewUrl = URL.createObjectURL(optimizedFile);
-      setPreviewUrl(localPreviewUrl);
-
       const publicUrl = await uploadImageToSupabase(optimizedFile);
-      console.log("Image uploaded to Supabase, public URL:", publicUrl);
-      
       if (!publicUrl) {
         setUploadError("Erreur lors du téléchargement de l'image");
         toast.error("Erreur lors du téléchargement de l'image");
-        URL.revokeObjectURL(localPreviewUrl);
         return null;
       }
 
-      // Clean up local preview and set the public URL
-      URL.revokeObjectURL(localPreviewUrl);
       setPreviewUrl(publicUrl);
       toast.success("Image téléchargée avec succès");
       return publicUrl;
     } catch (error) {
-      console.error("Unexpected error during upload:", error);
-      setUploadError("Erreur inattendue lors du téléchargement");
+      console.error("Erreur inattendue lors de l'upload:", error);
+      setUploadError("Erreur lors du téléchargement de l'image");
       toast.error("Erreur lors du téléchargement de l'image");
       return null;
     } finally {
@@ -59,12 +49,9 @@ export const useImageUpload = () => {
   }, []);
 
   const resetPreview = useCallback(() => {
-    if (previewUrl?.startsWith('blob:')) {
-      URL.revokeObjectURL(previewUrl);
-    }
     setPreviewUrl(null);
     setUploadError(null);
-  }, [previewUrl]);
+  }, []);
 
   return {
     isUploading,
