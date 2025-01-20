@@ -22,7 +22,7 @@ import { UserCheck, UserX } from "lucide-react";
 interface User {
   id: string;
   email: string;
-  role: string;
+  role: "admin" | "user";
 }
 
 export const UserManagement = () => {
@@ -62,7 +62,7 @@ export const UserManagement = () => {
     fetchUsers();
   }, []);
 
-  const updateUserRole = async (userId: string, newRole: string) => {
+  const updateUserRole = async (userId: string, newRole: "admin" | "user") => {
     try {
       const { error } = await supabase
         .from('user_roles')
@@ -103,7 +103,7 @@ export const UserManagement = () => {
               <TableCell>
                 <Select
                   defaultValue={user.role}
-                  onValueChange={(value) => updateUserRole(user.id, value)}
+                  onValueChange={(value: "admin" | "user") => updateUserRole(user.id, value)}
                 >
                   <SelectTrigger className="w-32">
                     <SelectValue />
@@ -111,7 +111,6 @@ export const UserManagement = () => {
                   <SelectContent>
                     <SelectItem value="user">Utilisateur</SelectItem>
                     <SelectItem value="admin">Admin</SelectItem>
-                    <SelectItem value="moderator">Modérateur</SelectItem>
                   </SelectContent>
                 </Select>
               </TableCell>
