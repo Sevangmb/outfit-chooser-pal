@@ -28,32 +28,32 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#0EA5E9", // Ocean Blue
+          DEFAULT: "#B5A642", // Gold
           foreground: "#FFFFFF",
         },
         secondary: {
-          DEFAULT: "#D3E4FD", // Soft Blue
-          foreground: "#222226", // Dark Gray
+          DEFAULT: "#F5DEB3", // Wheat
+          foreground: "#222226",
         },
         destructive: {
-          DEFAULT: "#F97316", // Bright Orange
+          DEFAULT: "#FF6B6B", // Soft Red
           foreground: "#FFFFFF",
         },
         muted: {
-          DEFAULT: "#F1F0FB", // Soft Gray
-          foreground: "#8E9196", // Neutral Gray
+          DEFAULT: "#FFF8DC", // Cream
+          foreground: "#666666",
         },
         accent: {
-          DEFAULT: "#FEC6A1", // Soft Orange
-          foreground: "#222226", // Dark Gray
+          DEFAULT: "#4682B4", // Steel Blue
+          foreground: "#FFFFFF",
         },
         popover: {
           DEFAULT: "#FFFFFF",
-          foreground: "#222226", // Dark Gray
+          foreground: "#222226",
         },
         card: {
           DEFAULT: "#FFFFFF",
-          foreground: "#222226", // Dark Gray
+          foreground: "#222226",
         },
       },
       borderRadius: {

@@ -6,25 +6,25 @@
 
 @layer base {
   :root {
-    --background: 60 9% 98%;
-    --foreground: 20 14.3% 4.1%;
+    --background: 60 80% 97%;
+    --foreground: 45 10% 20%;
     --card: 0 0% 100%;
-    --card-foreground: 20 14.3% 4.1%;
+    --card-foreground: 45 10% 20%;
     --popover: 0 0% 100%;
-    --popover-foreground: 20 14.3% 4.1%;
-    --primary: 24 9.8% 10%;
-    --primary-foreground: 60 9.1% 97.8%;
-    --secondary: 60 4.8% 95.9%;
-    --secondary-foreground: 24 9.8% 10%;
-    --muted: 60 4.8% 95.9%;
-    --muted-foreground: 25 5.3% 44.7%;
-    --accent: 60 4.8% 95.9%;
-    --accent-foreground: 24 9.8% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 60 9.1% 97.8%;
-    --border: 20 5.9% 90%;
-    --input: 20 5.9% 90%;
-    --ring: 24 9.8% 10%;
+    --popover-foreground: 45 10% 20%;
+    --primary: 52 45% 48%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 39 77% 83%;
+    --secondary-foreground: 45 10% 20%;
+    --muted: 48 100% 93%;
+    --muted-foreground: 0 0% 40%;
+    --accent: 207 45% 48%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 83% 71%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 45 10% 80%;
+    --input: 45 10% 80%;
+    --ring: 52 45% 48%;
     --radius: 0.75rem;
   }
  
@@ -44,12 +44,10 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Amélioration de l'accessibilité pour le focus */
   :focus-visible {
     @apply outline-2 outline-offset-2 outline-primary/50;
   }
 
-  /* Support pour la préférence de réduction de mouvement */
   @media (prefers-reduced-motion: reduce) {
     * {
       animation-duration: 0.01ms !important;
