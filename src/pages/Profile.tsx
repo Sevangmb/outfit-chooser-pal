@@ -19,9 +19,44 @@ interface Profile {
 }
 
 const Profile = () => {
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+
+  const { data: session } = useQuery({
+    queryKey: ["session"],
+    queryFn: async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error("Error fetching session:", error);
+        toast.error("Erreur lors de la récupération de la session");
+        throw error;
+      }
+      return session;
+    },
+  });
+
+  const { data: profile, isLoading: isLoadingProfile } = useQuery({
+    queryKey: ["profile", session?.user?.id],
+    queryFn: async () => {
+      if (!session?.user?.id) return null;
+
+      console.log("Fetching profile for user:", session.user.id);
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", session.user.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error("Error fetching profile:", error);
+        toast.error("Erreur lors du chargement du profil");
+        throw error;
+      }
+
+      return data;
+    },
+    enabled: !!session?.user?.id,
+  });
 
   const { data: isAdmin } = useQuery({
     queryKey: ["userRole", profile?.id],
@@ -46,44 +81,10 @@ const Profile = () => {
   });
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session?.user) {
-          navigate("/auth");
-          return;
-        }
+    setLoading(false);
+  }, []);
 
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", session.user.id)
-          .maybeSingle();
-
-        if (error) {
-          console.error("Error fetching profile:", error);
-          toast.error("Erreur lors du chargement du profil");
-          return;
-        }
-
-        if (!data) {
-          toast.error("Profil non trouvé");
-          return;
-        }
-
-        setProfile(data);
-      } catch (error) {
-        console.error("Error:", error);
-        toast.error("Une erreur est survenue");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProfile();
-  }, [navigate]);
-
-  if (loading) {
+  if (loading || isLoadingProfile) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-secondary/30">
         <div className="text-primary animate-pulse">Chargement...</div>
