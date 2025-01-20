@@ -22,7 +22,6 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
     try {
       console.log("Form submitted with values:", values);
       
-      // Validate image URL
       if (!values.image || values.image.startsWith('blob:')) {
         toast.error("L'image n'a pas été téléchargée correctement");
         return;
@@ -38,7 +37,7 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
     }
   });
   
-  const { isUploading, previewUrl, handleImageUpload, resetPreview } = useImageUpload();
+  const { isUploading, previewUrl, uploadError, handleImageUpload, resetPreview } = useImageUpload();
 
   useEffect(() => {
     if (Object.keys(errors).length > 0) {
@@ -139,6 +138,7 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
           form={form}
           isUploading={isUploading}
           previewUrl={previewUrl}
+          uploadError={uploadError}
           onFileUpload={handleImageUpload}
           onCameraCapture={handleCameraCapture}
           onUrlUpload={handleUrlImage}
