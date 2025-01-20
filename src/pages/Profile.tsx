@@ -43,7 +43,7 @@ const Profile = () => {
       console.log("Fetching profile for user:", session.user.id);
       const { data, error } = await supabase
         .from("profiles")
-        .select("*")
+        .select()
         .eq("id", session.user.id)
         .maybeSingle();
 
@@ -57,7 +57,10 @@ const Profile = () => {
         console.log("No profile found, creating one...");
         const { data: newProfile, error: createError } = await supabase
           .from("profiles")
-          .insert([{ id: session.user.id, email: session.user.email }])
+          .insert([{ 
+            id: session.user.id, 
+            email: session.user.email 
+          }])
           .select()
           .single();
 
