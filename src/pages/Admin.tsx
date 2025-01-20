@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Shield, Users, List } from "lucide-react";
+import { Shield, Users, List, Ban } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserManagement } from "@/components/admin/UserManagement";
 import { AuditLogs } from "@/components/admin/AuditLogs";
-import { DashboardMetrics } from "@/components/admin/DashboardMetrics";
-import { DashboardCharts } from "@/components/admin/DashboardCharts";
+import { BannedWords } from "@/components/admin/BannedWords";
+import { ContentModeration } from "@/components/admin/ContentModeration";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -74,28 +74,25 @@ const Admin = () => {
         <h1 className="text-3xl font-bold text-primary">Administration</h1>
       </div>
 
-      <Tabs defaultValue="dashboard" className="space-y-4">
+      <Tabs defaultValue="users" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="dashboard" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            Tableau de bord
-          </TabsTrigger>
           <TabsTrigger value="users" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
             Utilisateurs
+          </TabsTrigger>
+          <TabsTrigger value="moderation" className="flex items-center gap-2">
+            <Ban className="h-4 w-4" />
+            Modération
+          </TabsTrigger>
+          <TabsTrigger value="banned-words" className="flex items-center gap-2">
+            <Ban className="h-4 w-4" />
+            Mots bannis
           </TabsTrigger>
           <TabsTrigger value="logs" className="flex items-center gap-2">
             <List className="h-4 w-4" />
             Logs d'audit
           </TabsTrigger>
         </TabsList>
-
-        <TabsContent value="dashboard">
-          <div className="space-y-4">
-            <DashboardMetrics />
-            <DashboardCharts />
-          </div>
-        </TabsContent>
 
         <TabsContent value="users">
           <Card>
@@ -104,6 +101,28 @@ const Admin = () => {
             </CardHeader>
             <CardContent>
               <UserManagement />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="moderation">
+          <Card>
+            <CardHeader>
+              <CardTitle>Modération du contenu</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ContentModeration />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="banned-words">
+          <Card>
+            <CardHeader>
+              <CardTitle>Gestion des mots bannis</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <BannedWords />
             </CardContent>
           </Card>
         </TabsContent>

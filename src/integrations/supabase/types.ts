@@ -89,6 +89,35 @@ export type Database = {
           },
         ]
       }
+      banned_words: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          word: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          word: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          word?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "banned_words_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clothes: {
         Row: {
           category: string
@@ -219,25 +248,44 @@ export type Database = {
         Row: {
           content: string
           created_at: string
+          flag_reason: string | null
           id: number
+          is_flagged: boolean | null
+          moderated_at: string | null
+          moderated_by: string | null
           outfit_id: number | null
           user_id: string | null
         }
         Insert: {
           content: string
           created_at?: string
+          flag_reason?: string | null
           id?: number
+          is_flagged?: boolean | null
+          moderated_at?: string | null
+          moderated_by?: string | null
           outfit_id?: number | null
           user_id?: string | null
         }
         Update: {
           content?: string
           created_at?: string
+          flag_reason?: string | null
           id?: number
+          is_flagged?: boolean | null
+          moderated_at?: string | null
+          moderated_by?: string | null
           outfit_id?: number | null
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "outfit_comments_moderated_by_fkey"
+            columns: ["moderated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "outfit_comments_outfit_id_fkey"
             columns: ["outfit_id"]
@@ -280,8 +328,12 @@ export type Database = {
         Row: {
           created_at: string
           description: string | null
+          flag_reason: string | null
           id: number
           is_favorite: boolean | null
+          is_flagged: boolean | null
+          moderated_at: string | null
+          moderated_by: string | null
           name: string
           rating: number | null
           user_id: string | null
@@ -289,8 +341,12 @@ export type Database = {
         Insert: {
           created_at?: string
           description?: string | null
+          flag_reason?: string | null
           id?: number
           is_favorite?: boolean | null
+          is_flagged?: boolean | null
+          moderated_at?: string | null
+          moderated_by?: string | null
           name: string
           rating?: number | null
           user_id?: string | null
@@ -298,13 +354,25 @@ export type Database = {
         Update: {
           created_at?: string
           description?: string | null
+          flag_reason?: string | null
           id?: number
           is_favorite?: boolean | null
+          is_flagged?: boolean | null
+          moderated_at?: string | null
+          moderated_by?: string | null
           name?: string
           rating?: number | null
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "outfits_moderated_by_fkey"
+            columns: ["moderated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -398,6 +466,12 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      contains_banned_words: {
+        Args: {
+          text_to_check: string
+        }
+        Returns: boolean
+      }
       get_daily_active_users: {
         Args: {
           start_date: string
@@ -451,6 +525,22 @@ export type Database = {
         }
         Returns: undefined
       }
+      moderate_comment: {
+        Args: {
+          p_comment_id: number
+          p_action: string
+          p_reason?: string
+        }
+        Returns: undefined
+      }
+      moderate_outfit: {
+        Args: {
+          p_outfit_id: number
+          p_action: string
+          p_reason?: string
+        }
+        Returns: undefined
+      }
       update_user_status: {
         Args: {
           user_id: string
@@ -471,6 +561,9 @@ export type Database = {
         | "delete_outfit"
         | "moderate_comment"
         | "send_message"
+        | "moderate_outfit"
+        | "add_banned_word"
+        | "remove_banned_word"
       app_role: "admin" | "user"
     }
     CompositeTypes: {
