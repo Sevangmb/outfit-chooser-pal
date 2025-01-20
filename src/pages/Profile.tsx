@@ -7,8 +7,9 @@ import { FollowList } from "@/components/social/FollowList";
 import { ProfileStats } from "@/components/social/ProfileStats";
 import { UserOutfits } from "@/components/social/UserOutfits";
 import { Button } from "@/components/ui/button";
-import { Settings } from "lucide-react";
+import { Settings, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 
 interface Profile {
   id: string;
@@ -20,6 +21,25 @@ const Profile = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  const { data: isAdmin } = useQuery({
+    queryKey: ["userRole"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", profile?.id)
+        .single();
+
+      if (error) {
+        console.error("Error fetching user role:", error);
+        return false;
+      }
+
+      return data?.role === "admin";
+    },
+    enabled: !!profile?.id
+  });
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -77,15 +97,28 @@ const Profile = () => {
                 </p>
               </div>
             </div>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => navigate("/settings")}
-              className="border-primary/20 hover:bg-primary/10"
-            >
-              <Settings className="h-4 w-4" />
-              <span className="sr-only">Paramètres</span>
-            </Button>
+            <div className="flex gap-2">
+              {isAdmin && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => navigate("/admin")}
+                  className="border-primary/20 hover:bg-primary/10"
+                >
+                  <Shield className="h-4 w-4" />
+                  <span className="sr-only">Administration</span>
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => navigate("/settings")}
+                className="border-primary/20 hover:bg-primary/10"
+              >
+                <Settings className="h-4 w-4" />
+                <span className="sr-only">Paramètres</span>
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-6">
             {profile && (
