@@ -1,4 +1,5 @@
 import { Navigation } from "@/components/Navigation";
+import { BottomNav } from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
 import { Compass, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -7,7 +8,7 @@ const Discover = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-secondary/30">
+    <div className="min-h-screen bg-secondary/30 pb-16">
       <Navigation />
       <div className="container py-8 px-4 mx-auto mt-16">
         <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6">
@@ -37,6 +38,7 @@ const Discover = () => {
           </div>
         </div>
       </div>
+      <BottomNav />
     </div>
   );
 };
