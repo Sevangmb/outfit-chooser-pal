@@ -332,6 +332,61 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_user_retention: {
+        Args: {
+          start_date: string
+          end_date: string
+          retention_period: unknown
+        }
+        Returns: {
+          date: string
+          retention_rate: number
+        }[]
+      }
+      check_is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      get_daily_active_users: {
+        Args: {
+          start_date: string
+          end_date: string
+        }
+        Returns: {
+          date: string
+          active_users: number
+        }[]
+      }
+      get_new_users_per_day: {
+        Args: {
+          start_date: string
+          end_date: string
+        }
+        Returns: {
+          date: string
+          new_users: number
+        }[]
+      }
+      get_outfits_per_day: {
+        Args: {
+          start_date: string
+          end_date: string
+        }
+        Returns: {
+          date: string
+          outfits_count: number
+        }[]
+      }
+      get_votes_per_day: {
+        Args: {
+          start_date: string
+          end_date: string
+        }
+        Returns: {
+          date: string
+          votes_count: number
+        }[]
+      }
       is_admin: {
         Args: {
           user_id: string
