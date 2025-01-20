@@ -1,8 +1,9 @@
-import { pipeline, env } from '@huggingface/transformers';
+import { pipeline } from '@huggingface/transformers';
 
-// Configure transformers.js
-env.allowLocalModels = false;
-env.useBrowserCache = false;
+interface ImageClassificationResult {
+  label: string;
+  score: number;
+}
 
 export const analyzeImage = async (imageUrl: string) => {
   try {
@@ -19,7 +20,9 @@ export const analyzeImage = async (imageUrl: string) => {
     console.log('Classification results:', results);
 
     // Get the most likely category
-    const topCategory = results[0]?.label?.toLowerCase() || '';
+    // The results are always an array of objects with label and score
+    const topResult = Array.isArray(results) ? results[0] : results;
+    const topCategory = (topResult as ImageClassificationResult).label?.toLowerCase() || '';
 
     // Map the model's category to our application's categories
     const categoryMapping: Record<string, string> = {
@@ -36,7 +39,7 @@ export const analyzeImage = async (imageUrl: string) => {
 
     return {
       category: categoryMapping[topCategory] || '',
-      confidence: results[0]?.score || 0,
+      confidence: (topResult as ImageClassificationResult).score || 0,
     };
   } catch (error) {
     console.error('Error analyzing image:', error);
