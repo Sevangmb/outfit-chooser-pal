@@ -23,15 +23,10 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) {
-          console.error("Error checking auth status:", error);
-          setIsAuthenticated(false);
-        } else {
-          setIsAuthenticated(!!session);
-        }
+        const { data: { session } } = await supabase.auth.getSession();
+        setIsAuthenticated(!!session);
       } catch (error) {
-        console.error("Error in checkAuth:", error);
+        console.error("Error checking auth status:", error);
         setIsAuthenticated(false);
       } finally {
         setIsLoading(false);
@@ -40,13 +35,9 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
     checkAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event);
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        setIsAuthenticated(true);
-      } else {
-        setIsAuthenticated(false);
-      }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state changed:", event, "Session:", !!session);
+      setIsAuthenticated(!!session);
       setIsLoading(false);
     });
 
@@ -63,7 +54,12 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  return isAuthenticated ? <>{children}</> : <Navigate to="/landing" />;
+  if (!isAuthenticated) {
+    console.log("User not authenticated, redirecting to landing");
+    return <Navigate to="/landing" replace />;
+  }
+
+  return <>{children}</>;
 };
 
 const App = () => (
