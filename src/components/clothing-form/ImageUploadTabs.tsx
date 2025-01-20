@@ -64,17 +64,6 @@ export const ImageUploadTabs = ({
 
     try {
       setIsVerifying(true);
-      // Validate URL format
-      new URL(url);
-      
-      // Verify image can be loaded
-      await new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = resolve;
-        img.onerror = reject;
-        img.src = url;
-      });
-      
       await onUrlUpload(url);
     } catch (error) {
       console.error("Error with URL:", error);
