@@ -8,6 +8,7 @@ import { Loader2, Search, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import ReactPullToRefresh from "react-pull-to-refresh";
+import { toast } from "sonner";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -46,7 +47,8 @@ export const OutfitFeed = () => {
     hasNextPage,
     isFetchingNextPage,
     refetch,
-    isRefetching
+    isRefetching,
+    error
   } = useInfiniteQuery<PageData>({
     queryKey: ["outfits-feed"],
     initialPageParam: 0,
@@ -55,6 +57,7 @@ export const OutfitFeed = () => {
       console.log("Fetching outfits for feed, page:", pageParam);
       
       try {
+        // First fetch outfits
         const { data: outfitsData, error: outfitsError } = await supabase
           .from("outfits")
           .select(`
@@ -71,29 +74,43 @@ export const OutfitFeed = () => {
           throw outfitsError;
         }
 
-        if (!outfitsData) {
+        if (!outfitsData || outfitsData.length === 0) {
           return {
             outfits: [],
             nextPage: null
           };
         }
 
-        const userIds = outfitsData.map((outfit: any) => outfit.user_id);
-        const { data: profiles, error: profilesError } = await supabase
-          .from("profiles")
-          .select("id, email")
-          .in("id", userIds);
+        // Get unique user IDs
+        const userIds = [...new Set(outfitsData.map((outfit: any) => outfit.user_id))];
+        console.log("Fetching profiles for users:", userIds);
 
-        if (profilesError) {
-          console.error("Error fetching profiles:", profilesError);
-          throw profilesError;
+        // Fetch profiles in smaller batches to avoid URL length issues
+        const BATCH_SIZE = 5;
+        const profiles: any[] = [];
+        
+        for (let i = 0; i < userIds.length; i += BATCH_SIZE) {
+          const batchIds = userIds.slice(i, i + BATCH_SIZE);
+          const { data: batchProfiles, error: profilesError } = await supabase
+            .from("profiles")
+            .select("id, email")
+            .in("id", batchIds);
+
+          if (profilesError) {
+            console.error("Error fetching profiles batch:", profilesError);
+            continue;
+          }
+
+          if (batchProfiles) {
+            profiles.push(...batchProfiles);
+          }
         }
 
-        const emailMap = new Map(profiles?.map((p) => [p.id, p.email]));
+        const emailMap = new Map(profiles.map((p) => [p.id, p.email]));
 
         const formattedOutfits = outfitsData.map((outfit: any) => ({
           ...outfit,
-          user_email: emailMap.get(outfit.user_id),
+          user_email: emailMap.get(outfit.user_id) || "Utilisateur inconnu",
           clothes: outfit.clothes.map((item: any) => ({
             clothes: item.clothes,
           })),
@@ -109,6 +126,8 @@ export const OutfitFeed = () => {
       }
     },
     getNextPageParam: (lastPage) => lastPage.nextPage,
+    retry: 2,
+    retryDelay: 1000,
   });
 
   useEffect(() => {
@@ -119,9 +138,24 @@ export const OutfitFeed = () => {
 
   const handleRefresh = async () => {
     console.log("Refreshing feed...");
-    await refetch();
-    return Promise.resolve();
+    try {
+      await refetch();
+      return Promise.resolve();
+    } catch (error) {
+      console.error("Error refreshing feed:", error);
+      toast.error("Erreur lors du rafraîchissement");
+      return Promise.reject(error);
+    }
   };
+
+  if (error) {
+    return (
+      <div className="text-center py-12 space-y-6">
+        <p className="text-destructive">Une erreur est survenue lors du chargement des tenues</p>
+        <Button onClick={() => refetch()}>Réessayer</Button>
+      </div>
+    );
+  }
 
   // Initial loading state
   if (isLoading) {
