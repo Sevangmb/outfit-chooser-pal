@@ -6,14 +6,22 @@ import { ImageAnalysisButton } from "./clothing-form/ImageAnalysisButton";
 import { SubmitButton } from "./clothing-form/SubmitButton";
 import { useClothingForm } from "./clothing-form/hooks/useClothingForm";
 import { toast } from "sonner";
+import { useEffect } from "react";
 
 interface AddClothingFormProps {
   onSuccess?: () => void;
 }
 
 export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
-  const { form, onSubmit } = useClothingForm(onSuccess);
+  const { form, onSubmit, isValid, isSubmitting, errors } = useClothingForm(onSuccess);
   const { isUploading, previewUrl, handleImageUpload, resetPreview } = useImageUpload();
+
+  // Afficher les erreurs de validation en temps réel
+  useEffect(() => {
+    if (Object.keys(errors).length > 0) {
+      console.log("Form validation errors:", errors);
+    }
+  }, [errors]);
 
   const handleCameraCapture = async () => {
     try {
@@ -82,7 +90,11 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
 
         <ClothingFormFields form={form} />
 
-        <SubmitButton isUploading={isUploading} />
+        <SubmitButton 
+          isUploading={isUploading} 
+          isSubmitting={isSubmitting}
+          isValid={isValid}
+        />
       </form>
     </Form>
   );

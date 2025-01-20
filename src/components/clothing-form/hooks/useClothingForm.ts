@@ -23,6 +23,7 @@ export const useClothingForm = (onSuccess?: () => void) => {
       image: null,
       imageUrl: "",
     },
+    mode: "onChange", // Validation en temps réel
   });
 
   const onSubmit = async (values: FormValues) => {
@@ -35,6 +36,8 @@ export const useClothingForm = (onSuccess?: () => void) => {
         toast.error("Vous devez être connecté pour ajouter un vêtement");
         return;
       }
+
+      toast.loading("Ajout du vêtement en cours...");
 
       const { error } = await supabase.from("clothes").insert({
         name: values.name,
@@ -50,7 +53,11 @@ export const useClothingForm = (onSuccess?: () => void) => {
         user_id: user.id,
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error adding clothing:", error);
+        toast.error("Erreur lors de l'ajout du vêtement");
+        return;
+      }
 
       console.log("Successfully added clothing item");
       toast.success("Vêtement ajouté avec succès");
@@ -66,5 +73,8 @@ export const useClothingForm = (onSuccess?: () => void) => {
   return {
     form,
     onSubmit,
+    isValid: form.formState.isValid,
+    isSubmitting: form.formState.isSubmitting,
+    errors: form.formState.errors,
   };
 };
