@@ -10,9 +10,7 @@ export const analyzeImage = async (imageUrl: string) => {
     console.log('Starting image analysis...');
     
     // Initialize the image classification pipeline with a compatible model
-    const classifier = await pipeline('image-classification', 'Xenova/vit-base-patch16-224', {
-      quantized: true, // Use quantized model for better performance
-    });
+    const classifier = await pipeline('image-classification', 'Xenova/vit-base-patch16-224');
 
     // Analyze the image
     console.log('Analyzing image:', imageUrl);
