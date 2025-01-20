@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Canvas as FabricCanvas } from "fabric";
+import { Canvas as FabricCanvas, Image as FabricImage } from "fabric";
 import { Button } from "@/components/ui/button";
 import { RotateCw, ZoomIn, ZoomOut } from "lucide-react";
 
@@ -43,7 +43,7 @@ export const OutfitCanvas = ({ selectedTop, selectedBottom, selectedShoes, cloth
         canvas.clear();
         
         await new Promise((resolve, reject) => {
-          fabric.Image.fromURL(clothing.image, (img) => {
+          FabricImage.fromURL(clothing.image, (img) => {
             if (!img) {
               reject(new Error("Failed to load image"));
               return;
