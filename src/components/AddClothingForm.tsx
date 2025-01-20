@@ -7,15 +7,29 @@ import { SubmitButton } from "./clothing-form/SubmitButton";
 import { useClothingForm } from "./clothing-form/hooks/useClothingForm";
 import { toast } from "sonner";
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface AddClothingFormProps {
   onSuccess?: () => void;
 }
 
 export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
-  const { form, onSubmit, isValid, isSubmitting, errors } = useClothingForm((values) => {
-    toast.success(`Le vêtement "${values.name}" a été ajouté à votre garde-robe`);
-    onSuccess?.();
+  const navigate = useNavigate();
+  const { form, onSubmit, isValid, isSubmitting, errors } = useClothingForm(async (values) => {
+    try {
+      console.log("Form submitted with values:", values);
+      toast.success(`Le vêtement "${values.name}" a été ajouté à votre garde-robe`);
+      
+      // Attendre un peu pour que l'utilisateur voie le message de succès
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Rediriger vers la garde-robe
+      navigate("/closet");
+      onSuccess?.();
+    } catch (error) {
+      console.error("Error in form success callback:", error);
+      toast.error("Une erreur est survenue lors de l'ajout du vêtement");
+    }
   });
   
   const { isUploading, previewUrl, handleImageUpload, resetPreview } = useImageUpload();
@@ -23,6 +37,8 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
   useEffect(() => {
     if (Object.keys(errors).length > 0) {
       console.log("Form validation errors:", errors);
+      // Afficher un message d'erreur à l'utilisateur
+      toast.error("Veuillez remplir tous les champs requis");
     }
   }, [errors]);
 

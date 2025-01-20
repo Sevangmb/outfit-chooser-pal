@@ -44,18 +44,16 @@ export const useClothingForm = (onSuccess?: (values: FormValues) => void) => {
         return;
       }
 
-      toast.loading("Ajout du vêtement en cours...");
-
       const { error } = await supabase.from("clothes").insert({
         name: values.name,
         category: values.category,
-        subcategory: values.subcategory,
-        brand: values.brand,
+        subcategory: values.subcategory || null,
+        brand: values.brand || null,
         color: values.color,
-        secondary_color: values.secondary_color,
-        size: values.size,
-        material: values.material,
-        notes: values.notes,
+        secondary_color: values.secondary_color || null,
+        size: values.size || null,
+        material: values.material || null,
+        notes: values.notes || null,
         image: values.image,
         user_id: user.id,
       });
@@ -67,7 +65,7 @@ export const useClothingForm = (onSuccess?: (values: FormValues) => void) => {
       }
 
       console.log("Successfully added clothing item");
-      queryClient.invalidateQueries({ queryKey: ["clothes"] });
+      await queryClient.invalidateQueries({ queryKey: ["clothes"] });
       form.reset();
       onSuccess?.(values);
     } catch (error) {
