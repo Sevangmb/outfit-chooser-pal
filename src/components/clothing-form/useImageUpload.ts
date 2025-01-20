@@ -32,7 +32,8 @@ export const useImageUpload = () => {
         .from('clothes')
         .getPublicUrl(filePath);
 
-      // Ne pas révoquer l'URL locale tant que l'upload n'est pas terminé
+      // Keep the local preview until we confirm the upload is successful
+      URL.revokeObjectURL(localPreviewUrl);
       setPreviewUrl(publicUrl);
       
       return publicUrl;
