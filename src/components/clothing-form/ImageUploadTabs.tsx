@@ -39,17 +39,35 @@ export const ImageUploadTabs = ({
     console.log("Erreur lors du chargement de l'image");
     setImageLoadError(true);
     toast.error("Erreur lors du chargement de l'image");
-  }, []);
+    // Réinitialiser le champ image du formulaire
+    form.setValue("image", null);
+  }, [form]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB max
+        toast.error("L'image est trop volumineuse (max 5MB)");
+        return;
+      }
+
+      if (!file.type.startsWith('image/')) {
+        toast.error("Le fichier doit être une image");
+        return;
+      }
+
       console.log("Fichier sélectionné:", file.name);
       setSelectedFile(file);
-      const imageUrl = await onFileUpload(file);
-      if (imageUrl) {
-        console.log("URL de l'image enregistrée:", imageUrl);
-        form.setValue("image", imageUrl, { shouldValidate: true });
+      try {
+        const imageUrl = await onFileUpload(file);
+        if (imageUrl) {
+          console.log("URL de l'image enregistrée:", imageUrl);
+          form.setValue("image", imageUrl, { shouldValidate: true });
+        }
+      } catch (error) {
+        console.error("Erreur lors du téléchargement:", error);
+        toast.error("Erreur lors du téléchargement de l'image");
+        setSelectedFile(null);
       }
     }
   };
