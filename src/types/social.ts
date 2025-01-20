@@ -8,7 +8,7 @@ export interface Follower {
   follower_id: string;
   following_id: string;
   created_at: string;
-  profile?: {
+  profile: {
     email: string;
   }
 }

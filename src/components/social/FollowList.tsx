@@ -17,7 +17,7 @@ export const FollowList = ({ userId }: FollowListProps) => {
         .from("followers")
         .select(`
           *,
-          profile:profiles(email)
+          profile:profiles!followers_follower_id_fkey(email)
         `)
         .eq("following_id", userId);
 
@@ -33,7 +33,7 @@ export const FollowList = ({ userId }: FollowListProps) => {
         .from("followers")
         .select(`
           *,
-          profile:profiles(email)
+          profile:profiles!followers_following_id_fkey(email)
         `)
         .eq("follower_id", userId);
 
