@@ -46,51 +46,63 @@ export const OutfitFeed = () => {
     queryFn: async ({ pageParam }) => {
       console.log("Fetching outfits for feed, page:", pageParam);
       
-      // First, fetch outfits with their clothes
-      const { data: outfitsData, error: outfitsError } = await supabase
-        .from("outfits")
-        .select(`
-          *,
-          clothes:outfit_clothes(
-            clothes(id, name, category, color, image)
-          )
-        `)
-        .order("created_at", { ascending: false })
-        .range(pageParam * ITEMS_PER_PAGE, (pageParam + 1) * ITEMS_PER_PAGE - 1);
+      try {
+        // First, fetch outfits with their clothes
+        const { data: outfitsData, error: outfitsError } = await supabase
+          .from("outfits")
+          .select(`
+            *,
+            clothes:outfit_clothes(
+              clothes(id, name, category, color, image)
+            )
+          `)
+          .order("created_at", { ascending: false })
+          .range(pageParam * ITEMS_PER_PAGE, (pageParam + 1) * ITEMS_PER_PAGE - 1);
 
-      if (outfitsError) {
-        console.error("Error fetching outfits:", outfitsError);
-        throw outfitsError;
+        if (outfitsError) {
+          console.error("Error fetching outfits:", outfitsError);
+          throw outfitsError;
+        }
+
+        if (!outfitsData) {
+          return {
+            outfits: [],
+            nextPage: null
+          };
+        }
+
+        // Then, fetch profiles for all user_ids
+        const userIds = outfitsData.map((outfit: any) => outfit.user_id);
+        const { data: profiles, error: profilesError } = await supabase
+          .from("profiles")
+          .select("id, email")
+          .in("id", userIds);
+
+        if (profilesError) {
+          console.error("Error fetching profiles:", profilesError);
+          throw profilesError;
+        }
+
+        // Create a map of user_id to email
+        const emailMap = new Map(profiles?.map((p) => [p.id, p.email]));
+
+        // Combine the data
+        const formattedOutfits = outfitsData.map((outfit: any) => ({
+          ...outfit,
+          user_email: emailMap.get(outfit.user_id),
+          clothes: outfit.clothes.map((item: any) => ({
+            clothes: item.clothes,
+          })),
+        }));
+
+        return {
+          outfits: formattedOutfits,
+          nextPage: outfitsData.length === ITEMS_PER_PAGE ? (pageParam as number) + 1 : null,
+        };
+      } catch (error) {
+        console.error("Error in queryFn:", error);
+        throw error;
       }
-
-      // Then, fetch profiles for all user_ids
-      const userIds = outfitsData.map((outfit: any) => outfit.user_id);
-      const { data: profiles, error: profilesError } = await supabase
-        .from("profiles")
-        .select("id, email")
-        .in("id", userIds);
-
-      if (profilesError) {
-        console.error("Error fetching profiles:", profilesError);
-        throw profilesError;
-      }
-
-      // Create a map of user_id to email
-      const emailMap = new Map(profiles?.map((p) => [p.id, p.email]));
-
-      // Combine the data
-      const formattedOutfits = outfitsData.map((outfit: any) => ({
-        ...outfit,
-        user_email: emailMap.get(outfit.user_id),
-        clothes: outfit.clothes.map((item: any) => ({
-          clothes: item.clothes,
-        })),
-      }));
-
-      return {
-        outfits: formattedOutfits,
-        nextPage: outfitsData.length === ITEMS_PER_PAGE ? pageParam + 1 : null,
-      };
     },
     getNextPageParam: (lastPage) => lastPage.nextPage,
   });
