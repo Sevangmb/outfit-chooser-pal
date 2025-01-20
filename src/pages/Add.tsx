@@ -1,4 +1,3 @@
-import { Navigation } from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Plus, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -8,7 +7,6 @@ const Add = () => {
 
   return (
     <div className="min-h-screen bg-secondary/30">
-      <Navigation />
       <div className="container py-8 px-4 mx-auto mt-16">
         <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6">
           <div className="rounded-full bg-primary/10 p-6">

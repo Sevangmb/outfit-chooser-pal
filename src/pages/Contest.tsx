@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Navigation } from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { ThumbsUp, ThumbsDown } from "lucide-react";
 import { toast } from "sonner";
@@ -116,7 +115,6 @@ const Contest = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-secondary/30">
-        <Navigation />
         <div className="container py-8 mt-16">
           <div className="text-center text-primary animate-pulse">
             Chargement du concours...
@@ -129,7 +127,6 @@ const Contest = () => {
   if (!outfits.length) {
     return (
       <div className="min-h-screen bg-secondary/30">
-        <Navigation />
         <div className="container py-8 mt-16">
           <div className="text-center text-primary">
             Aucun ensemble à noter pour le moment
@@ -144,7 +141,6 @@ const Contest = () => {
 
   return (
     <div className="min-h-screen bg-secondary/30">
-      <Navigation />
       <div className="container py-8 mt-16">
         <h1 className="text-2xl font-bold text-primary mb-8 text-center">
           Concours des plus beaux ensembles
