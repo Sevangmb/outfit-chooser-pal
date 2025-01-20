@@ -6,6 +6,7 @@ import { UseFormReturn } from "react-hook-form";
 import { FormValues } from "../AddClothingForm";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Palette, Tag, Shirt, Box, Ruler, Scissors } from "lucide-react";
 
 interface ClothingFormFieldsProps {
   form: UseFormReturn<FormValues>;
@@ -56,7 +57,10 @@ export const ClothingFormFields = ({ form }: ClothingFormFieldsProps) => {
         name="name"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Nom</FormLabel>
+            <FormLabel className="flex items-center gap-2">
+              <Tag className="h-4 w-4" />
+              Nom
+            </FormLabel>
             <FormControl>
               <Input placeholder="T-shirt blanc" {...field} />
             </FormControl>
@@ -70,7 +74,10 @@ export const ClothingFormFields = ({ form }: ClothingFormFieldsProps) => {
         name="category"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Catégorie</FormLabel>
+            <FormLabel className="flex items-center gap-2">
+              <Shirt className="h-4 w-4" />
+              Catégorie
+            </FormLabel>
             <Select onValueChange={field.onChange} defaultValue={field.value}>
               <FormControl>
                 <SelectTrigger>
@@ -95,7 +102,10 @@ export const ClothingFormFields = ({ form }: ClothingFormFieldsProps) => {
         name="subcategory"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Sous-catégorie</FormLabel>
+            <FormLabel className="flex items-center gap-2">
+              <Box className="h-4 w-4" />
+              Sous-catégorie
+            </FormLabel>
             <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!form.watch('category')}>
               <FormControl>
                 <SelectTrigger>
@@ -120,7 +130,10 @@ export const ClothingFormFields = ({ form }: ClothingFormFieldsProps) => {
         name="brand"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Marque</FormLabel>
+            <FormLabel className="flex items-center gap-2">
+              <Tag className="h-4 w-4" />
+              Marque
+            </FormLabel>
             <FormControl>
               <Input placeholder="Nike, Zara, etc." {...field} />
             </FormControl>
@@ -134,9 +147,25 @@ export const ClothingFormFields = ({ form }: ClothingFormFieldsProps) => {
         name="color"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Couleur principale</FormLabel>
+            <FormLabel className="flex items-center gap-2">
+              <Palette className="h-4 w-4" />
+              Couleur principale
+            </FormLabel>
             <FormControl>
-              <Input placeholder="Blanc, Noir, etc." {...field} />
+              <div className="flex gap-2">
+                <Input 
+                  type="color" 
+                  className="w-12 h-10 p-1 cursor-pointer" 
+                  {...field} 
+                />
+                <Input 
+                  type="text"
+                  placeholder="Blanc, Noir, etc." 
+                  className="flex-1"
+                  value={field.value}
+                  onChange={field.onChange}
+                />
+              </div>
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -148,9 +177,25 @@ export const ClothingFormFields = ({ form }: ClothingFormFieldsProps) => {
         name="secondary_color"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Couleur secondaire</FormLabel>
+            <FormLabel className="flex items-center gap-2">
+              <Palette className="h-4 w-4" />
+              Couleur secondaire
+            </FormLabel>
             <FormControl>
-              <Input placeholder="Optionnel" {...field} />
+              <div className="flex gap-2">
+                <Input 
+                  type="color" 
+                  className="w-12 h-10 p-1 cursor-pointer" 
+                  {...field} 
+                />
+                <Input 
+                  type="text"
+                  placeholder="Optionnel" 
+                  className="flex-1"
+                  value={field.value || ''}
+                  onChange={field.onChange}
+                />
+              </div>
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -162,7 +207,10 @@ export const ClothingFormFields = ({ form }: ClothingFormFieldsProps) => {
         name="size"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Taille</FormLabel>
+            <FormLabel className="flex items-center gap-2">
+              <Ruler className="h-4 w-4" />
+              Taille
+            </FormLabel>
             <FormControl>
               <Input placeholder="S, M, L, 42, etc." {...field} />
             </FormControl>
@@ -176,7 +224,10 @@ export const ClothingFormFields = ({ form }: ClothingFormFieldsProps) => {
         name="material"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Matière</FormLabel>
+            <FormLabel className="flex items-center gap-2">
+              <Scissors className="h-4 w-4" />
+              Matière
+            </FormLabel>
             <Select onValueChange={field.onChange} defaultValue={field.value}>
               <FormControl>
                 <SelectTrigger>
