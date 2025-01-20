@@ -9,28 +9,30 @@ export const useImageUpload = () => {
   const verifyImageUrl = async (url: string): Promise<boolean> => {
     try {
       console.log("Verifying image URL:", url);
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 seconds timeout
-
-      const response = await fetch(url, {
-        signal: controller.signal,
-        method: 'HEAD' // Only fetch headers, not the full image
-      });
-
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        throw new Error(`Image not accessible: ${response.status}`);
+      
+      // Pour les URLs blob, on les considère valides car créées localement
+      if (url.startsWith('blob:')) {
+        console.log("URL blob détectée, considérée comme valide");
+        return true;
       }
 
-      const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.startsWith("image/")) {
-        throw new Error("URL does not point to a valid image");
+      // Pour les URLs Supabase Storage, on les considère valides
+      if (url.includes('supabase.co/storage')) {
+        console.log("URL Supabase Storage détectée, considérée comme valide");
+        return true;
+      }
+
+      // Pour les autres URLs, on vérifie le format
+      try {
+        new URL(url);
+      } catch (e) {
+        console.error("Format d'URL invalide:", e);
+        return false;
       }
 
       return true;
     } catch (error) {
-      console.error("Error verifying image URL:", error);
+      console.error("Erreur lors de la vérification de l'URL:", error);
       return false;
     }
   };
@@ -38,7 +40,7 @@ export const useImageUpload = () => {
   const handleImageUpload = async (file: File) => {
     try {
       setIsUploading(true);
-      toast.info("Téléchargement de l'image en cours...");
+      console.log("Téléchargement de l'image en cours...");
       
       // Validate file type
       if (!file.type.startsWith('image/')) {
@@ -56,33 +58,35 @@ export const useImageUpload = () => {
       // Create a local preview URL
       const localPreviewUrl = URL.createObjectURL(file);
       setPreviewUrl(localPreviewUrl);
-      toast.info("Aperçu de l'image généré");
 
       const fileExt = file.name.split('.').pop();
       const fileName = `${Math.random()}.${fileExt}`;
       const filePath = `${fileName}`;
 
       console.log("Uploading file:", filePath);
+      
+      // Upload to Supabase Storage
       const { error: uploadError, data } = await supabase.storage
         .from('clothes')
-        .upload(filePath, file);
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
       if (uploadError) {
-        throw uploadError;
+        console.error("Error uploading file:", uploadError);
+        toast.error("Erreur lors du téléchargement de l'image");
+        return null;
       }
 
       console.log("File uploaded successfully:", data);
+      
+      // Get the public URL
       const { data: { publicUrl } } = supabase.storage
         .from('clothes')
         .getPublicUrl(filePath);
 
-      // Verify the uploaded image is accessible with timeout
-      const isValid = await verifyImageUrl(publicUrl);
-      if (!isValid) {
-        throw new Error("Uploaded image is not accessible");
-      }
-
-      // Keep the local preview until we confirm the upload is successful
+      // Clean up the local preview URL
       URL.revokeObjectURL(localPreviewUrl);
       setPreviewUrl(publicUrl);
       
