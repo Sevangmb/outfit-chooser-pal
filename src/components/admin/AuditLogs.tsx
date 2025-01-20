@@ -30,9 +30,7 @@ export const AuditLogs = () => {
         .from('audit_logs')
         .select(`
           *,
-          admin:admin_id (
-            email:profiles!inner(email)
-          )
+          profiles!audit_logs_admin_id_fkey(email)
         `)
         .order('created_at', { ascending: false });
 
@@ -42,7 +40,7 @@ export const AuditLogs = () => {
 
       const formattedLogs = logsData.map((log: any) => ({
         ...log,
-        admin_email: log.admin?.email
+        admin_email: log.profiles?.email
       }));
 
       setLogs(formattedLogs);
