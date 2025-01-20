@@ -9,36 +9,44 @@ export const Navigation = () => {
   const navigate = useNavigate();
   const [unreadCount, setUnreadCount] = useState(0);
 
-  // Fetch notifications count with better error handling
+  // Fetch notifications count with better error handling and retry
   const { data: notificationsCount } = useQuery({
     queryKey: ["unread-notifications"],
     queryFn: async () => {
       console.log("Fetching notifications count...");
       
-      const { data: { session } } = await supabase.auth.getSession();
-      console.log("Current session:", session);
-      
-      if (!session) {
-        console.log("No session found, returning 0");
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log("Current session:", session);
+        
+        if (!session) {
+          console.log("No session found, returning 0");
+          return 0;
+        }
+
+        console.log("Fetching unread messages for user:", session.user.id);
+        const { count, error } = await supabase
+          .from("admin_messages")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", session.user.id)
+          .is("read_at", null);
+
+        if (error) {
+          console.error("Error fetching notifications:", error);
+          throw error;
+        }
+
+        console.log("Unread messages count:", count);
+        return count || 0;
+      } catch (error) {
+        console.error("Error in notification query:", error);
         return 0;
       }
-
-      console.log("Fetching unread messages for user:", session.user.id);
-      const { count, error } = await supabase
-        .from("admin_messages")
-        .select("*", { count: "exact" })
-        .eq("user_id", session.user.id)
-        .is("read_at", null);
-
-      if (error) {
-        console.error("Error fetching notifications:", error);
-        return 0;
-      }
-
-      console.log("Unread messages count:", count);
-      return count || 0;
     },
-    retry: false
+    retry: 3,
+    retryDelay: 1000,
+    staleTime: 30000,
+    refetchOnWindowFocus: true
   });
 
   return (
