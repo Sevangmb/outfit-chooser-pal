@@ -26,6 +26,11 @@ interface Outfit {
   }[];
 }
 
+interface PageData {
+  outfits: Outfit[];
+  nextPage: number | null;
+}
+
 export const OutfitFeed = () => {
   const { ref, inView } = useInView();
 
@@ -35,9 +40,10 @@ export const OutfitFeed = () => {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage
-  } = useInfiniteQuery({
+  } = useInfiniteQuery<PageData>({
     queryKey: ["outfits-feed"],
-    queryFn: async ({ pageParam = 0 }) => {
+    initialPageParam: 0,
+    queryFn: async ({ pageParam }) => {
       console.log("Fetching outfits for feed, page:", pageParam);
       
       // First, fetch outfits with their clothes
@@ -83,7 +89,7 @@ export const OutfitFeed = () => {
 
       return {
         outfits: formattedOutfits,
-        nextPage: outfitsData.length === ITEMS_PER_PAGE ? pageParam + 1 : undefined,
+        nextPage: outfitsData.length === ITEMS_PER_PAGE ? pageParam + 1 : null,
       };
     },
     getNextPageParam: (lastPage) => lastPage.nextPage,
