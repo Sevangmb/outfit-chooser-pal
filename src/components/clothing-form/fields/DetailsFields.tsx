@@ -12,6 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Check, ChevronsUpDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface DetailsFieldsProps {
   form: UseFormReturn<FormValues>;
