@@ -39,6 +39,27 @@ export type Database = {
         }
         Relationships: []
       }
+      followers: {
+        Row: {
+          created_at: string
+          follower_id: string
+          following_id: string
+          id: number
+        }
+        Insert: {
+          created_at?: string
+          follower_id: string
+          following_id: string
+          id?: number
+        }
+        Update: {
+          created_at?: string
+          follower_id?: string
+          following_id?: string
+          id?: number
+        }
+        Relationships: []
+      }
       friendships: {
         Row: {
           created_at: string

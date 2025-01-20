@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Navigation } from "@/components/Navigation";
+import { FollowList } from "@/components/social/FollowList";
+import { useQuery } from "@tanstack/react-query";
 
 interface Profile {
   id: string;
@@ -13,6 +15,30 @@ interface Profile {
 const Profile = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const { data: followStats } = useQuery({
+    queryKey: ["followStats", profile?.id],
+    queryFn: async () => {
+      if (!profile?.id) return { followers_count: 0, following_count: 0 };
+
+      const [followers, following] = await Promise.all([
+        supabase
+          .from("followers")
+          .select("*", { count: "exact" })
+          .eq("following_id", profile.id),
+        supabase
+          .from("followers")
+          .select("*", { count: "exact" })
+          .eq("follower_id", profile.id)
+      ]);
+
+      return {
+        followers_count: followers.count || 0,
+        following_count: following.count || 0
+      };
+    },
+    enabled: !!profile?.id
+  });
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -67,12 +93,20 @@ const Profile = () => {
               <p className="text-muted-foreground">
                 Membre depuis le {new Date(profile?.created_at || "").toLocaleDateString()}
               </p>
+              <div className="flex gap-4 justify-center mt-2">
+                <div className="text-center">
+                  <div className="text-lg font-semibold">{followStats?.followers_count}</div>
+                  <div className="text-sm text-muted-foreground">Abonnés</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-semibold">{followStats?.following_count}</div>
+                  <div className="text-sm text-muted-foreground">Abonnements</div>
+                </div>
+              </div>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {/* Ici nous pouvons ajouter plus d'informations sur le profil si nécessaire */}
-            </div>
+            {profile && <FollowList userId={profile.id} />}
           </CardContent>
         </Card>
       </div>
