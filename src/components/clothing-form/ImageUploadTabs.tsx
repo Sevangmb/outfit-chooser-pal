@@ -38,7 +38,7 @@ export const ImageUploadTabs = ({
       setDisplayUrl(imageValue);
       setImageLoadError(false);
     }
-  }, [form.getValues("image")]);
+  }, [form]);
 
   const handleImageLoad = useCallback(() => {
     console.log("Image chargée avec succès");
@@ -66,6 +66,7 @@ export const ImageUploadTabs = ({
 
       console.log("Fichier sélectionné:", file.name);
       setSelectedFile(file);
+      setImageLoadError(false);
       
       try {
         const imageUrl = await onFileUpload(file);
@@ -75,7 +76,6 @@ export const ImageUploadTabs = ({
           console.log("Setting image URL in form:", imageUrl);
           form.setValue("image", imageUrl, { shouldValidate: true });
           setDisplayUrl(imageUrl);
-          setImageLoadError(false);
         } else {
           throw new Error("URL de l'image non reçue");
         }
@@ -131,7 +131,7 @@ export const ImageUploadTabs = ({
             <img
               src={displayUrl}
               alt="Aperçu"
-              className={`object-cover w-full h-full ${imageLoadError ? 'opacity-50' : ''}`}
+              className={`object-cover w-full h-full ${imageLoadError ? 'hidden' : ''}`}
               onError={handleImageError}
               onLoad={handleImageLoad}
             />
