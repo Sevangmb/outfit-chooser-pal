@@ -24,12 +24,11 @@ export const ImageAnalysisButton = ({ form, previewUrl, isUploading }: ImageAnal
       // Analyze image for category
       const analysis = await analyzeImage(previewUrl);
       if (analysis?.category) {
-        form.setValue("category", analysis.category);
+        form.setValue("category", analysis.category, { shouldValidate: true });
         toast.success(`Catégorie détectée : ${analysis.category}`);
       }
 
       // Extract dominant color
-      toast.info("Détection de la couleur principale...");
       const dominantColor = await extractDominantColor(previewUrl);
       if (dominantColor && dominantColor !== '#000000') {
         console.log('Setting color to:', dominantColor);

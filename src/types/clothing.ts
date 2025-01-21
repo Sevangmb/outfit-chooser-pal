@@ -14,7 +14,7 @@ export const clothingFormSchema = z.object({
   material: z.string().optional(),
   notes: z.string().optional(),
   image: z.string().nullable(),
-  imageUrl: z.string().url().optional(),
+  imageUrl: z.string().optional(),
 });
 
 export type FormValues = z.infer<typeof clothingFormSchema>;

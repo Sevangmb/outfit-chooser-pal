@@ -125,7 +125,7 @@ export const ImageUploadTabs = ({
           </Alert>
         )}
 
-        {displayUrl && (
+        {displayUrl && !imageLoadError && (
           <div className="relative aspect-square w-full max-w-sm mx-auto overflow-hidden rounded-lg border">
             <img
               src={displayUrl}
@@ -134,11 +134,6 @@ export const ImageUploadTabs = ({
               onError={handleImageError}
               onLoad={handleImageLoad}
             />
-            {imageLoadError && (
-              <div className="absolute inset-0 flex items-center justify-center bg-background/50">
-                <p className="text-destructive">Erreur lors du chargement de l'image</p>
-              </div>
-            )}
           </div>
         )}
       </div>
