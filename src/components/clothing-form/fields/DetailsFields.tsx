@@ -21,27 +21,37 @@ export const DetailsFields = ({ form }: DetailsFieldsProps) => {
   const [openBrand, setOpenBrand] = useState(false);
   const [openMaterial, setOpenMaterial] = useState(false);
 
-  const { data: materials, isLoading: materialsLoading } = useQuery({
+  const { data: materials = [], isLoading: materialsLoading } = useQuery({
     queryKey: ['materials'],
     queryFn: async () => {
+      console.log("Fetching materials...");
       const { data, error } = await supabase
         .from('clothing_materials')
         .select('*')
         .order('name');
-      if (error) throw error;
-      return data;
+      if (error) {
+        console.error("Error fetching materials:", error);
+        throw error;
+      }
+      console.log("Materials fetched:", data);
+      return data || [];
     }
   });
 
-  const { data: brands, isLoading: brandsLoading } = useQuery({
+  const { data: brands = [], isLoading: brandsLoading } = useQuery({
     queryKey: ['brands'],
     queryFn: async () => {
+      console.log("Fetching brands...");
       const { data, error } = await supabase
         .from('clothing_brands')
         .select('*')
         .order('name');
-      if (error) throw error;
-      return data;
+      if (error) {
+        console.error("Error fetching brands:", error);
+        throw error;
+      }
+      console.log("Brands fetched:", data);
+      return data || [];
     }
   });
 
@@ -78,6 +88,7 @@ export const DetailsFields = ({ form }: DetailsFieldsProps) => {
                     role="combobox"
                     aria-expanded={openBrand}
                     className="w-full justify-between"
+                    disabled={brandsLoading}
                   >
                     {field.value
                       ? brands?.find((brand) => brand.name === field.value)?.name
@@ -91,7 +102,7 @@ export const DetailsFields = ({ form }: DetailsFieldsProps) => {
                   <CommandInput placeholder="Rechercher une marque..." />
                   <CommandEmpty>Aucune marque trouvée.</CommandEmpty>
                   <CommandGroup>
-                    {brands?.map((brand) => (
+                    {(brands || []).map((brand) => (
                       <CommandItem
                         key={brand.id}
                         value={brand.name}
@@ -135,6 +146,7 @@ export const DetailsFields = ({ form }: DetailsFieldsProps) => {
                     role="combobox"
                     aria-expanded={openMaterial}
                     className="w-full justify-between"
+                    disabled={materialsLoading}
                   >
                     {field.value
                       ? materials?.find((material) => material.name === field.value)?.name
@@ -148,7 +160,7 @@ export const DetailsFields = ({ form }: DetailsFieldsProps) => {
                   <CommandInput placeholder="Rechercher une matière..." />
                   <CommandEmpty>Aucune matière trouvée.</CommandEmpty>
                   <CommandGroup>
-                    {materials?.map((material) => (
+                    {(materials || []).map((material) => (
                       <CommandItem
                         key={material.id}
                         value={material.name}
