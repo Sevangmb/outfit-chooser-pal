@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { FormValidationErrors } from "./clothing-form/FormValidationErrors";
 import { ImageUploadTabs } from "./clothing-form/ImageUploadTabs";
-import { ImageAnalysisButton } from "./clothing-form/ImageAnalysisButton";
 import { Button } from "./ui/button";
 import { Loader2 } from "lucide-react";
 import { BasicFields } from "./clothing-form/fields/BasicFields";
@@ -102,23 +101,6 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
               }
             }}
           />
-
-          {previewUrl && (
-            <div className="space-y-4">
-              <div className="aspect-square w-full max-w-sm mx-auto overflow-hidden rounded-lg border">
-                <img
-                  src={previewUrl}
-                  alt="Preview"
-                  className="object-cover w-full h-full"
-                />
-              </div>
-              <ImageAnalysisButton
-                form={form}
-                previewUrl={previewUrl}
-                isUploading={isUploading}
-              />
-            </div>
-          )}
 
           <div className="space-y-8 bg-background/50 backdrop-blur-sm rounded-lg border border-border p-6">
             <BasicFields form={form} />

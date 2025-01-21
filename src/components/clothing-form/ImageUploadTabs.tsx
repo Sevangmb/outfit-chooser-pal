@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useCallback, useState, useEffect } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { ImagePreview } from "./ImagePreview";
 
 interface ImageUploadTabsProps {
   form: UseFormReturn<FormValues>;
@@ -126,15 +127,13 @@ export const ImageUploadTabs = ({
         )}
 
         {displayUrl && !imageLoadError && (
-          <div className="relative aspect-square w-full max-w-sm mx-auto overflow-hidden rounded-lg border">
-            <img
-              src={displayUrl}
-              alt="Aperçu"
-              className="object-cover w-full h-full"
-              onError={handleImageError}
-              onLoad={handleImageLoad}
-            />
-          </div>
+          <ImagePreview
+            form={form}
+            previewUrl={displayUrl}
+            isUploading={isUploading}
+            onError={handleImageError}
+            onLoad={handleImageLoad}
+          />
         )}
       </div>
       <FormMessage />
