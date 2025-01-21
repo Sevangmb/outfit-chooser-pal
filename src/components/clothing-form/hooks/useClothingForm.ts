@@ -37,6 +37,11 @@ export const useClothingForm = (onSuccess?: (values: FormValues) => void) => {
     try {
       console.log("Submitting form with values:", values);
       
+      if (!values.image) {
+        toast.error("Une image est requise");
+        return;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
@@ -44,19 +49,25 @@ export const useClothingForm = (onSuccess?: (values: FormValues) => void) => {
         return;
       }
 
-      const { error } = await supabase.from("clothes").insert({
-        name: values.name,
-        category: values.category,
-        subcategory: values.subcategory || null,
-        brand: values.brand || null,
-        color: values.color,
-        secondary_color: values.secondary_color || null,
-        size: values.size || null,
-        material: values.material || null,
-        notes: values.notes || null,
-        image: values.image,
-        user_id: user.id,
-      });
+      console.log("Inserting into clothes table with user_id:", user.id);
+
+      const { data, error } = await supabase
+        .from("clothes")
+        .insert({
+          name: values.name,
+          category: values.category,
+          subcategory: values.subcategory || null,
+          brand: values.brand || null,
+          color: values.color,
+          secondary_color: values.secondary_color || null,
+          size: values.size || null,
+          material: values.material || null,
+          notes: values.notes || null,
+          image: values.image,
+          user_id: user.id,
+        })
+        .select()
+        .single();
 
       if (error) {
         console.error("Error adding clothing:", error);
@@ -64,7 +75,7 @@ export const useClothingForm = (onSuccess?: (values: FormValues) => void) => {
         return;
       }
 
-      console.log("Successfully added clothing item");
+      console.log("Successfully added clothing item:", data);
       await queryClient.invalidateQueries({ queryKey: ["clothes"] });
       form.reset();
       onSuccess?.(values);

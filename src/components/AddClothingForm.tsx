@@ -12,7 +12,6 @@ import { BasicFields } from "./clothing-form/fields/BasicFields";
 import { CategoryFields } from "./clothing-form/fields/CategoryFields";
 import { ColorFields } from "./clothing-form/fields/ColorFields";
 import { DetailsFields } from "./clothing-form/fields/DetailsFields";
-import { supabase } from "@/integrations/supabase/client";
 
 interface AddClothingFormProps {
   onSuccess?: () => void;
@@ -22,46 +21,10 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
   const navigate = useNavigate();
   
   const { form, onSubmit, isValid, isSubmitting, errors } = useClothingForm(async (values) => {
-    try {
-      console.log("Form submitted with values:", values);
-      
-      if (!values.image) {
-        toast.error("Une image est requise");
-        return;
-      }
-
-      // Insertion dans la table clothes
-      const { data, error } = await supabase
-        .from('clothes')
-        .insert({
-          name: values.name,
-          category: values.category,
-          subcategory: values.subcategory || null,
-          brand: values.brand || null,
-          color: values.color,
-          secondary_color: values.secondary_color || null,
-          size: values.size || null,
-          material: values.material || null,
-          notes: values.notes || null,
-          image: values.image
-        })
-        .select()
-        .single();
-
-      if (error) {
-        console.error("Error inserting into clothes table:", error);
-        toast.error("Une erreur est survenue lors de l'ajout du vêtement");
-        return;
-      }
-
-      console.log("Successfully added clothing item:", data);
-      toast.success(`Le vêtement "${values.name}" a été ajouté à votre garde-robe`);
-      navigate("/closet");
-      onSuccess?.();
-    } catch (error) {
-      console.error("Error in form success callback:", error);
-      toast.error("Une erreur est survenue lors de l'ajout du vêtement");
-    }
+    console.log("Form submitted successfully with values:", values);
+    toast.success(`Le vêtement "${values.name}" a été ajouté à votre garde-robe`);
+    navigate("/closet");
+    onSuccess?.();
   });
   
   const { isUploading, previewUrl, uploadError, handleImageUpload, resetPreview } = useImageUpload();
