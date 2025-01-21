@@ -8,14 +8,12 @@ export const clothingFormSchema = z.object({
     .min(1, "La catégorie est requise"),
   subcategory: z.string().optional(),
   brand: z.string().optional(),
-  color: z.string()
-    .min(2, "La couleur principale est requise"),
+  color: z.string().optional(),
   secondary_color: z.string().optional(),
   size: z.string().optional(),
   material: z.string().optional(),
   notes: z.string().optional(),
-  image: z.string().nullable()
-    .refine((val) => val !== null, "L'image est requise"),
+  image: z.string().nullable(),
   imageUrl: z.string().url().optional(),
 });
 

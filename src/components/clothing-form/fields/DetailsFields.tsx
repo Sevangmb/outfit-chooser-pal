@@ -18,7 +18,6 @@ interface DetailsFieldsProps {
 }
 
 export const DetailsFields = ({ form }: DetailsFieldsProps) => {
-  const [openBrand, setOpenBrand] = useState(false);
   const [openMaterial, setOpenMaterial] = useState(false);
 
   const { data: materials = [], isLoading: materialsLoading } = useQuery({
@@ -38,23 +37,6 @@ export const DetailsFields = ({ form }: DetailsFieldsProps) => {
     }
   });
 
-  const { data: brands = [], isLoading: brandsLoading } = useQuery({
-    queryKey: ['brands'],
-    queryFn: async () => {
-      console.log("Fetching brands...");
-      const { data, error } = await supabase
-        .from('clothing_brands')
-        .select('*')
-        .order('name');
-      if (error) {
-        console.error("Error fetching brands:", error);
-        throw error;
-      }
-      console.log("Brands fetched:", data);
-      return data || [];
-    }
-  });
-
   return (
     <>
       <FormField
@@ -69,61 +51,6 @@ export const DetailsFields = ({ form }: DetailsFieldsProps) => {
             <FormControl>
               <Input placeholder="S, M, L, 42, etc." {...field} />
             </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={form.control}
-        name="brand"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Marque</FormLabel>
-            <Popover open={openBrand} onOpenChange={setOpenBrand}>
-              <PopoverTrigger asChild>
-                <FormControl>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={openBrand}
-                    className="w-full justify-between"
-                    disabled={brandsLoading}
-                  >
-                    {field.value
-                      ? brands?.find((brand) => brand.name === field.value)?.name
-                      : "Sélectionner une marque"}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </FormControl>
-              </PopoverTrigger>
-              <PopoverContent className="w-full p-0">
-                <Command>
-                  <CommandInput placeholder="Rechercher une marque..." />
-                  <CommandEmpty>Aucune marque trouvée.</CommandEmpty>
-                  <CommandGroup>
-                    {(brands || []).map((brand) => (
-                      <CommandItem
-                        key={brand.id}
-                        value={brand.name}
-                        onSelect={() => {
-                          form.setValue("brand", brand.name);
-                          setOpenBrand(false);
-                        }}
-                      >
-                        <Check
-                          className={cn(
-                            "mr-2 h-4 w-4",
-                            field.value === brand.name ? "opacity-100" : "opacity-0"
-                          )}
-                        />
-                        {brand.name}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </Command>
-              </PopoverContent>
-            </Popover>
             <FormMessage />
           </FormItem>
         )}

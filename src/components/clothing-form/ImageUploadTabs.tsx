@@ -33,7 +33,6 @@ export const ImageUploadTabs = ({
 
   useEffect(() => {
     const imageValue = form.getValues("image");
-    console.log("Image value changed:", imageValue);
     if (imageValue) {
       setDisplayUrl(imageValue);
       setImageLoadError(false);
@@ -131,7 +130,7 @@ export const ImageUploadTabs = ({
             <img
               src={displayUrl}
               alt="Aperçu"
-              className={`object-cover w-full h-full ${imageLoadError ? 'hidden' : ''}`}
+              className="object-cover w-full h-full"
               onError={handleImageError}
               onLoad={handleImageLoad}
             />
