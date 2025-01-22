@@ -49,18 +49,25 @@ export const ImageUploadTabs = ({
     console.log("Erreur lors du chargement de l'image");
     setImageLoadError(true);
     toast.error("Erreur lors du chargement de l'image");
-  }, []);
+    // Reset the form image value when there's an error
+    form.setValue("image", null);
+    setDisplayUrl(null);
+  }, [form]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error("L'image est trop volumineuse (max 5MB)");
+    if (!file) return;
+
+    try {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast.error("Le fichier doit être une image");
         return;
       }
 
-      if (!file.type.startsWith('image/')) {
-        toast.error("Le fichier doit être une image");
+      // Validate file size (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("L'image est trop volumineuse (max 5MB)");
         return;
       }
 
@@ -68,24 +75,23 @@ export const ImageUploadTabs = ({
       setSelectedFile(file);
       setImageLoadError(false);
       
-      try {
-        const imageUrl = await onFileUpload(file);
-        console.log("Image URL received:", imageUrl);
-        
-        if (imageUrl) {
-          console.log("Setting image URL in form:", imageUrl);
-          form.setValue("image", imageUrl, { shouldValidate: true });
-          setDisplayUrl(imageUrl);
-        } else {
-          throw new Error("URL de l'image non reçue");
-        }
-      } catch (error) {
-        console.error("Erreur lors du téléchargement:", error);
-        toast.error("Erreur lors du téléchargement de l'image");
-        setSelectedFile(null);
-        form.setValue("image", null);
-        setDisplayUrl(null);
+      const imageUrl = await onFileUpload(file);
+      console.log("Image URL received:", imageUrl);
+      
+      if (imageUrl) {
+        console.log("Setting image URL in form:", imageUrl);
+        form.setValue("image", imageUrl, { shouldValidate: true });
+        setDisplayUrl(imageUrl);
+        toast.success("Image téléchargée avec succès");
+      } else {
+        throw new Error("URL de l'image non reçue");
       }
+    } catch (error) {
+      console.error("Erreur lors du téléchargement:", error);
+      toast.error("Erreur lors du téléchargement de l'image");
+      setSelectedFile(null);
+      form.setValue("image", null);
+      setDisplayUrl(null);
     }
   };
 

@@ -1,7 +1,9 @@
 export const validateImageFile = async (file: File): Promise<boolean> => {
   console.log("Validating image file:", file.name);
   
-  if (!file.type.startsWith('image/')) {
+  // Check MIME type
+  const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+  if (!validImageTypes.includes(file.type)) {
     console.error("Invalid file type:", file.type);
     return false;
   }
@@ -12,7 +14,19 @@ export const validateImageFile = async (file: File): Promise<boolean> => {
     return false;
   }
 
-  return true;
+  // Additional validation: check if file can be loaded as an image
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      console.log("Image validated successfully");
+      resolve(true);
+    };
+    img.onerror = () => {
+      console.error("Failed to load image");
+      resolve(false);
+    };
+    img.src = URL.createObjectURL(file);
+  });
 };
 
 export const verifyImageUrl = async (url: string): Promise<boolean> => {
@@ -28,7 +42,19 @@ export const verifyImageUrl = async (url: string): Promise<boolean> => {
       throw new Error('Not an image');
     }
 
-    return true;
+    // Additional validation: check if URL can be loaded as an image
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        console.log("Image URL validated successfully");
+        resolve(true);
+      };
+      img.onerror = () => {
+        console.error("Failed to load image from URL");
+        resolve(false);
+      };
+      img.src = url;
+    });
   } catch (error) {
     console.error("Error verifying image URL:", error);
     return false;
