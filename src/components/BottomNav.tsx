@@ -17,7 +17,6 @@ export const BottomNav = () => {
   const navigate = useNavigate();
   const currentPath = location.pathname;
 
-  // Fetch notifications count with better error handling and retry
   const { data: notificationsCount } = useQuery({
     queryKey: ["unread-notifications"],
     queryFn: async () => {
@@ -62,27 +61,31 @@ export const BottomNav = () => {
       icon: Home,
       label: "Accueil",
       path: "/",
+      ariaLabel: "Aller à l'accueil",
     },
     {
       icon: Search,
       label: "Découvrir",
       path: "/discover",
+      ariaLabel: "Découvrir de nouvelles tenues",
     },
     {
       icon: PlusCircle,
       label: "",
       path: "/add",
+      ariaLabel: "Ajouter un vêtement",
     },
     {
       icon: ShoppingBag,
       label: "Placard",
       path: "/closet",
+      ariaLabel: "Voir mon placard",
     },
   ];
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border">
-      <div className="flex items-center justify-around h-16">
+      <div className="flex items-center justify-around h-16 max-w-md mx-auto">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = currentPath === tab.path;
@@ -93,16 +96,16 @@ export const BottomNav = () => {
               key={tab.path}
               onClick={() => navigate(tab.path)}
               className={cn(
-                "flex flex-col items-center justify-center w-full h-full",
+                "flex flex-col items-center justify-center w-full h-full transition-colors",
                 isAdd && "relative -top-3"
               )}
-              aria-label={tab.label || "Créer"}
+              aria-label={tab.ariaLabel}
               role="tab"
               aria-selected={isActive}
             >
               <Icon
                 className={cn(
-                  "h-6 w-6 mb-1",
+                  "h-6 w-6 mb-1 transition-colors",
                   isActive
                     ? "text-primary"
                     : "text-muted-foreground",
@@ -112,7 +115,7 @@ export const BottomNav = () => {
               {tab.label && (
                 <span
                   className={cn(
-                    "text-xs",
+                    "text-xs transition-colors",
                     isActive
                       ? "text-primary font-medium"
                       : "text-muted-foreground"
@@ -125,24 +128,23 @@ export const BottomNav = () => {
           );
         })}
 
-        {/* Profile Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
               className={cn(
-                "flex flex-col items-center justify-center w-full h-full relative",
+                "flex flex-col items-center justify-center w-full h-full relative transition-colors",
                 currentPath === "/profile" && "text-primary"
               )}
-              aria-label="Profile"
+              aria-label="Menu profil"
               role="tab"
               aria-selected={currentPath === "/profile"}
             >
               <User className={cn(
-                "h-6 w-6 mb-1",
+                "h-6 w-6 mb-1 transition-colors",
                 currentPath === "/profile" ? "text-primary" : "text-muted-foreground"
               )} />
               <span className={cn(
-                "text-xs",
+                "text-xs transition-colors",
                 currentPath === "/profile" ? "text-primary font-medium" : "text-muted-foreground"
               )}>
                 Profil
