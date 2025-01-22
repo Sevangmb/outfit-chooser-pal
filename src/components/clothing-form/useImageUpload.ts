@@ -1,23 +1,19 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { validateImageFile } from "@/utils/imageValidation";
 import { uploadImageToSupabase } from "@/services/imageUploadService";
 
 export const useImageUpload = () => {
   const [isUploading, setIsUploading] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [uploadError, setUploadError] = useState<string | null>(null);
 
-  const handleImageUpload = useCallback(async (file: File) => {
+  const uploadImage = async (file: File): Promise<string | null> => {
+    setIsUploading(true);
+    console.log("Début de l'upload de l'image:", file.name);
+
     try {
-      setIsUploading(true);
-      setUploadError(null);
-      console.log("Début du processus d'upload pour:", file.name);
-
       const isValid = await validateImageFile(file);
       if (!isValid) {
-        setUploadError("Format d'image invalide ou taille trop importante");
-        toast.error("Format d'image invalide ou taille trop importante");
+        toast.error("Format d'image invalide. Utilisez JPG, PNG, GIF ou WEBP.");
         return null;
       }
 
@@ -26,44 +22,30 @@ export const useImageUpload = () => {
       console.log("URL publique reçue:", publicUrl);
       
       if (!publicUrl) {
-        setUploadError("Erreur lors du téléchargement de l'image");
-        toast.error("Erreur lors du téléchargement de l'image");
-        return null;
+        throw new Error("Échec de l'upload de l'image");
       }
 
-      // Create a new URL object to validate the URL
-      try {
-        new URL(publicUrl);
-      } catch (e) {
-        console.error("URL invalide reçue:", publicUrl);
-        setUploadError("URL de l'image invalide");
-        toast.error("URL de l'image invalide");
-        return null;
-      }
-
-      setPreviewUrl(publicUrl);
       toast.success("Image téléchargée avec succès");
       return publicUrl;
+
     } catch (error) {
-      console.error("Erreur inattendue lors de l'upload:", error);
-      setUploadError("Erreur lors du téléchargement de l'image");
-      toast.error("Erreur lors du téléchargement de l'image");
+      console.error("Erreur lors de l'upload:", error);
+      
+      // Message d'erreur spécifique pour le rejet par l'utilisateur
+      if (error instanceof Error && error.message.includes("rejected")) {
+        toast.error("Upload annulé par l'utilisateur");
+      } else {
+        toast.error("Erreur lors de l'upload de l'image");
+      }
+      
       return null;
     } finally {
       setIsUploading(false);
     }
-  }, []);
-
-  const resetPreview = useCallback(() => {
-    setPreviewUrl(null);
-    setUploadError(null);
-  }, []);
+  };
 
   return {
-    isUploading,
-    previewUrl,
-    uploadError,
-    handleImageUpload,
-    resetPreview,
+    uploadImage,
+    isUploading
   };
 };
