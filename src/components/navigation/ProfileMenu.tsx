@@ -10,6 +10,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useNotifications } from "@/hooks/useNotifications";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface ProfileMenuProps {
   isActive: boolean;
@@ -18,6 +20,24 @@ interface ProfileMenuProps {
 export const ProfileMenu = ({ isActive }: ProfileMenuProps) => {
   const navigate = useNavigate();
   const { data: notificationsCount } = useNotifications();
+
+  const handleLogout = async () => {
+    try {
+      console.log("Attempting to sign out...");
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Error signing out:", error);
+        toast.error("Erreur lors de la déconnexion");
+        return;
+      }
+      console.log("Successfully signed out");
+      toast.success("Vous avez été déconnecté");
+      navigate("/landing");
+    } catch (error) {
+      console.error("Unexpected error during sign out:", error);
+      toast.error("Une erreur inattendue s'est produite");
+    }
+  };
 
   return (
     <DropdownMenu>
@@ -60,6 +80,10 @@ export const ProfileMenu = ({ isActive }: ProfileMenuProps) => {
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => navigate("/notifications")}>
           Notifications {notificationsCount > 0 && `(${notificationsCount})`}
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={handleLogout} className="text-destructive">
+          Déconnexion
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
