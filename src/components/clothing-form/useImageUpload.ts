@@ -2,7 +2,6 @@ import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import { validateImageFile } from "@/utils/imageValidation";
 import { uploadImageToSupabase } from "@/services/imageUploadService";
-import { optimizeImage } from "@/utils/imageOptimization";
 
 export const useImageUpload = () => {
   const [isUploading, setIsUploading] = useState(false);
@@ -22,13 +21,8 @@ export const useImageUpload = () => {
         return null;
       }
 
-      const optimizedFile = await optimizeImage(file);
-      console.log("Image optimisée:", {
-        tailleOriginale: file.size,
-        tailleOptimisée: optimizedFile.size
-      });
-
-      const publicUrl = await uploadImageToSupabase(optimizedFile);
+      // Upload direct sans optimisation
+      const publicUrl = await uploadImageToSupabase(file);
       console.log("URL publique reçue:", publicUrl);
       
       if (!publicUrl) {
