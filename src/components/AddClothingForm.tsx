@@ -1,5 +1,5 @@
 import { Form } from "@/components/ui/form";
-import { useImageUpload } from "./clothing-form/useImageUpload";
+import { useImageUpload } from "@/hooks/useImageUpload";
 import { useClothingForm } from "./clothing-form/hooks/useClothingForm";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
