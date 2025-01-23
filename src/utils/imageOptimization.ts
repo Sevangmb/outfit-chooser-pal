@@ -1,6 +1,6 @@
 export const optimizeImage = async (file: File, maxWidth = 1200, quality = 0.8): Promise<File> => {
   console.log("Starting image optimization for:", file.name);
-  
+
   return new Promise((resolve, reject) => {
     const img = new Image();
     const canvas = document.createElement('canvas');
@@ -10,7 +10,7 @@ export const optimizeImage = async (file: File, maxWidth = 1200, quality = 0.8):
       // Calculate new dimensions while maintaining aspect ratio
       let width = img.width;
       let height = img.height;
-      
+
       if (width > maxWidth) {
         height = (height * maxWidth) / width;
         width = maxWidth;
@@ -26,7 +26,7 @@ export const optimizeImage = async (file: File, maxWidth = 1200, quality = 0.8):
 
       // Draw and compress image
       ctx.drawImage(img, 0, 0, width, height);
-      
+
       // Convert to blob
       canvas.toBlob(
         (blob) => {
@@ -34,23 +34,23 @@ export const optimizeImage = async (file: File, maxWidth = 1200, quality = 0.8):
             reject(new Error("Failed to create blob"));
             return;
           }
-          
+
           // Create new file from blob
-          const optimizedFile = new File([blob], file.name, {
-            type: 'image/jpeg',
+          const optimizedFile = new File([blob], file.name.replace(/\.[^/.]+$/, ".png"), {
+            type: 'image/png',
             lastModified: Date.now(),
           });
-          
+
           console.log("Image optimization complete:", {
             originalSize: file.size,
             optimizedSize: optimizedFile.size,
             width,
             height
           });
-          
+
           resolve(optimizedFile);
         },
-        'image/jpeg',
+        'image/png',
         quality
       );
     };
