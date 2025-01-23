@@ -10,6 +10,8 @@ interface ClothingCardProps {
 }
 
 export const ClothingCard = ({ image, name, category, color }: ClothingCardProps) => {
+  console.log("Rendering ClothingCard with image:", image); // Debug log
+
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow border-secondary/50 hover:border-primary/30 bg-background/50 backdrop-blur-sm">
       <CardHeader className="p-0">
@@ -19,6 +21,11 @@ export const ClothingCard = ({ image, name, category, color }: ClothingCardProps
               src={image}
               alt={name}
               className="w-full h-full object-contain bg-secondary/30"
+              onError={(e) => {
+                console.error("Image load error:", e);
+                const imgElement = e.target as HTMLImageElement;
+                imgElement.src = "placeholder.svg"; // Fallback to placeholder if image fails to load
+              }}
             />
           ) : (
             <div className="w-full h-full bg-secondary/30 flex items-center justify-center">
