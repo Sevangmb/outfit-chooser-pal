@@ -5,10 +5,9 @@ import { FormControl, FormItem, FormLabel, FormMessage } from "@/components/ui/f
 import { UseFormReturn } from "react-hook-form";
 import { FormValues } from "@/types/clothing";
 import { toast } from "sonner";
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
-import { ImagePreview } from "./ImagePreview";
 
 interface ImageUploadTabsProps {
   form: UseFormReturn<FormValues>;
@@ -28,52 +27,20 @@ export const ImageUploadTabs = ({
   onFileUpload,
   onCameraCapture,
 }: ImageUploadTabsProps) => {
-  const [imageLoadError, setImageLoadError] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [displayUrl, setDisplayUrl] = useState<string | null>(null);
-
-  useEffect(() => {
-    const imageValue = form.getValues("image");
-    if (imageValue) {
-      setDisplayUrl(imageValue);
-      setImageLoadError(false);
-    }
-  }, [form]);
-
-  const handleImageLoad = useCallback(() => {
-    console.log("Image chargée avec succès");
-    setImageLoadError(false);
-  }, []);
-
-  const handleImageError = useCallback(() => {
-    console.log("Erreur lors du chargement de l'image");
-    setImageLoadError(true);
-    toast.error("Erreur lors du chargement de l'image");
-    // Reset the form image value when there's an error
-    form.setValue("image", null);
-    setDisplayUrl(null);
-  }, [form]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     try {
-      // Validate file type
       if (!file.type.startsWith('image/')) {
         toast.error("Le fichier doit être une image");
         return;
       }
 
-      // Validate file size (5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error("L'image est trop volumineuse (max 5MB)");
-        return;
-      }
-
-      console.log("Fichier sélectionné:", file.name);
+      console.log("File selected:", file.name);
       setSelectedFile(file);
-      setImageLoadError(false);
       
       const imageUrl = await onFileUpload(file);
       console.log("Image URL received:", imageUrl);
@@ -81,17 +48,15 @@ export const ImageUploadTabs = ({
       if (imageUrl) {
         console.log("Setting image URL in form:", imageUrl);
         form.setValue("image", imageUrl, { shouldValidate: true });
-        setDisplayUrl(imageUrl);
         toast.success("Image téléchargée avec succès");
       } else {
         throw new Error("URL de l'image non reçue");
       }
     } catch (error) {
-      console.error("Erreur lors du téléchargement:", error);
+      console.error("Upload error:", error);
       toast.error("Erreur lors du téléchargement de l'image");
       setSelectedFile(null);
       form.setValue("image", null);
-      setDisplayUrl(null);
     }
   };
 
@@ -132,14 +97,14 @@ export const ImageUploadTabs = ({
           </Alert>
         )}
 
-        {displayUrl && !imageLoadError && (
-          <ImagePreview
-            form={form}
-            previewUrl={displayUrl}
-            isUploading={isUploading}
-            onError={handleImageError}
-            onLoad={handleImageLoad}
-          />
+        {previewUrl && (
+          <div className="aspect-square w-full max-w-sm mx-auto overflow-hidden rounded-lg border">
+            <img
+              src={previewUrl}
+              alt="Aperçu"
+              className="w-full h-full object-contain"
+            />
+          </div>
         )}
       </div>
       <FormMessage />
