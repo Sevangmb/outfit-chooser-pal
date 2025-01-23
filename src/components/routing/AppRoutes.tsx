@@ -8,13 +8,29 @@ import Admin from "@/pages/Admin";
 import Contest from "@/pages/Contest";
 import Discover from "@/pages/Discover";
 import Favorites from "@/pages/Favorites";
+import LandingPage from "@/pages/LandingPage";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { PublicRoute } from "./PublicRoute";
 
 export const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="/" element={<Index />} />
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <Index />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/landing"
+        element={
+          <PublicRoute>
+            <LandingPage />
+          </PublicRoute>
+        }
+      />
       <Route
         path="/auth"
         element={
