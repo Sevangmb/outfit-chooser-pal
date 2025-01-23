@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { toast } from "sonner";
 import { uploadImageToSupabase } from "@/services/imageUploadService";
 
 export const useImageUpload = () => {
@@ -44,7 +43,6 @@ export const useImageUpload = () => {
   };
 
   return {
-    uploadImage: handleImageUpload,
     isUploading,
     previewUrl,
     uploadError,
