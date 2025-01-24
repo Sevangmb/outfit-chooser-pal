@@ -36,12 +36,12 @@ export default function Index() {
           sender:profiles!group_messages_sender_id_fkey(email),
           message_groups(name)
         `)
-        .in(
-          "group_id",
-          supabase
+        .in("group_id", 
+          await supabase
             .from("message_group_members")
             .select("group_id")
             .eq("user_id", user.id)
+            .then(result => result.data?.map(row => row.group_id) || [])
         )
         .order("created_at", { ascending: false })
         .limit(10);
