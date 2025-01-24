@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { uploadImageToSupabase } from "@/services/imageUploadService";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useImageUpload = () => {
   const [isUploading, setIsUploading] = useState(false);
@@ -17,21 +17,40 @@ export const useImageUpload = () => {
         throw new Error('Format de fichier invalide. Seules les images sont autorisées.');
       }
 
-      // Créer une URL de preview de haute qualité
+      // Créer une URL de preview
       const preview = URL.createObjectURL(file);
       console.log("Created preview URL:", preview);
       setPreviewUrl(preview);
 
-      // Upload vers Supabase avec une meilleure qualité
-      const imageUrl = await uploadImageToSupabase(file);
-      console.log("Upload successful, URL:", imageUrl);
-      
-      if (!imageUrl) {
-        throw new Error("Échec de l'upload de l'image");
+      // Générer un nom de fichier unique
+      const timestamp = new Date().toISOString().replace(/[^0-9]/g, "");
+      const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const fileName = `${timestamp}_${crypto.randomUUID()}.${fileExt}`;
+
+      console.log("Uploading file to Supabase:", fileName);
+
+      // Upload direct vers Supabase
+      const { data, error: uploadError } = await supabase.storage
+        .from('clothes')
+        .upload(fileName, file, {
+          cacheControl: '31536000',
+          upsert: false
+        });
+
+      if (uploadError) {
+        console.error("Upload error:", uploadError);
+        throw uploadError;
       }
 
+      // Récupérer l'URL publique
+      const { data: { publicUrl } } = supabase.storage
+        .from('clothes')
+        .getPublicUrl(fileName);
+
+      console.log("Upload successful, public URL:", publicUrl);
       toast.success("Image téléchargée avec succès");
-      return imageUrl;
+      return publicUrl;
+
     } catch (error) {
       console.error("Error during image upload:", error);
       const errorMessage = error instanceof Error ? error.message : "Erreur lors du téléchargement de l'image";

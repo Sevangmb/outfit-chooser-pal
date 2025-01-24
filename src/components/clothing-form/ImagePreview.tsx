@@ -3,6 +3,7 @@ import { Wand2 } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 import { FormValues } from "@/types/clothing";
 import { useImageAnalysis } from "./hooks/useImageAnalysis";
+import { useState } from "react";
 
 interface ImagePreviewProps {
   form: UseFormReturn<FormValues>;
@@ -20,8 +21,21 @@ export const ImagePreview = ({
   onLoad
 }: ImagePreviewProps) => {
   const { analyzeUploadedImage } = useImageAnalysis(form);
+  const [imageError, setImageError] = useState(false);
 
-  if (!previewUrl) return null;
+  const handleImageError = () => {
+    console.error("Error loading image:", previewUrl);
+    setImageError(true);
+    onError();
+  };
+
+  const handleImageLoad = () => {
+    console.log("Image loaded successfully:", previewUrl);
+    setImageError(false);
+    onLoad();
+  };
+
+  if (!previewUrl || imageError) return null;
 
   return (
     <div className="space-y-4">
@@ -29,9 +43,9 @@ export const ImagePreview = ({
         <img
           src={previewUrl}
           alt="Aperçu"
-          className="object-cover w-full h-full"
-          onError={onError}
-          onLoad={onLoad}
+          className="h-full w-full object-contain"
+          onError={handleImageError}
+          onLoad={handleImageLoad}
           loading="eager"
           decoding="sync"
         />
