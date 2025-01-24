@@ -122,9 +122,12 @@ export const UserFiles = () => {
       try {
         console.log("Attempting to get public URL for file:", file.file_path);
         
-        const { data: { publicUrl } } = supabase.storage
+        // Get the public URL using Supabase's getPublicUrl method
+        const { data } = supabase.storage
           .from('user_files')
           .getPublicUrl(file.file_path);
+
+        const publicUrl = data.publicUrl;
 
         if (!publicUrl) {
           console.error("No public URL returned for file:", file.file_path);
@@ -132,11 +135,17 @@ export const UserFiles = () => {
           return;
         }
 
-        // Verify the URL structure
-        const url = new URL(publicUrl);
-        console.log("Generated public URL:", url.toString());
+        // Log the URL for debugging
+        console.log("Generated public URL:", publicUrl);
         
-        setPreviewImage(publicUrl);
+        // Validate the URL
+        try {
+          new URL(publicUrl);
+          setPreviewImage(publicUrl);
+        } catch (urlError) {
+          console.error("Invalid URL generated:", urlError);
+          toast.error("URL de l'image invalide");
+        }
       } catch (error) {
         console.error("Error handling file click:", error);
         toast.error("Erreur lors de l'affichage de l'image");
