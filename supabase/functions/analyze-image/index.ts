@@ -74,6 +74,7 @@ const categoryMappings: Record<string, string> = {
 
 async function getImageDimensions(base64Data: string): Promise<{ width: number; height: number }> {
   try {
+    console.log("Getting image dimensions");
     const base64Image = base64Data.includes('base64,') 
       ? base64Data.split('base64,')[1] 
       : base64Data;
@@ -85,16 +86,15 @@ async function getImageDimensions(base64Data: string): Promise<{ width: number; 
     }
 
     const blob = new Blob([bytes], { type: 'image/jpeg' });
-    
     const arrayBuffer = await blob.arrayBuffer();
     const view = new DataView(arrayBuffer);
     
     let offset = 2;
-    
     while (offset < view.byteLength) {
       if (view.getUint8(offset) === 0xFF && view.getUint8(offset + 1) === 0xC0) {
         const height = view.getUint16(offset + 5);
         const width = view.getUint16(offset + 7);
+        console.log("Found dimensions:", { width, height });
         return { width, height };
       }
       offset += 1;
@@ -109,8 +109,8 @@ async function getImageDimensions(base64Data: string): Promise<{ width: number; 
 }
 
 function detectCategory(label: string, imageRatio: number): string {
+  console.log("Detecting category for label:", label, "with ratio:", imageRatio);
   const normalizedLabel = label.toLowerCase();
-  console.log("Analyzing label:", normalizedLabel);
   
   const words = normalizedLabel.split(/[\s,]+/);
   for (const word of words) {
@@ -120,18 +120,7 @@ function detectCategory(label: string, imageRatio: number): string {
     }
   }
   
-  console.log("No category detected from words, using image ratio:", imageRatio);
-  
-  if (imageRatio > 1.3) {
-    console.log("Wide image ratio detected - likely Chaussures");
-    return "Chaussures";
-  } else if (imageRatio < 0.7) {
-    console.log("Tall image ratio detected - likely Bas");
-    return "Bas";
-  } else {
-    console.log("Square-ish image ratio detected - likely Hauts");
-    return "Hauts";
-  }
+  return fallbackCategoryFromRatio(imageRatio);
 }
 
 function fallbackCategoryFromRatio(imageRatio: number): string {
@@ -152,8 +141,8 @@ serve(async (req) => {
   }
 
   try {
+    console.log("Received image analysis request");
     const { imageBase64 } = await req.json();
-    console.log("Received image data for analysis");
 
     if (!imageBase64) {
       throw new Error('No image data provided');
@@ -164,6 +153,7 @@ serve(async (req) => {
     console.log("Image ratio calculated:", imageRatio);
 
     try {
+      console.log("Preparing image for Hugging Face API");
       const base64Data = imageBase64.includes('base64,') 
         ? imageBase64.split('base64,')[1] 
         : imageBase64;
@@ -177,11 +167,17 @@ serve(async (req) => {
       const imageBlob = new Blob([bytes], { type: 'image/jpeg' });
       console.log("Image blob created, size:", imageBlob.size);
 
+      const apiKey = Deno.env.get('HUGGING_FACE_API_KEY');
+      if (!apiKey) {
+        throw new Error('Hugging Face API key not configured');
+      }
+
+      console.log("Calling Hugging Face API");
       const response = await fetch(
         "https://api-inference.huggingface.co/models/microsoft/resnet-50",
         {
           headers: {
-            'Authorization': `Bearer ${Deno.env.get('HUGGING_FACE_API_KEY')}`,
+            'Authorization': `Bearer ${apiKey}`,
             'Content-Type': 'application/json'
           },
           method: "POST",
@@ -191,66 +187,50 @@ serve(async (req) => {
 
       if (!response.ok) {
         console.error('Hugging Face API error:', response.status, response.statusText);
-        const errorText = await response.text();
-        console.error('Error details:', errorText);
-        
-        const fallbackCategory = fallbackCategoryFromRatio(imageRatio);
-        return new Response(
-          JSON.stringify({ 
-            name: "",
-            category: fallbackCategory,
-            confidence: 0,
-            note: "Used fallback detection due to API error" 
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        throw new Error(`Hugging Face API error: ${response.statusText}`);
       }
 
       const results = await response.json();
       console.log("Classification results:", results);
 
       const topResult = results[0];
-      let detectedName = "";
-
-      if (topResult) {
-        detectedName = topResult.label
-          .split(',')[0]
-          .split(' ')[0]
-          .toLowerCase();
-        
-        const category = detectCategory(topResult.label, imageRatio);
-        
-        return new Response(
-          JSON.stringify({ 
-            name: detectedName,
-            category: category,
-            confidence: topResult.score || 0 
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+      if (!topResult) {
+        throw new Error('No classification results received');
       }
 
-      const fallbackCategory = fallbackCategoryFromRatio(imageRatio);
+      const detectedName = topResult.label
+        .split(',')[0]
+        .split(' ')[0]
+        .toLowerCase();
+      
+      const category = detectCategory(topResult.label, imageRatio);
+      
+      const result = {
+        name: detectedName,
+        category: category,
+        confidence: topResult.score || 0
+      };
+
+      console.log("Sending successful response:", result);
       return new Response(
-        JSON.stringify({ 
-          name: "",
-          category: fallbackCategory,
-          confidence: 0,
-          note: "No classification results, used fallback" 
-        }),
+        JSON.stringify(result),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
 
     } catch (apiError) {
       console.error('API or processing error:', apiError);
+      // Fallback to using image ratio only
       const fallbackCategory = fallbackCategoryFromRatio(imageRatio);
+      const fallbackResult = {
+        name: "",
+        category: fallbackCategory,
+        confidence: 0,
+        note: "Used fallback detection due to API error"
+      };
+
+      console.log("Sending fallback response:", fallbackResult);
       return new Response(
-        JSON.stringify({ 
-          name: "",
-          category: fallbackCategory,
-          confidence: 0,
-          note: "Used fallback detection due to error" 
-        }),
+        JSON.stringify(fallbackResult),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
