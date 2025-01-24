@@ -4,6 +4,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ClothingDetailsDialog } from "./ClothingDetailsDialog";
+import { toast } from "sonner";
 
 interface ClothingCardProps {
   id: number;
@@ -42,20 +43,25 @@ export const ClothingCard = ({ id, image, name, category, color }: ClothingCardP
       console.error("Image failed to load:", image, error);
       setIsLoading(false);
       setImageError(true);
+      toast.error(`Erreur de chargement de l'image pour ${name}`);
     };
 
     // Try to fetch the image to verify it's accessible
-    fetch(image, { method: 'HEAD' })
-      .then(response => {
+    const checkImageAccess = async () => {
+      try {
+        const response = await fetch(image, { method: 'HEAD' });
         if (!response.ok) {
           console.error("Image URL is not accessible:", image, response.status);
           setImageError(true);
+          toast.error(`Image inaccessible pour ${name}`);
         }
-      })
-      .catch(error => {
+      } catch (error) {
         console.error("Error checking image URL:", image, error);
         setImageError(true);
-      });
+      }
+    };
+
+    checkImageAccess();
 
     return () => {
       img.onload = null;
