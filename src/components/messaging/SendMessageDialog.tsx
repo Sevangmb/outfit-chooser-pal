@@ -17,7 +17,7 @@ export const SendMessageDialog = () => {
   const [recipientId, setRecipientId] = useState("");
   const [messageType, setMessageType] = useState("direct"); // "direct" or "group"
   const [groupName, setGroupName] = useState("");
-  const [selectedGroupId, setSelectedGroupId] = useState<string>("");
+  const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
   const [isSending, setIsSending] = useState(false);
   const queryClient = useQueryClient();
 
@@ -120,7 +120,7 @@ export const SendMessageDialog = () => {
           });
 
         if (error) throw error;
-      } else {
+      } else if (selectedGroupId) {
         const { error } = await supabase
           .from("group_messages")
           .insert({
@@ -191,13 +191,16 @@ export const SendMessageDialog = () => {
               </Button>
             </div>
 
-            <Select value={selectedGroupId} onValueChange={setSelectedGroupId}>
+            <Select 
+              value={selectedGroupId?.toString() || ""} 
+              onValueChange={(value) => setSelectedGroupId(Number(value))}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Sélectionner un groupe" />
               </SelectTrigger>
               <SelectContent>
                 {groups.map((group) => (
-                  <SelectItem key={group.id} value={group.id}>
+                  <SelectItem key={group.id} value={group.id.toString()}>
                     {group.name}
                   </SelectItem>
                 ))}

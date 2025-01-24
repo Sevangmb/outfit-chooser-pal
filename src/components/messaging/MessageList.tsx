@@ -20,7 +20,7 @@ interface GroupMessage {
   sender_id: string;
   content: string;
   created_at: string;
-  group: {
+  message_groups: {
     name: string;
   };
 }
@@ -118,7 +118,7 @@ export const MessageList = () => {
               >
                 <div className="flex justify-between items-center">
                   <span className="text-xs font-medium text-primary">
-                    {message.group?.name}
+                    {message.message_groups.name}
                   </span>
                 </div>
                 <p className="text-sm text-foreground">{message.content}</p>
