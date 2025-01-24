@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ClothingDetailsDialog } from "./ClothingDetailsDialog";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ClothingCardProps {
   id: number;
