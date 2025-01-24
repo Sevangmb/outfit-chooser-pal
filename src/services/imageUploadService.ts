@@ -13,7 +13,7 @@ export const uploadImageToSupabase = async (file: File): Promise<string | null> 
     console.log("Generated filename:", fileName);
 
     // Upload the file
-    const { data, error: uploadError } = await supabase.storage
+    const { data: uploadData, error: uploadError } = await supabase.storage
       .from('clothes')
       .upload(fileName, file, {
         cacheControl: '3600',
@@ -27,7 +27,7 @@ export const uploadImageToSupabase = async (file: File): Promise<string | null> 
 
     console.log("Upload successful, getting public URL");
     
-    // Get the public URL - this method doesn't return an error
+    // Get the public URL
     const { data: { publicUrl } } = supabase.storage
       .from('clothes')
       .getPublicUrl(fileName);
