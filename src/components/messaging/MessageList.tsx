@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 
 interface Message {
   id: number;
@@ -12,6 +12,9 @@ interface Message {
   content: string;
   created_at: string;
   read_at: string | null;
+  profiles?: {
+    email: string;
+  };
 }
 
 interface GroupMessage {
@@ -25,17 +28,33 @@ interface GroupMessage {
   };
 }
 
-export const MessageList = () => {
+interface MessageListProps {
+  onSelectConversation: (conversation: {
+    type: "direct" | "group";
+    id: string | number;
+    name: string;
+  } | null) => void;
+  selectedConversation: {
+    type: "direct" | "group";
+    id: string | number;
+    name: string;
+  } | null;
+}
+
+export const MessageList = ({ onSelectConversation, selectedConversation }: MessageListProps) => {
   const { data: directMessages = [], isLoading: isLoadingDirect } = useQuery({
     queryKey: ["messages"],
     queryFn: async () => {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) return [];
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
 
       const { data, error } = await supabase
         .from("user_messages")
-        .select("*")
-        .or(`sender_id.eq.${user.user.id},recipient_id.eq.${user.user.id}`)
+        .select(`
+          *,
+          profiles:recipient_id(email)
+        `)
+        .or(`sender_id.eq.${user.id},recipient_id.eq.${user.id}`)
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -50,8 +69,8 @@ export const MessageList = () => {
   const { data: groupMessages = [], isLoading: isLoadingGroup } = useQuery({
     queryKey: ["groupMessages"],
     queryFn: async () => {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) return [];
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
 
       const { data, error } = await supabase
         .from("group_messages")
@@ -80,59 +99,78 @@ export const MessageList = () => {
     );
   }
 
+  const uniqueConversations = directMessages.reduce((acc, message) => {
+    const otherUserId = message.sender_id === supabase.auth.user()?.id 
+      ? message.recipient_id 
+      : message.sender_id;
+    
+    if (!acc.some(conv => conv.id === otherUserId)) {
+      acc.push({
+        type: "direct" as const,
+        id: otherUserId,
+        name: message.profiles?.email || "Utilisateur",
+        lastMessage: message.content,
+        timestamp: message.created_at,
+      });
+    }
+    return acc;
+  }, [] as Array<{
+    type: "direct";
+    id: string;
+    name: string;
+    lastMessage: string;
+    timestamp: string;
+  }>);
+
+  const groupConversations = groupMessages.reduce((acc, message) => {
+    if (!acc.some(conv => conv.id === message.group_id)) {
+      acc.push({
+        type: "group" as const,
+        id: message.group_id,
+        name: message.message_groups.name,
+        lastMessage: message.content,
+        timestamp: message.created_at,
+      });
+    }
+    return acc;
+  }, [] as Array<{
+    type: "group";
+    id: number;
+    name: string;
+    lastMessage: string;
+    timestamp: string;
+  }>);
+
+  const allConversations = [...uniqueConversations, ...groupConversations]
+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
   return (
-    <Tabs defaultValue="direct" className="w-full">
-      <TabsList className="grid w-full grid-cols-2">
-        <TabsTrigger value="direct">Messages Directs</TabsTrigger>
-        <TabsTrigger value="group">Messages de Groupe</TabsTrigger>
-      </TabsList>
-
-      <TabsContent value="direct">
-        <ScrollArea className="h-[500px] w-full rounded-md border p-4">
-          <div className="space-y-4">
-            {directMessages.map((message) => (
-              <div
-                key={message.id}
-                className="flex flex-col space-y-1 bg-secondary/30 p-4 rounded-lg"
-              >
-                <p className="text-sm text-foreground">{message.content}</p>
-                <span className="text-xs text-muted-foreground">
-                  {formatDistanceToNow(new Date(message.created_at), {
-                    addSuffix: true,
-                    locale: fr,
-                  })}
-                </span>
-              </div>
-            ))}
-          </div>
-        </ScrollArea>
-      </TabsContent>
-
-      <TabsContent value="group">
-        <ScrollArea className="h-[500px] w-full rounded-md border p-4">
-          <div className="space-y-4">
-            {groupMessages.map((message) => (
-              <div
-                key={message.id}
-                className="flex flex-col space-y-1 bg-secondary/30 p-4 rounded-lg"
-              >
-                <div className="flex justify-between items-center">
-                  <span className="text-xs font-medium text-primary">
-                    {message.message_groups.name}
-                  </span>
-                </div>
-                <p className="text-sm text-foreground">{message.content}</p>
-                <span className="text-xs text-muted-foreground">
-                  {formatDistanceToNow(new Date(message.created_at), {
-                    addSuffix: true,
-                    locale: fr,
-                  })}
-                </span>
-              </div>
-            ))}
-          </div>
-        </ScrollArea>
-      </TabsContent>
-    </Tabs>
+    <ScrollArea className="h-[calc(100vh-16rem)]">
+      <div className="space-y-1">
+        {allConversations.map((conversation) => (
+          <button
+            key={`${conversation.type}-${conversation.id}`}
+            onClick={() => onSelectConversation(conversation)}
+            className={cn(
+              "w-full p-3 text-left hover:bg-secondary/50 transition-colors",
+              selectedConversation?.id === conversation.id && "bg-secondary"
+            )}
+          >
+            <div className="flex flex-col">
+              <span className="font-medium">{conversation.name}</span>
+              <span className="text-sm text-muted-foreground truncate">
+                {conversation.lastMessage}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {formatDistanceToNow(new Date(conversation.timestamp), {
+                  addSuffix: true,
+                  locale: fr,
+                })}
+              </span>
+            </div>
+          </button>
+        ))}
+      </div>
+    </ScrollArea>
   );
 };
