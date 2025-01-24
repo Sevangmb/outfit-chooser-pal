@@ -120,18 +120,18 @@ export const UserFiles = () => {
   const handleFileClick = async (file: any) => {
     if (file.content_type.startsWith('image/')) {
       try {
-        const { data: { publicUrl }, error } = supabase.storage
+        const { data } = supabase.storage
           .from('user_files')
           .getPublicUrl(file.file_path);
 
-        if (error) {
-          console.error("Error getting public URL:", error);
+        if (!data.publicUrl) {
+          console.error("No public URL returned");
           toast.error("Erreur lors de la récupération de l'image");
           return;
         }
 
-        console.log("Image public URL:", publicUrl);
-        setPreviewImage(publicUrl);
+        console.log("Image public URL:", data.publicUrl);
+        setPreviewImage(data.publicUrl);
       } catch (error) {
         console.error("Error handling file click:", error);
         toast.error("Erreur lors de l'affichage de l'image");
