@@ -26,7 +26,7 @@ export const useImageUpload = () => {
       const fileName = `${crypto.randomUUID()}.${fileExt}`;
       console.log("Generated unique filename:", fileName);
 
-      // Upload to Supabase
+      // Upload to Supabase with both required arguments
       const imageUrl = await uploadImageToSupabase(file, fileName);
       console.log("Upload successful, URL:", imageUrl);
       
