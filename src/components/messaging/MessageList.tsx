@@ -5,6 +5,7 @@ import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
+import { User, Users } from "lucide-react";
 
 interface Message {
   id: number;
@@ -96,7 +97,6 @@ export const MessageList = ({ onSelectConversation, selectedConversation }: Mess
       const user = sessionData?.session?.user;
       if (!user) return [];
 
-      // First get the groups the user is a member of
       const { data: memberGroups, error: memberError } = await supabase
         .from("message_group_members")
         .select("group_id")
@@ -201,17 +201,24 @@ export const MessageList = ({ onSelectConversation, selectedConversation }: Mess
               selectedConversation?.id === conversation.id && "bg-secondary"
             )}
           >
-            <div className="flex flex-col">
-              <span className="font-medium">{conversation.name}</span>
-              <span className="text-sm text-muted-foreground truncate">
-                {conversation.lastMessage}
-              </span>
-              <span className="text-xs text-muted-foreground">
-                {formatDistanceToNow(new Date(conversation.timestamp), {
-                  addSuffix: true,
-                  locale: fr,
-                })}
-              </span>
+            <div className="flex items-start gap-3">
+              {conversation.type === "direct" ? (
+                <User className="h-5 w-5 text-muted-foreground shrink-0 mt-1" />
+              ) : (
+                <Users className="h-5 w-5 text-muted-foreground shrink-0 mt-1" />
+              )}
+              <div className="flex flex-col min-w-0">
+                <span className="font-medium truncate">{conversation.name}</span>
+                <span className="text-sm text-muted-foreground truncate">
+                  {conversation.lastMessage}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {formatDistanceToNow(new Date(conversation.timestamp), {
+                    addSuffix: true,
+                    locale: fr,
+                  })}
+                </span>
+              </div>
             </div>
           </button>
         ))}
