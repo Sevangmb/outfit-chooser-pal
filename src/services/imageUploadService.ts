@@ -13,11 +13,11 @@ export const uploadImageToSupabase = async (file: File): Promise<string | null> 
     
     console.log("Generated filename:", fileName);
 
-    // Ensure we're uploading the actual file blob/buffer, not the FormData
+    // Upload with better quality settings
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('clothes')
       .upload(fileName, file, {
-        cacheControl: '3600',
+        cacheControl: '31536000', // Cache for 1 year
         contentType: file.type,
         upsert: false
       });

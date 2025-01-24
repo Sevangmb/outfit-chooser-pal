@@ -32,6 +32,8 @@ export const ImagePreview = ({
           className="object-cover w-full h-full"
           onError={onError}
           onLoad={onLoad}
+          loading="eager"
+          decoding="sync"
         />
       </div>
       <Button

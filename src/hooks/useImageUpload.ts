@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { uploadImageToSupabase } from "@/services/imageUploadService";
 import { toast } from "sonner";
+import { validateImageFile } from "@/utils/imageValidation";
+import { uploadImageToSupabase } from "@/services/imageUploadService";
 
 export const useImageUpload = () => {
   const [isUploading, setIsUploading] = useState(false);
@@ -19,19 +20,23 @@ export const useImageUpload = () => {
 
       // Create preview URL
       const preview = URL.createObjectURL(file);
+      console.log("Created preview URL:", preview);
       setPreviewUrl(preview);
 
-      // Direct upload to Supabase without background removal
+      // Upload to Supabase
       const imageUrl = await uploadImageToSupabase(file);
       console.log("Upload successful, URL:", imageUrl);
       
+      if (!imageUrl) {
+        throw new Error("Échec de l'upload de l'image");
+      }
+
       toast.success("Image téléchargée avec succès");
       return imageUrl;
     } catch (error) {
       console.error("Error during image upload:", error);
       const errorMessage = error instanceof Error ? error.message : "Erreur lors du téléchargement de l'image";
       setUploadError(errorMessage);
-      setPreviewUrl(null);
       toast.error(errorMessage);
       return null;
     } finally {
