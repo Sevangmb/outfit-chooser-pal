@@ -12,7 +12,11 @@ interface Message {
   content: string;
   created_at: string;
   read_at: string | null;
-  profiles: {
+  is_deleted: boolean | null;
+  sender: {
+    email: string;
+  };
+  recipient: {
     email: string;
   };
 }
@@ -53,8 +57,8 @@ export const MessageList = ({ onSelectConversation, selectedConversation }: Mess
         .from("user_messages")
         .select(`
           *,
-          sender:sender_id(email),
-          recipient:recipient_id(email)
+          sender:profiles!user_messages_sender_id_fkey(email),
+          recipient:profiles!user_messages_recipient_id_fkey(email)
         `)
         .or(`sender_id.eq.${user.id},recipient_id.eq.${user.id}`)
         .order("created_at", { ascending: false });
@@ -104,9 +108,9 @@ export const MessageList = ({ onSelectConversation, selectedConversation }: Mess
 
   const uniqueConversations = directMessages.reduce((acc, message) => {
     const { data: sessionData } = supabase.auth.getSession();
-    const user = sessionData?.session?.user;
-    if (!user) return acc;
+    if (!sessionData?.session?.user) return acc;
 
+    const user = sessionData.session.user;
     const otherUserId = message.sender_id === user.id 
       ? message.recipient_id 
       : message.sender_id;
