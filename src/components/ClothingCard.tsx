@@ -1,9 +1,8 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Eye, Shirt, Twitter, Facebook, Linkedin } from "lucide-react";
+import { Eye, Shirt } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 import { ClothingDetailsDialog } from "./ClothingDetailsDialog";
 
 interface ClothingCardProps {
@@ -46,37 +45,6 @@ export const ClothingCard = ({ id, image, name, category, color }: ClothingCardP
     };
   }, [image]);
 
-  const handleShare = (platform: string) => {
-    const shareUrl = window.location.href;
-    const shareText = `Découvrez ce ${name} sur Lovable!`;
-    
-    let shareLink = '';
-    switch (platform) {
-      case 'twitter':
-        shareLink = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
-        break;
-      case 'facebook':
-        shareLink = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
-        break;
-      case 'linkedin':
-        shareLink = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
-        break;
-    }
-    
-    if (shareLink) {
-      window.open(shareLink, '_blank', 'width=600,height=400');
-    } else if (navigator.share) {
-      navigator.share({
-        title: name,
-        text: shareText,
-        url: shareUrl,
-      }).catch((error) => {
-        console.error('Error sharing:', error);
-        toast.error("Erreur lors du partage");
-      });
-    }
-  };
-
   return (
     <>
       <Card className="overflow-hidden hover:shadow-lg transition-shadow border-secondary/50 hover:border-primary/30 bg-background/50 backdrop-blur-sm">
@@ -116,40 +84,14 @@ export const ClothingCard = ({ id, image, name, category, color }: ClothingCardP
                 <span>{color}</span>
               </div>
             </div>
-            <div className="flex gap-2">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-8 w-8" 
-                onClick={() => setIsDetailsOpen(true)}
-              >
-                <Eye className="h-4 w-4 text-muted-foreground hover:text-primary" />
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-8 w-8" 
-                onClick={() => handleShare('twitter')}
-              >
-                <Twitter className="h-4 w-4 text-muted-foreground hover:text-[#1DA1F2]" />
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-8 w-8" 
-                onClick={() => handleShare('facebook')}
-              >
-                <Facebook className="h-4 w-4 text-muted-foreground hover:text-[#4267B2]" />
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-8 w-8" 
-                onClick={() => handleShare('linkedin')}
-              >
-                <Linkedin className="h-4 w-4 text-muted-foreground hover:text-[#0077B5]" />
-              </Button>
-            </div>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-8 w-8" 
+              onClick={() => setIsDetailsOpen(true)}
+            >
+              <Eye className="h-4 w-4 text-muted-foreground hover:text-primary" />
+            </Button>
           </div>
         </CardContent>
       </Card>

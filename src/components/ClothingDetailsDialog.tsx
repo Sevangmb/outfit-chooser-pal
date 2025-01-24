@@ -1,10 +1,11 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Edit, Shirt } from "lucide-react";
+import { Edit, Shirt, Twitter, Facebook, Linkedin } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface ClothingDetailsDialogProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ export const ClothingDetailsDialog = ({ isOpen, onClose, clothingId }: ClothingD
   const [clothing, setClothing] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isOwner, setIsOwner] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     const fetchClothingDetails = async () => {
@@ -43,6 +45,43 @@ export const ClothingDetailsDialog = ({ isOpen, onClose, clothingId }: ClothingD
     }
   }, [isOpen, clothingId]);
 
+  const handleShare = (platform: string) => {
+    const shareUrl = window.location.href;
+    const shareText = `Découvrez ce ${clothing?.name} sur Lovable!`;
+    
+    let shareLink = '';
+    switch (platform) {
+      case 'twitter':
+        shareLink = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+        break;
+      case 'facebook':
+        shareLink = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+        break;
+      case 'linkedin':
+        shareLink = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+        break;
+    }
+    
+    if (shareLink) {
+      window.open(shareLink, '_blank', 'width=600,height=400');
+    } else if (navigator.share) {
+      navigator.share({
+        title: clothing?.name,
+        text: shareText,
+        url: shareUrl,
+      }).catch((error) => {
+        console.error('Error sharing:', error);
+        toast.error("Erreur lors du partage");
+      });
+    }
+  };
+
+  const handleEdit = () => {
+    setIsEditing(true);
+    // TODO: Implement edit functionality
+    toast.info("La fonctionnalité de modification sera bientôt disponible");
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -51,12 +90,37 @@ export const ClothingDetailsDialog = ({ isOpen, onClose, clothingId }: ClothingD
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold flex items-center justify-between">
             <span>{clothing?.name || 'Détails du vêtement'}</span>
-            {isOwner && (
-              <Button variant="outline" size="sm" className="gap-2">
-                <Edit className="h-4 w-4" />
-                Modifier
-              </Button>
-            )}
+            <div className="flex gap-2">
+              {isOwner && (
+                <Button variant="outline" size="sm" className="gap-2" onClick={handleEdit}>
+                  <Edit className="h-4 w-4" />
+                  Modifier
+                </Button>
+              )}
+              <div className="flex gap-1">
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => handleShare('twitter')}
+                >
+                  <Twitter className="h-4 w-4 text-muted-foreground hover:text-[#1DA1F2]" />
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => handleShare('facebook')}
+                >
+                  <Facebook className="h-4 w-4 text-muted-foreground hover:text-[#4267B2]" />
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => handleShare('linkedin')}
+                >
+                  <Linkedin className="h-4 w-4 text-muted-foreground hover:text-[#0077B5]" />
+                </Button>
+              </div>
+            </div>
           </DialogTitle>
         </DialogHeader>
 
