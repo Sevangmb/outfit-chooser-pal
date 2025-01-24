@@ -35,8 +35,14 @@ export const uploadImageToSupabase = async (file: File): Promise<string> => {
   try {
     // Resize and optimize the image before upload
     const optimizedBlob = await resizeFile(file);
+    
+    // Generate a unique filename with timestamp and UUID
+    const timestamp = new Date().toISOString().replace(/[^0-9]/g, '');
+    const randomId = crypto.randomUUID().slice(0, 8);
     const fileExt = file.name.split('.').pop() || 'jpg';
-    const filePath = `${crypto.randomUUID()}.${fileExt}`;
+    const filePath = `${timestamp}_${randomId}.${fileExt}`;
+
+    console.log("Uploading file with path:", filePath);
 
     const { data, error: uploadError } = await supabase.storage
       .from('clothes')
@@ -62,7 +68,14 @@ export const uploadImageToSupabase = async (file: File): Promise<string> => {
       .from('clothes')
       .getPublicUrl(data.path);
 
-    console.log("Image URL generated:", publicUrl);
+    console.log("Generated public URL:", publicUrl);
+    
+    // Verify the URL is accessible
+    const response = await fetch(publicUrl, { method: 'HEAD' });
+    if (!response.ok) {
+      throw new Error(`Failed to verify image URL: ${response.status}`);
+    }
+
     return publicUrl;
   } catch (error) {
     console.error("Error in uploadImageToSupabase:", error);

@@ -17,20 +17,30 @@ export const ClothingCard = ({ image, name, category, color }: ClothingCardProps
   useEffect(() => {
     if (!image) {
       setIsLoading(false);
+      return;
     }
+
+    // Précharger l'image pour vérifier si elle est valide
+    const img = new Image();
+    img.src = image;
+
+    img.onload = () => {
+      console.log("Image loaded successfully:", image);
+      setIsLoading(false);
+      setImageError(false);
+    };
+
+    img.onerror = () => {
+      console.error("Image failed to load:", image);
+      setIsLoading(false);
+      setImageError(true);
+    };
+
+    return () => {
+      img.onload = null;
+      img.onerror = null;
+    };
   }, [image]);
-
-  const handleImageLoad = () => {
-    console.log("Image loaded successfully:", image);
-    setIsLoading(false);
-    setImageError(false);
-  };
-
-  const handleImageError = () => {
-    console.error("Image failed to load:", image);
-    setIsLoading(false);
-    setImageError(true);
-  };
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow border-secondary/50 hover:border-primary/30 bg-background/50 backdrop-blur-sm">
@@ -51,8 +61,6 @@ export const ClothingCard = ({ image, name, category, color }: ClothingCardProps
                 }`}
                 loading="lazy"
                 decoding="async"
-                onLoad={handleImageLoad}
-                onError={handleImageError}
               />
             </div>
           ) : (
