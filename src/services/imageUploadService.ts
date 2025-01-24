@@ -1,8 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
 
-export const uploadImageToSupabase = async (file: File, fileName: string): Promise<string> => {
+export const uploadImageToSupabase = async (file: File): Promise<string> => {
   console.log("Starting image upload to Supabase:", {
-    fileName,
+    fileName: file.name,
     fileType: file.type,
     fileSize: file.size
   });
@@ -12,17 +12,21 @@ export const uploadImageToSupabase = async (file: File, fileName: string): Promi
   }
 
   try {
-    const { data, error } = await supabase.storage
+    // Generate a unique filename with proper extension
+    const fileExt = file.name.split('.').pop() || 'jpg';
+    const filePath = `${crypto.randomUUID()}.${fileExt}`;
+
+    const { data, error: uploadError } = await supabase.storage
       .from('clothes')
-      .upload(fileName, file, {
+      .upload(filePath, file, {
         contentType: file.type,
         cacheControl: '3600',
         upsert: false
       });
 
-    if (error) {
-      console.error("Supabase upload error:", error);
-      throw error;
+    if (uploadError) {
+      console.error("Supabase upload error:", uploadError);
+      throw uploadError;
     }
 
     if (!data) {

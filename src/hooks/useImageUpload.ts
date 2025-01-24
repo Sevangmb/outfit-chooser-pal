@@ -21,13 +21,8 @@ export const useImageUpload = () => {
       const preview = URL.createObjectURL(file);
       setPreviewUrl(preview);
 
-      // Generate unique filename using UUID
-      const fileExt = file.name.split('.').pop() || 'jpg';
-      const fileName = `${crypto.randomUUID()}.${fileExt}`;
-      console.log("Generated unique filename:", fileName);
-
-      // Upload to Supabase with both required arguments
-      const imageUrl = await uploadImageToSupabase(file, fileName);
+      // Upload to Supabase
+      const imageUrl = await uploadImageToSupabase(file);
       console.log("Upload successful, URL:", imageUrl);
       
       return imageUrl;
