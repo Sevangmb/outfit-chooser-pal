@@ -4,10 +4,17 @@ import { Input } from "@/components/ui/input";
 import { Upload, Trash2, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export const UserFiles = () => {
   const [uploading, setUploading] = useState(false);
   const [files, setFiles] = useState<any[]>([]);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
@@ -16,6 +23,13 @@ export const UserFiles = () => {
 
       setUploading(true);
       console.log("Starting file upload:", file.name);
+
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Utilisateur non connecté");
+        return;
+      }
 
       // Upload to Storage
       const fileExt = file.name.split('.').pop();
@@ -28,13 +42,6 @@ export const UserFiles = () => {
       if (uploadError) {
         console.error("Upload error:", uploadError);
         toast.error("Erreur lors de l'upload du fichier");
-        return;
-      }
-
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast.error("Utilisateur non connecté");
         return;
       }
 
@@ -109,6 +116,16 @@ export const UserFiles = () => {
     }
   };
 
+  const handleFileClick = async (file: any) => {
+    if (file.content_type.startsWith('image/')) {
+      const { data } = supabase.storage
+        .from('user_files')
+        .getPublicUrl(file.file_path);
+      
+      setPreviewImage(data.publicUrl);
+    }
+  };
+
   // Fetch files on component mount
   useEffect(() => {
     fetchFiles();
@@ -133,7 +150,8 @@ export const UserFiles = () => {
         {files.map((file) => (
           <div
             key={file.id}
-            className="flex items-center justify-between p-4 bg-background/50 backdrop-blur-sm rounded-lg border border-secondary/50"
+            className="flex items-center justify-between p-4 bg-background/50 backdrop-blur-sm rounded-lg border border-secondary/50 cursor-pointer"
+            onClick={() => handleFileClick(file)}
           >
             <div className="flex items-center gap-3">
               <FileText className="w-5 h-5 text-muted-foreground" />
@@ -147,13 +165,31 @@ export const UserFiles = () => {
             <Button
               variant="destructive"
               size="icon"
-              onClick={() => deleteFile(file.id, file.file_path)}
+              onClick={(e) => {
+                e.stopPropagation();
+                deleteFile(file.id, file.file_path);
+              }}
             >
               <Trash2 className="w-4 h-4" />
             </Button>
           </div>
         ))}
       </div>
+
+      <Dialog open={!!previewImage} onOpenChange={() => setPreviewImage(null)}>
+        <DialogContent className="sm:max-w-[800px]">
+          <DialogHeader>
+            <DialogTitle>Aperçu de l'image</DialogTitle>
+          </DialogHeader>
+          {previewImage && (
+            <img 
+              src={previewImage} 
+              alt="Aperçu" 
+              className="w-full h-auto rounded-lg"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
