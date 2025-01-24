@@ -73,7 +73,7 @@ export const ClothingCard = ({ id, name, category, color, image }: ClothingCardP
       toast.error("Une erreur est survenue lors de la suppression");
     }
   };
-  
+
   useEffect(() => {
     if (!image) {
       setIsLoading(false);
@@ -90,19 +90,10 @@ export const ClothingCard = ({ id, name, category, color, image }: ClothingCardP
           return;
         }
 
-        // Extract filename from path
-        const fileName = image.split('/').pop();
-        
-        if (!fileName) {
-          console.error("Invalid image path:", image);
-          setImageError(true);
-          throw new Error("Invalid image path");
-        }
-
-        // Get the public URL for the image
+        // Get the public URL for the image directly
         const { data: { publicUrl } } = supabase.storage
           .from('clothes')
-          .getPublicUrl(fileName);
+          .getPublicUrl(image);
 
         console.log("Generated public URL:", publicUrl);
         setImageUrl(publicUrl);
