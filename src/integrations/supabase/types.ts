@@ -344,6 +344,91 @@ export type Database = {
         }
         Relationships: []
       }
+      group_messages: {
+        Row: {
+          content: string
+          created_at: string
+          group_id: number | null
+          id: number
+          is_deleted: boolean | null
+          sender_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          group_id?: number | null
+          id?: number
+          is_deleted?: boolean | null
+          sender_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          group_id?: number | null
+          id?: number
+          is_deleted?: boolean | null
+          sender_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_messages_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "message_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      message_group_members: {
+        Row: {
+          group_id: number | null
+          id: number
+          joined_at: string
+          user_id: string | null
+        }
+        Insert: {
+          group_id?: number | null
+          id?: number
+          joined_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          group_id?: number | null
+          id?: number
+          joined_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "message_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      message_groups: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: number
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: number
+          name: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: number
+          name?: string
+        }
+        Relationships: []
+      }
       outfit_clothes: {
         Row: {
           clothes_id: number | null
