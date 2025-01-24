@@ -9,6 +9,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 
 export const UserFiles = () => {
@@ -118,11 +119,23 @@ export const UserFiles = () => {
 
   const handleFileClick = async (file: any) => {
     if (file.content_type.startsWith('image/')) {
-      const { data } = supabase.storage
-        .from('user_files')
-        .getPublicUrl(file.file_path);
-      
-      setPreviewImage(data.publicUrl);
+      try {
+        const { data: { publicUrl }, error } = supabase.storage
+          .from('user_files')
+          .getPublicUrl(file.file_path);
+
+        if (error) {
+          console.error("Error getting public URL:", error);
+          toast.error("Erreur lors de la récupération de l'image");
+          return;
+        }
+
+        console.log("Image public URL:", publicUrl);
+        setPreviewImage(publicUrl);
+      } catch (error) {
+        console.error("Error handling file click:", error);
+        toast.error("Erreur lors de l'affichage de l'image");
+      }
     }
   };
 
@@ -180,6 +193,9 @@ export const UserFiles = () => {
         <DialogContent className="sm:max-w-[800px]">
           <DialogHeader>
             <DialogTitle>Aperçu de l'image</DialogTitle>
+            <DialogDescription>
+              Cliquez en dehors de la fenêtre pour fermer
+            </DialogDescription>
           </DialogHeader>
           {previewImage && (
             <img 
