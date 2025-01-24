@@ -62,6 +62,7 @@ export const MessageList = ({ onSelectConversation, selectedConversation }: Mess
   const { data: directMessages = [], isLoading: isLoadingDirect } = useQuery({
     queryKey: ["messages"],
     queryFn: async () => {
+      console.log("Fetching direct messages...");
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       if (sessionError) throw sessionError;
       const user = sessionData?.session?.user;
@@ -78,10 +79,10 @@ export const MessageList = ({ onSelectConversation, selectedConversation }: Mess
         .order("created_at", { ascending: false });
 
       if (error) {
-        console.error("Error fetching messages:", error);
+        console.error("Error fetching direct messages:", error);
         throw error;
       }
-
+      console.log("Direct messages fetched:", data);
       return data as Message[];
     },
   });
@@ -89,10 +90,29 @@ export const MessageList = ({ onSelectConversation, selectedConversation }: Mess
   const { data: groupMessages = [], isLoading: isLoadingGroup } = useQuery({
     queryKey: ["groupMessages"],
     queryFn: async () => {
+      console.log("Fetching group messages...");
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       if (sessionError) throw sessionError;
       const user = sessionData?.session?.user;
       if (!user) return [];
+
+      // First get the groups the user is a member of
+      const { data: memberGroups, error: memberError } = await supabase
+        .from("message_group_members")
+        .select("group_id")
+        .eq("user_id", user.id);
+
+      if (memberError) {
+        console.error("Error fetching member groups:", memberError);
+        throw memberError;
+      }
+
+      const groupIds = memberGroups.map(g => g.group_id);
+      
+      if (groupIds.length === 0) {
+        console.log("User is not a member of any groups");
+        return [];
+      }
 
       const { data, error } = await supabase
         .from("group_messages")
@@ -102,13 +122,14 @@ export const MessageList = ({ onSelectConversation, selectedConversation }: Mess
             name
           )
         `)
+        .in("group_id", groupIds)
         .order("created_at", { ascending: false });
 
       if (error) {
         console.error("Error fetching group messages:", error);
         throw error;
       }
-
+      console.log("Group messages fetched:", data);
       return data as GroupMessage[];
     },
   });
