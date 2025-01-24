@@ -49,7 +49,8 @@ export const MessageList = ({ onSelectConversation, selectedConversation }: Mess
   const { data: directMessages = [], isLoading: isLoadingDirect } = useQuery({
     queryKey: ["messages"],
     queryFn: async () => {
-      const { data: sessionData } = await supabase.auth.getSession();
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
       const user = sessionData?.session?.user;
       if (!user) return [];
 
@@ -75,7 +76,8 @@ export const MessageList = ({ onSelectConversation, selectedConversation }: Mess
   const { data: groupMessages = [], isLoading: isLoadingGroup } = useQuery({
     queryKey: ["groupMessages"],
     queryFn: async () => {
-      const { data: sessionData } = await supabase.auth.getSession();
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
       const user = sessionData?.session?.user;
       if (!user) return [];
 
