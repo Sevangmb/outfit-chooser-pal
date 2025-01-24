@@ -11,6 +11,7 @@ import { BasicFields } from "./clothing-form/fields/BasicFields";
 import { CategoryFields } from "./clothing-form/fields/CategoryFields";
 import { ColorFields } from "./clothing-form/fields/ColorFields";
 import { DetailsFields } from "./clothing-form/fields/DetailsFields";
+import { ImageAnalysisButton } from "./clothing-form/ImageAnalysisButton";
 
 interface AddClothingFormProps {
   onSuccess?: () => void;
@@ -101,6 +102,14 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
               }
             }}
           />
+
+          {previewUrl && (
+            <ImageAnalysisButton 
+              form={form} 
+              previewUrl={previewUrl} 
+              isUploading={isUploading} 
+            />
+          )}
 
           <div className="space-y-8 bg-background/50 backdrop-blur-sm rounded-lg border border-border p-6">
             <BasicFields form={form} />
