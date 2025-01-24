@@ -6,6 +6,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { useState } from "react";
 
 interface FilePreviewDialogProps {
   previewImage: string | null;
@@ -13,8 +14,16 @@ interface FilePreviewDialogProps {
 }
 
 export const FilePreviewDialog = ({ previewImage, onOpenChange }: FilePreviewDialogProps) => {
+  const [imageError, setImageError] = useState(false);
+
+  const handleImageError = () => {
+    console.error("Error loading image:", previewImage);
+    setImageError(true);
+    toast.error("Erreur lors du chargement de l'image");
+  };
+
   return (
-    <Dialog open={!!previewImage} onOpenChange={onOpenChange}>
+    <Dialog open={!!previewImage && !imageError} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[800px]">
         <DialogHeader>
           <DialogTitle>Aperçu de l'image</DialogTitle>
@@ -27,11 +36,8 @@ export const FilePreviewDialog = ({ previewImage, onOpenChange }: FilePreviewDia
             src={previewImage} 
             alt="Aperçu" 
             className="w-full h-auto rounded-lg"
-            onError={(e) => {
-              console.error("Error loading image:", previewImage);
-              toast.error("Erreur lors du chargement de l'image");
-              onOpenChange(false);
-            }}
+            onError={handleImageError}
+            onLoad={() => setImageError(false)}
           />
         )}
       </DialogContent>
