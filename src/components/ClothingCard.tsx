@@ -46,22 +46,30 @@ export const ClothingCard = ({ id, image, name, category, color }: ClothingCardP
       toast.error(`Erreur de chargement de l'image pour ${name}`);
     };
 
-    // Try to fetch the image to verify it's accessible
-    const checkImageAccess = async () => {
+    // Verify image content type and accessibility
+    const verifyImage = async () => {
       try {
         const response = await fetch(image, { method: 'HEAD' });
         if (!response.ok) {
           console.error("Image URL is not accessible:", image, response.status);
           setImageError(true);
           toast.error(`Image inaccessible pour ${name}`);
+          return;
+        }
+
+        const contentType = response.headers.get('content-type');
+        if (!contentType?.startsWith('image/')) {
+          console.error("Invalid content type for image:", contentType);
+          setImageError(true);
+          toast.error(`Type de contenu invalide pour l'image de ${name}`);
         }
       } catch (error) {
-        console.error("Error checking image URL:", image, error);
+        console.error("Error verifying image:", image, error);
         setImageError(true);
       }
     };
 
-    checkImageAccess();
+    verifyImage();
 
     return () => {
       img.onload = null;
