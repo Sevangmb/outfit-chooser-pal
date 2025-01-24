@@ -41,7 +41,7 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
     },
   });
   
-  const { isUploading, previewUrl, uploadError, handleImageUpload, resetPreview } = useImageUpload();
+  const { isUploading, previewUrl, uploadError, handleFileUpload, resetPreview } = useImageUpload();
 
   const handleCameraCapture = async () => {
     try {
@@ -175,7 +175,7 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
           form={form}
           isUploading={isUploading}
           previewUrl={previewUrl}
-          onFileUpload={handleImageUpload}
+          onFileUpload={handleFileUpload}
           onCameraCapture={handleCameraCapture}
           onResetPreview={resetPreview}
           uploadError={uploadError}
