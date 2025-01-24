@@ -1,9 +1,9 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+}
 
 const HUGGING_FACE_API_URL = "https://api-inference.huggingface.co/models/microsoft/resnet-50";
 
@@ -13,12 +13,20 @@ serve(async (req) => {
   }
 
   try {
-    const { imageUrl } = await req.json();
-    console.log("Analyzing image:", imageUrl);
+    const { imageBase64 } = await req.json();
+    console.log("Analyzing image data");
 
-    // Fetch the image data
-    const imageResponse = await fetch(imageUrl);
-    const imageBlob = await imageResponse.blob();
+    if (!imageBase64) {
+      throw new Error('No image data provided');
+    }
+
+    // Convert base64 to blob
+    const binaryData = atob(imageBase64.split(',')[1]);
+    const array = new Uint8Array(binaryData.length);
+    for (let i = 0; i < binaryData.length; i++) {
+      array[i] = binaryData.charCodeAt(i);
+    }
+    const imageBlob = new Blob([array], { type: 'image/jpeg' });
 
     // Send image to Hugging Face API
     const response = await fetch(HUGGING_FACE_API_URL, {

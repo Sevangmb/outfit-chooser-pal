@@ -1,10 +1,21 @@
 import { supabase } from "@/integrations/supabase/client";
 
+const getBase64FromUrl = async (url: string): Promise<string> => {
+  const response = await fetch(url);
+  const blob = await response.blob();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+};
+
 export const analyzeImage = async (imageUrl: string): Promise<{ category?: string, name?: string } | null> => {
   try {
     console.log("Starting image analysis for:", imageUrl);
     
-    // Chargement de l'image
+    // Load the image to get dimensions
     const img = new Image();
     img.crossOrigin = "anonymous";
     await new Promise((resolve, reject) => {
@@ -13,13 +24,16 @@ export const analyzeImage = async (imageUrl: string): Promise<{ category?: strin
       img.src = imageUrl;
     });
 
-    // Calcul du ratio de l'image
+    // Calculate ratio
     const ratio = img.width / img.height;
     console.log("Image ratio:", ratio);
 
-    // Appel à l'Edge Function pour l'analyse de l'image
+    // Convert image to base64
+    const imageBase64 = await getBase64FromUrl(imageUrl);
+
+    // Call Edge Function with base64 data
     const { data: analysisData, error } = await supabase.functions.invoke('analyze-image', {
-      body: { imageUrl }
+      body: { imageBase64 }
     });
 
     if (error) {
@@ -29,7 +43,7 @@ export const analyzeImage = async (imageUrl: string): Promise<{ category?: strin
 
     console.log("Analysis results:", analysisData);
 
-    // Détection de la catégorie basée sur les proportions et le nom détecté
+    // Detect category based on proportions
     let category = "Hauts"; // default
     if (ratio > 1.5) {
       console.log("Detected: Chaussures (wide ratio)");
@@ -44,7 +58,7 @@ export const analyzeImage = async (imageUrl: string): Promise<{ category?: strin
 
     return { 
       category,
-      name: analysisData.name 
+      name: analysisData?.name 
     };
   } catch (error) {
     console.error("Error analyzing image:", error);
