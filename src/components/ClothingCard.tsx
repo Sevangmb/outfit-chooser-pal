@@ -12,11 +12,31 @@ interface ClothingCardProps {
 export const ClothingCard = ({ image, name, category, color }: ClothingCardProps) => {
   console.log("Rendering ClothingCard with image:", image);
 
-  // Vérifie si l'image est au format PNG
-  const isPNG = image?.toLowerCase().endsWith('.png');
+  // Détermine le type de contenu en fonction de l'URL
+  const getContentType = (url: string) => {
+    const extension = url.split('.').pop()?.toLowerCase();
+    switch (extension) {
+      case 'png':
+        return 'image/png';
+      case 'jpg':
+      case 'jpeg':
+        return 'image/jpeg';
+      case 'webp':
+        return 'image/webp';
+      case 'gif':
+        return 'image/gif';
+      default:
+        return null;
+    }
+  };
+
+  // Vérifie si l'URL de l'image est valide
+  const isValidImageUrl = image && getContentType(image);
   
-  // Log pour vérifier le type d'image
+  // Log pour le débogage
   if (image) {
+    console.log("Image content type:", getContentType(image));
+    
     fetch(image)
       .then(response => {
         console.log("Image response:", {
@@ -34,11 +54,13 @@ export const ClothingCard = ({ image, name, category, color }: ClothingCardProps
     <Card className="overflow-hidden hover:shadow-lg transition-shadow border-secondary/50 hover:border-primary/30 bg-background/50 backdrop-blur-sm">
       <CardHeader className="p-0">
         <AspectRatio ratio={4/3}>
-          {image ? (
+          {isValidImageUrl ? (
             <img
               src={image}
               alt={name}
-              className={`w-full h-full ${isPNG ? 'object-contain' : 'object-cover'} bg-secondary/30`}
+              className="w-full h-full object-cover bg-secondary/30"
+              loading="lazy"
+              decoding="async"
               onLoad={(e) => {
                 const img = e.target as HTMLImageElement;
                 console.log("Image loaded successfully:", {
@@ -46,7 +68,8 @@ export const ClothingCard = ({ image, name, category, color }: ClothingCardProps
                   naturalWidth: img.naturalWidth,
                   naturalHeight: img.naturalHeight,
                   displayWidth: img.width,
-                  displayHeight: img.height
+                  displayHeight: img.height,
+                  currentSrc: img.currentSrc
                 });
               }}
               onError={(e) => {

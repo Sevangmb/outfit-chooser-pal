@@ -12,18 +12,19 @@ export const uploadImageToSupabase = async (file: File): Promise<string> => {
     throw new Error(`Invalid file type: ${file.type}. Only images are allowed.`);
   }
 
-  // Extraction de l'extension depuis le nom du fichier ou le type MIME
-  const fileExt = file.name.split('.').pop() || file.type.split('/')[1];
-  console.log("File extension:", fileExt);
+  // Extraction de l'extension depuis le type MIME pour garantir la cohérence
+  const fileExt = file.type.split('/')[1];
+  console.log("File extension from MIME type:", fileExt);
 
-  // Génération d'un nom de fichier unique
-  const fileName = `${Math.random()}.${fileExt}`;
+  // Génération d'un nom de fichier unique avec l'extension correcte
+  const fileName = `${crypto.randomUUID()}.${fileExt}`;
   console.log("Generated filename:", fileName);
 
   const { data, error } = await supabase.storage
     .from('clothes')
     .upload(fileName, file, {
       contentType: file.type,
+      cacheControl: '3600',
       upsert: false
     });
 
@@ -39,23 +40,31 @@ export const uploadImageToSupabase = async (file: File): Promise<string> => {
 
   console.log("Upload successful:", data);
 
+  // Récupération de l'URL publique
   const { data: { publicUrl } } = supabase.storage
     .from('clothes')
     .getPublicUrl(data.path);
 
-  console.log("Public URL:", publicUrl);
+  // Vérification que l'URL est bien formée
+  const finalUrl = new URL(publicUrl).toString();
+  console.log("Final public URL:", finalUrl);
 
-  // Vérification finale de l'URL
+  // Vérification de l'accessibilité de l'image
   try {
-    const response = await fetch(publicUrl);
+    const response = await fetch(finalUrl);
     console.log("URL verification response:", {
       status: response.status,
       contentType: response.headers.get('content-type'),
-      url: publicUrl
+      url: finalUrl
     });
+
+    if (!response.ok) {
+      throw new Error(`Failed to verify image URL: ${response.status}`);
+    }
   } catch (error) {
     console.error("Error verifying URL:", error);
+    throw error;
   }
 
-  return publicUrl;
+  return finalUrl;
 };
