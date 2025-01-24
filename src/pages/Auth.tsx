@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -12,30 +12,49 @@ const Auth = () => {
     const checkSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
+        
         if (error) {
           console.error("Error checking session:", error);
-          toast({
-            variant: "destructive",
-            title: "Erreur d'authentification",
-            description: "Impossible de vérifier votre session"
-          });
+          // Try to refresh the session
+          const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+          if (refreshError) {
+            console.error("Error refreshing session:", refreshError);
+            toast.error("Erreur d'authentification. Veuillez vous reconnecter.");
+            // Clear any existing session data
+            await supabase.auth.signOut();
+            return;
+          }
+          if (refreshData.session) {
+            console.log("Session refreshed successfully");
+            navigate("/");
+            return;
+          }
         }
+
         if (session) {
-          console.log("Session exists, redirecting to home");
+          console.log("Valid session found, redirecting to home");
           navigate("/");
         }
       } catch (error) {
         console.error("Error in checkSession:", error);
+        toast.error("Une erreur est survenue lors de la vérification de la session");
       }
     };
 
     checkSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event, session);
+      
       if (event === 'SIGNED_IN') {
         console.log("User signed in, redirecting to home");
         navigate("/");
+      } else if (event === 'SIGNED_OUT') {
+        console.log("User signed out");
+        // Clear any remaining session data
+        await supabase.auth.signOut();
+      } else if (event === 'TOKEN_REFRESHED') {
+        console.log("Token refreshed successfully");
       }
     });
 
