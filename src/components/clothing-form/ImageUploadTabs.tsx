@@ -18,6 +18,7 @@ interface ImageUploadTabsProps {
   onFileUpload: (file: File) => Promise<string | null>;
   onCameraCapture: () => Promise<void>;
   onUrlUpload: (url: string) => Promise<void>;
+  onResetPreview: () => void;
 }
 
 export const ImageUploadTabs = ({
@@ -27,6 +28,8 @@ export const ImageUploadTabs = ({
   uploadError,
   onFileUpload,
   onCameraCapture,
+  onUrlUpload,
+  onResetPreview,
 }: ImageUploadTabsProps) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState<string>("");
@@ -76,7 +79,7 @@ export const ImageUploadTabs = ({
         return;
       }
 
-      form.setValue("image", imageUrl, { shouldValidate: true });
+      await onUrlUpload(imageUrl);
       toast.success("Image importée avec succès");
     } catch (error) {
       console.error("URL import error:", error);
