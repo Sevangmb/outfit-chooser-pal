@@ -17,19 +17,19 @@ export const useImageUpload = () => {
         throw new Error('Format de fichier invalide. Seules les images sont autorisées.');
       }
 
-      // Créer une URL de preview
+      // Create preview URL
       const preview = URL.createObjectURL(file);
       console.log("Created preview URL:", preview);
       setPreviewUrl(preview);
 
-      // Générer un nom de fichier unique
+      // Generate unique filename
       const timestamp = new Date().toISOString().replace(/[^0-9]/g, "");
       const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
       const fileName = `${timestamp}_${crypto.randomUUID()}.${fileExt}`;
 
       console.log("Uploading file to Supabase:", fileName);
 
-      // Upload direct vers Supabase
+      // Upload to Supabase
       const { data, error: uploadError } = await supabase.storage
         .from('clothes')
         .upload(fileName, file, {
@@ -42,7 +42,7 @@ export const useImageUpload = () => {
         throw uploadError;
       }
 
-      // Récupérer l'URL publique
+      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('clothes')
         .getPublicUrl(fileName);
