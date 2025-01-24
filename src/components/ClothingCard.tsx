@@ -35,50 +35,85 @@ export const ClothingCard = ({ id, image, name, category, color }: ClothingCardP
 
     const loadImage = async () => {
       try {
-        // Check if the image URL is a Supabase storage URL
-        if (image.includes('supabase.co')) {
-          const path = image.split('/clothes/')[1];
-          if (!path) {
-            console.error("Invalid image path format:", image);
-            throw new Error("Invalid image path");
-          }
-
-          console.log("Attempting to get signed URL for path:", path);
-          
-          const { data: { signedUrl }, error: signedUrlError } = await supabase.storage
-            .from('clothes')
-            .createSignedUrl(path, 3600); // 1 hour expiry
-
-          if (signedUrlError) {
-            console.error("Error getting signed URL:", signedUrlError);
-            throw signedUrlError;
-          }
-
-          if (!signedUrl) {
-            console.error("No signed URL received for path:", path);
-            throw new Error("Failed to get signed URL");
-          }
-
-          console.log("Successfully obtained signed URL for:", name);
-          setImageUrl(signedUrl);
-        } else {
-          // If not a Supabase URL, use the original URL
-          console.log("Using original image URL:", image);
-          setImageUrl(image);
+        // First check if the image URL is valid
+        if (!image.includes('clothes/')) {
+          console.error("Invalid image URL format:", image);
+          throw new Error("Invalid image URL format");
         }
+
+        // Extract the path after 'clothes/'
+        const pathMatch = image.match(/clothes\/(.+)/);
+        if (!pathMatch) {
+          console.error("Could not extract image path from URL:", image);
+          throw new Error("Invalid image path format");
+        }
+
+        const path = pathMatch[1];
+        console.log("Attempting to get signed URL for path:", path);
+
+        // Check if the file exists in storage first
+        const { data: fileExists, error: checkError } = await supabase.storage
+          .from('clothes')
+          .list('', {
+            search: path
+          });
+
+        if (checkError) {
+          console.error("Error checking file existence:", checkError);
+          throw checkError;
+        }
+
+        if (!fileExists || fileExists.length === 0) {
+          console.error("File does not exist in storage:", path);
+          throw new Error("Image file not found in storage");
+        }
+
+        // If file exists, get the signed URL
+        const { data: { signedUrl }, error: signedUrlError } = await supabase.storage
+          .from('clothes')
+          .createSignedUrl(path, 3600); // 1 hour expiry
+
+        if (signedUrlError) {
+          console.error("Error getting signed URL:", signedUrlError);
+          throw signedUrlError;
+        }
+
+        if (!signedUrl) {
+          console.error("No signed URL received for path:", path);
+          throw new Error("Failed to get signed URL");
+        }
+
+        console.log("Successfully obtained signed URL for:", name);
+        setImageUrl(signedUrl);
       } catch (error) {
         console.error("Error loading image for:", name, error);
         setImageError(true);
         toast.error(`Erreur de chargement de l'image pour ${name}`, {
           description: "L'image n'est plus disponible ou a été supprimée"
         });
+
+        // Update the database to remove the invalid image reference
+        try {
+          const { error: updateError } = await supabase
+            .from('clothes')
+            .update({ image: null })
+            .eq('id', id);
+
+          if (updateError) {
+            console.error("Error updating clothing record:", updateError);
+          } else {
+            console.log("Successfully removed invalid image reference for:", name);
+          }
+        } catch (updateError) {
+          console.error("Error updating clothing record:", updateError);
+        }
       } finally {
         setIsLoading(false);
       }
     };
 
     loadImage();
-  }, [image, name]);
+  }, [image, name, id]);
 
   return (
     <>
