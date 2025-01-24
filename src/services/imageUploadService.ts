@@ -12,10 +12,23 @@ export const uploadImageToSupabase = async (file: File): Promise<string | null> 
     
     console.log("Generated filename:", fileName);
 
+    // First check if the file already exists
+    const { data: existingFile } = await supabase.storage
+      .from('clothes')
+      .list('', {
+        search: fileName
+      });
+
+    if (existingFile && existingFile.length > 0) {
+      console.error("File already exists:", fileName);
+      throw new Error('File already exists');
+    }
+
     // Upload the file
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('clothes')
       .upload(fileName, file, {
+        contentType: file.type,
         cacheControl: '3600',
         upsert: false
       });
@@ -31,6 +44,18 @@ export const uploadImageToSupabase = async (file: File): Promise<string | null> 
     const { data: { publicUrl } } = supabase.storage
       .from('clothes')
       .getPublicUrl(fileName);
+
+    // Verify the URL is accessible
+    try {
+      const response = await fetch(publicUrl, { method: 'HEAD' });
+      if (!response.ok) {
+        console.error("Generated URL is not accessible:", publicUrl);
+        throw new Error('Generated URL is not accessible');
+      }
+    } catch (error) {
+      console.error("Error verifying URL accessibility:", error);
+      throw error;
+    }
 
     console.log("Successfully generated public URL:", publicUrl);
     return publicUrl;
