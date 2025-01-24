@@ -35,56 +35,30 @@ export const ClothingCard = ({ id, image, name, category, color }: ClothingCardP
 
     const loadImage = async () => {
       try {
-        // First check if the image URL is valid
-        if (!image.includes('clothes/')) {
-          console.error("Invalid image URL format:", image);
-          throw new Error("Invalid image URL format");
+        // Use the public URL directly if it's already a public URL
+        if (image.includes('/object/public/')) {
+          console.log("Using public URL directly:", image);
+          setImageUrl(image);
+          return;
         }
 
-        // Extract the path after 'clothes/'
-        const pathMatch = image.match(/clothes\/(.+)/);
-        if (!pathMatch) {
-          console.error("Could not extract image path from URL:", image);
-          throw new Error("Invalid image path format");
+        // Extract the filename from the path
+        const fileName = image.split('/').pop();
+        if (!fileName) {
+          throw new Error("Invalid image path");
         }
 
-        const path = pathMatch[1];
-        console.log("Attempting to get signed URL for path:", path);
-
-        // Check if the file exists in storage first
-        const { data: fileExists, error: checkError } = await supabase.storage
+        // Get the public URL for the image
+        const { data: { publicUrl }, error: urlError } = supabase.storage
           .from('clothes')
-          .list('', {
-            search: path
-          });
+          .getPublicUrl(fileName);
 
-        if (checkError) {
-          console.error("Error checking file existence:", checkError);
-          throw checkError;
+        if (urlError) {
+          throw urlError;
         }
 
-        if (!fileExists || fileExists.length === 0) {
-          console.error("File does not exist in storage:", path);
-          throw new Error("Image file not found in storage");
-        }
-
-        // If file exists, get the signed URL
-        const { data: { signedUrl }, error: signedUrlError } = await supabase.storage
-          .from('clothes')
-          .createSignedUrl(path, 3600); // 1 hour expiry
-
-        if (signedUrlError) {
-          console.error("Error getting signed URL:", signedUrlError);
-          throw signedUrlError;
-        }
-
-        if (!signedUrl) {
-          console.error("No signed URL received for path:", path);
-          throw new Error("Failed to get signed URL");
-        }
-
-        console.log("Successfully obtained signed URL for:", name);
-        setImageUrl(signedUrl);
+        console.log("Successfully obtained public URL for:", name);
+        setImageUrl(publicUrl);
       } catch (error) {
         console.error("Error loading image for:", name, error);
         setImageError(true);

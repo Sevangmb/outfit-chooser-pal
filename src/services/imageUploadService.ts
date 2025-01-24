@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export const uploadImageToSupabase = async (file: File): Promise<string | null> => {
   try {
@@ -26,40 +27,22 @@ export const uploadImageToSupabase = async (file: File): Promise<string | null> 
       throw uploadError;
     }
 
-    // Get the public URL using the createSignedUrl method
-    const { data: { signedUrl }, error: signedUrlError } = await supabase.storage
+    // Get the public URL
+    const { data: { publicUrl }, error: urlError } = supabase.storage
       .from('clothes')
-      .createSignedUrl(fileName, 31536000); // 1 year expiry
+      .getPublicUrl(fileName);
 
-    if (signedUrlError) {
-      console.error("Error getting signed URL:", signedUrlError);
-      throw signedUrlError;
+    if (urlError) {
+      console.error("Error getting public URL:", urlError);
+      throw urlError;
     }
 
-    // Verify the URL is accessible
-    try {
-      const response = await fetch(signedUrl, { method: 'HEAD' });
-      if (!response.ok) {
-        console.error("Generated URL is not accessible:", signedUrl, response.status);
-        throw new Error('Generated URL is not accessible');
-      }
-      
-      const contentType = response.headers.get('content-type');
-      if (!contentType?.startsWith('image/')) {
-        console.error("Invalid content type for image:", contentType);
-        throw new Error('Invalid content type for uploaded image');
-      }
-      
-      console.log("Successfully verified URL accessibility:", signedUrl);
-    } catch (error) {
-      console.error("Error verifying URL accessibility:", error);
-      throw error;
-    }
-
-    return signedUrl;
+    console.log("Successfully uploaded image, public URL:", publicUrl);
+    return publicUrl;
 
   } catch (error) {
     console.error("Error in uploadImageToSupabase:", error);
+    toast.error("Erreur lors du téléchargement de l'image");
     throw error;
   }
 };
