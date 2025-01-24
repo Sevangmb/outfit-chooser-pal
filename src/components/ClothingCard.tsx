@@ -180,8 +180,8 @@ export const ClothingCard = ({ id, name, category, color, image }: ClothingCardP
         </CardContent>
       </Card>
       <ClothingDetailsDialog
-        open={isDetailsOpen}
-        onOpenChange={setIsDetailsOpen}
+        isOpen={isDetailsOpen}
+        onClose={() => setIsDetailsOpen(false)}
         clothingId={id}
       />
     </>
