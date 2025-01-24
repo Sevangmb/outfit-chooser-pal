@@ -5,10 +5,9 @@ import { FormControl, FormItem, FormLabel, FormMessage } from "@/components/ui/f
 import { UseFormReturn } from "react-hook-form";
 import { FormValues } from "@/types/clothing";
 import { toast } from "sonner";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
-import { verifyImageUrl } from "@/utils/imageValidation";
 
 interface ImageUploadTabsProps {
   form: UseFormReturn<FormValues>;
@@ -44,7 +43,7 @@ export const ImageUploadTabs = ({
         return;
       }
 
-      console.log("File selected:", file.name);
+      console.log("File selected:", file.name, file.type);
       setSelectedFile(file);
       
       const imageUrl = await onFileUpload(file);
@@ -133,12 +132,6 @@ export const ImageUploadTabs = ({
           </div>
         </div>
 
-        {selectedFile && (
-          <div className="text-sm text-muted-foreground">
-            Fichier sélectionné: {selectedFile.name} ({Math.round(selectedFile.size / 1024)} KB)
-          </div>
-        )}
-
         {uploadError && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
@@ -152,6 +145,11 @@ export const ImageUploadTabs = ({
               src={previewUrl}
               alt="Aperçu"
               className="w-full h-full object-contain"
+              onError={(e) => {
+                console.error("Error loading image:", previewUrl);
+                e.currentTarget.style.display = 'none';
+                toast.error("Erreur lors du chargement de l'image");
+              }}
             />
           </div>
         )}
