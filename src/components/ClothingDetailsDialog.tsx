@@ -61,10 +61,13 @@ export const ClothingDetailsDialog = ({ isOpen, onClose, clothingId }: ClothingD
             return;
           }
 
+          console.log("Analyzing color with session token:", session.access_token);
+          
           const { data, error } = await supabase.functions.invoke('analyze-color', {
             body: { hexColor: clothing.color },
             headers: {
               Authorization: `Bearer ${session.access_token}`,
+              'Content-Type': 'application/json',
             },
           });
 
@@ -72,6 +75,8 @@ export const ClothingDetailsDialog = ({ isOpen, onClose, clothingId }: ClothingD
             console.error('Error analyzing color:', error);
             throw error;
           }
+
+          console.log("Color analysis response:", data);
 
           if (data) {
             setColorName(data.colorName);
