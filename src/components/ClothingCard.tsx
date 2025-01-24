@@ -27,23 +27,27 @@ export const ClothingCard = ({ image, name, category, color }: ClothingCardProps
   const validateImageUrl = async (url: string) => {
     try {
       setIsValidatingImage(true);
-      const response = await fetch(url, { method: 'HEAD' });
       
-      console.log("Image validation response:", {
-        url,
-        status: response.status,
-        ok: response.ok,
-        contentType: response.headers.get('content-type'),
+      // Create a new Image object to test loading
+      const img = new Image();
+      img.src = url;
+      
+      await new Promise((resolve, reject) => {
+        img.onload = () => {
+          console.log("Image loaded successfully:", {
+            url,
+            naturalWidth: img.naturalWidth,
+            naturalHeight: img.naturalHeight
+          });
+          resolve(true);
+        };
+        img.onerror = () => {
+          console.error("Image failed to load:", url);
+          reject(new Error("Image failed to load"));
+        };
       });
 
-      if (!response.ok || !response.headers.get('content-type')?.startsWith('image/')) {
-        console.error("Invalid image URL:", {
-          url,
-          status: response.status,
-          statusText: response.statusText
-        });
-        setImageError(true);
-      }
+      setImageError(false);
     } catch (error) {
       console.error("Error validating image URL:", {
         url,
