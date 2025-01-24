@@ -1,10 +1,71 @@
-export default function Index() {
+import { useEffect } from "react";
+import { ClothingCard } from "@/components/ClothingCard";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+import { AddClothingDialog } from "@/components/AddClothingDialog";
+
+interface Clothing {
+  id: number;
+  name: string;
+  category: string;
+  color: string;
+  image?: string;
+}
+
+const fetchClothes = async () => {
+  console.log("Fetching clothes from Supabase...");
+  const { data, error } = await supabase
+    .from("clothes")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching clothes:", error);
+    throw error;
+  }
+
+  console.log("Fetched clothes:", data);
+  return data;
+};
+
+const Index = () => {
+  const { data: clothes = [], isLoading, error } = useQuery({
+    queryKey: ["clothes"],
+    queryFn: fetchClothes,
+  });
+
+  useEffect(() => {
+    if (error) {
+      console.error("Error in clothes query:", error);
+      toast.error("Erreur lors du chargement des vêtements");
+    }
+  }, [error]);
+
+  if (isLoading) {
+    return <div>Chargement...</div>;
+  }
+
   return (
-    <div className="container mx-auto py-6">
-      <h1 className="text-2xl font-bold mb-4">Bienvenue</h1>
-      <p className="text-muted-foreground">
-        Découvrez et partagez vos tenues préférées.
-      </p>
+    <div className="container py-8 px-4 mx-auto">
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-3xl font-semibold">Ma Garde-robe</h1>
+        <AddClothingDialog />
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {clothes.map((item) => (
+          <ClothingCard
+            key={item.id}
+            image={item.image}
+            name={item.name}
+            category={item.category}
+            color={item.color}
+          />
+        ))}
+      </div>
     </div>
   );
-}
+};
+
+export default Index;

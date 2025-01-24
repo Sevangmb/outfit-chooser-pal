@@ -15,7 +15,7 @@ export const AddClothingDialog = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <AddClothingButton onClick={() => setOpen(true)} />
+        <AddClothingButton onClick={() => {}} />
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
