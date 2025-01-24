@@ -48,14 +48,10 @@ export const ClothingCard = ({ id, image, name, category, color }: ClothingCardP
           throw new Error("Invalid image path");
         }
 
-        // Get the public URL for the image
-        const { data: { publicUrl }, error: urlError } = supabase.storage
+        // Get the public URL for the image - note that getPublicUrl doesn't return an error
+        const { data: { publicUrl } } = supabase.storage
           .from('clothes')
           .getPublicUrl(fileName);
-
-        if (urlError) {
-          throw urlError;
-        }
 
         console.log("Successfully obtained public URL for:", name);
         setImageUrl(publicUrl);
