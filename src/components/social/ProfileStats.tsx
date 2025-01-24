@@ -114,9 +114,7 @@ export const ProfileStats = ({ userId }: ProfileStatsProps) => {
               <BarChart data={categoryStats || []}>
                 <XAxis dataKey="name" />
                 <YAxis />
-                <ChartTooltip>
-                  <ChartTooltipContent />
-                </ChartTooltip>
+                <Tooltip content={<ChartTooltipContent />} />
                 <Bar dataKey="value" fill="var(--color-category)" />
               </BarChart>
             </ChartContainer>
@@ -144,8 +142,8 @@ export const ProfileStats = ({ userId }: ProfileStatsProps) => {
                   />
                 ))}
               </Pie>
-              <ChartTooltip>
-                {({ active, payload }) => {
+              <Tooltip 
+                content={({ active, payload }) => {
                   if (active && payload && payload.length) {
                     return (
                       <div className="bg-background border border-border p-2 rounded-lg shadow-lg">
@@ -155,7 +153,7 @@ export const ProfileStats = ({ userId }: ProfileStatsProps) => {
                   }
                   return null;
                 }}
-              </ChartTooltip>
+              />
             </PieChart>
           </div>
         </div>
