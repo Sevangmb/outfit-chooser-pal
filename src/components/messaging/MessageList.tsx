@@ -12,7 +12,7 @@ interface Message {
   content: string;
   created_at: string;
   read_at: string | null;
-  profiles?: {
+  profiles: {
     email: string;
   };
 }
@@ -45,14 +45,16 @@ export const MessageList = ({ onSelectConversation, selectedConversation }: Mess
   const { data: directMessages = [], isLoading: isLoadingDirect } = useQuery({
     queryKey: ["messages"],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: sessionData } = await supabase.auth.getSession();
+      const user = sessionData?.session?.user;
       if (!user) return [];
 
       const { data, error } = await supabase
         .from("user_messages")
         .select(`
           *,
-          profiles:recipient_id(email)
+          sender:sender_id(email),
+          recipient:recipient_id(email)
         `)
         .or(`sender_id.eq.${user.id},recipient_id.eq.${user.id}`)
         .order("created_at", { ascending: false });
@@ -69,7 +71,8 @@ export const MessageList = ({ onSelectConversation, selectedConversation }: Mess
   const { data: groupMessages = [], isLoading: isLoadingGroup } = useQuery({
     queryKey: ["groupMessages"],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: sessionData } = await supabase.auth.getSession();
+      const user = sessionData?.session?.user;
       if (!user) return [];
 
       const { data, error } = await supabase
@@ -100,7 +103,11 @@ export const MessageList = ({ onSelectConversation, selectedConversation }: Mess
   }
 
   const uniqueConversations = directMessages.reduce((acc, message) => {
-    const otherUserId = message.sender_id === supabase.auth.user()?.id 
+    const { data: sessionData } = supabase.auth.getSession();
+    const user = sessionData?.session?.user;
+    if (!user) return acc;
+
+    const otherUserId = message.sender_id === user.id 
       ? message.recipient_id 
       : message.sender_id;
     
@@ -108,7 +115,7 @@ export const MessageList = ({ onSelectConversation, selectedConversation }: Mess
       acc.push({
         type: "direct" as const,
         id: otherUserId,
-        name: message.profiles?.email || "Utilisateur",
+        name: message.sender_id === user.id ? message.recipient.email : message.sender.email,
         lastMessage: message.content,
         timestamp: message.created_at,
       });
