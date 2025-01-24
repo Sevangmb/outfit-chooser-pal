@@ -17,9 +17,11 @@ export const useImageUpload = () => {
         throw new Error('Invalid file type. Only images are allowed.');
       }
 
+      // Create a preview URL for the image
       const preview = URL.createObjectURL(file);
       setPreviewUrl(preview);
 
+      // Upload the original file to Supabase
       const imageUrl = await uploadImageToSupabase(file);
       console.log("Upload successful, URL:", imageUrl);
       
