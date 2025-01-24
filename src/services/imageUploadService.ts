@@ -26,8 +26,6 @@ export const uploadImageToSupabase = async (file: File): Promise<string | null> 
       throw uploadError;
     }
 
-    console.log("Upload successful, getting public URL");
-    
     // Get the public URL
     const { data: { publicUrl } } = supabase.storage
       .from('clothes')
@@ -40,6 +38,7 @@ export const uploadImageToSupabase = async (file: File): Promise<string | null> 
         console.error("Generated URL is not accessible:", publicUrl);
         throw new Error('Generated URL is not accessible');
       }
+      console.log("Successfully verified URL accessibility:", publicUrl);
     } catch (error) {
       console.error("Error verifying URL accessibility:", error);
       throw error;
