@@ -1,4 +1,6 @@
-export const analyzeImage = async (imageUrl: string): Promise<{ category?: string } | null> => {
+import { supabase } from "@/integrations/supabase/client";
+
+export const analyzeImage = async (imageUrl: string): Promise<{ category?: string, name?: string } | null> => {
   try {
     console.log("Starting image analysis for:", imageUrl);
     
@@ -15,20 +17,35 @@ export const analyzeImage = async (imageUrl: string): Promise<{ category?: strin
     const ratio = img.width / img.height;
     console.log("Image ratio:", ratio);
 
-    // Détection basée sur les proportions de l'image
+    // Appel à l'Edge Function pour l'analyse de l'image
+    const { data: analysisData, error } = await supabase.functions.invoke('analyze-image', {
+      body: { imageUrl }
+    });
+
+    if (error) {
+      console.error("Error calling analyze-image function:", error);
+      throw error;
+    }
+
+    console.log("Analysis results:", analysisData);
+
+    // Détection de la catégorie basée sur les proportions et le nom détecté
+    let category = "Hauts"; // default
     if (ratio > 1.5) {
       console.log("Detected: Chaussures (wide ratio)");
-      return { category: "Chaussures" };
+      category = "Chaussures";
     } else if (ratio < 0.7) {
       console.log("Detected: Pantalon (tall ratio)");
-      return { category: "Bas" };
+      category = "Bas";
     } else if (ratio >= 0.7 && ratio <= 0.9) {
       console.log("Detected: Hauts (medium-tall ratio)");
-      return { category: "Hauts" };
-    } else {
-      console.log("No specific category detected, defaulting to Hauts");
-      return { category: "Hauts" };
+      category = "Hauts";
     }
+
+    return { 
+      category,
+      name: analysisData.name 
+    };
   } catch (error) {
     console.error("Error analyzing image:", error);
     return null;
