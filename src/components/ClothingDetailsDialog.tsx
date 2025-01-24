@@ -2,9 +2,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Pencil } from "lucide-react";
+import { Pencil, Palette } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface ClothingDetailsDialogProps {
   isOpen: boolean;
@@ -15,6 +16,8 @@ interface ClothingDetailsDialogProps {
 export const ClothingDetailsDialog = ({ isOpen, onClose, clothingId }: ClothingDetailsDialogProps) => {
   const navigate = useNavigate();
   const [isOwner, setIsOwner] = useState(false);
+  const [colorName, setColorName] = useState<string | null>(null);
+  const [colorPalette, setColorPalette] = useState<string[]>([]);
   
   const { data: clothing, isLoading } = useQuery({
     queryKey: ['clothing', clothingId],
@@ -47,6 +50,39 @@ export const ClothingDetailsDialog = ({ isOpen, onClose, clothingId }: ClothingD
 
     checkOwnership();
   }, [clothing]);
+
+  useEffect(() => {
+    const analyzeColor = async () => {
+      if (clothing?.color && clothing.color.startsWith('#')) {
+        try {
+          const response = await fetch(
+            'https://bjydiorocaixosezpylh.supabase.co/functions/v1/analyze-color',
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY}`,
+              },
+              body: JSON.stringify({ hexColor: clothing.color }),
+            }
+          );
+
+          if (!response.ok) throw new Error('Failed to analyze color');
+
+          const data = await response.json();
+          setColorName(data.colorName);
+          setColorPalette(data.palette);
+        } catch (error) {
+          console.error('Error analyzing color:', error);
+          toast.error("Erreur lors de l'analyse de la couleur");
+        }
+      }
+    };
+
+    if (clothing?.color) {
+      analyzeColor();
+    }
+  }, [clothing?.color]);
 
   const handleEdit = () => {
     console.log("Redirecting to edit page with clothing:", clothing);
@@ -122,9 +158,23 @@ export const ClothingDetailsDialog = ({ isOpen, onClose, clothingId }: ClothingD
             <div>
               <h3 className="font-medium text-primary mb-2">Caractéristiques</h3>
               <div className="space-y-2 text-sm">
-                <p><span className="font-medium">Couleur principale:</span> {clothing.color}</p>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">Couleur principale:</span>
+                  <div 
+                    className="w-4 h-4 rounded-full border"
+                    style={{ backgroundColor: clothing.color }}
+                  />
+                  <span>{colorName || clothing.color}</span>
+                </div>
                 {clothing.secondary_color && (
-                  <p><span className="font-medium">Couleur secondaire:</span> {clothing.secondary_color}</p>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">Couleur secondaire:</span>
+                    <div 
+                      className="w-4 h-4 rounded-full border"
+                      style={{ backgroundColor: clothing.secondary_color }}
+                    />
+                    <span>{clothing.secondary_color}</span>
+                  </div>
                 )}
                 {clothing.size && (
                   <p><span className="font-medium">Taille:</span> {clothing.size}</p>
@@ -134,6 +184,25 @@ export const ClothingDetailsDialog = ({ isOpen, onClose, clothingId }: ClothingD
                 )}
               </div>
             </div>
+
+            {colorPalette.length > 0 && (
+              <div>
+                <h3 className="font-medium text-primary mb-2 flex items-center gap-2">
+                  <Palette className="h-4 w-4" />
+                  Palette de couleurs suggérée
+                </h3>
+                <div className="flex gap-2">
+                  {colorPalette.map((color, index) => (
+                    <div
+                      key={index}
+                      className="w-8 h-8 rounded-full border"
+                      style={{ backgroundColor: color }}
+                      title={`Couleur complémentaire ${index + 1}`}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
 
             {clothing.is_for_sale && (
               <div>
