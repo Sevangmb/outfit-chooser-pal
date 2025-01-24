@@ -24,6 +24,7 @@ export const ImageAnalysisButton = ({ form, previewUrl, isUploading }: ImageAnal
       // Analyze image for category
       const analysis = await analyzeImage(previewUrl);
       if (analysis?.category) {
+        console.log("Setting category to:", analysis.category);
         form.setValue("category", analysis.category, { shouldValidate: true });
         toast.success(`Catégorie détectée : ${analysis.category}`);
       }
@@ -33,10 +34,7 @@ export const ImageAnalysisButton = ({ form, previewUrl, isUploading }: ImageAnal
       if (dominantColor && dominantColor !== '#000000') {
         console.log('Setting color to:', dominantColor);
         form.setValue("color", dominantColor, { shouldValidate: true });
-        
-        // Convert hex to color name (simplified version)
-        const colorName = getColorName(dominantColor);
-        toast.success(`Couleur principale détectée : ${colorName}`);
+        toast.success(`Couleur principale détectée : ${getColorName(dominantColor)}`);
       }
     } catch (error) {
       console.error("Error analyzing image:", error);
@@ -45,7 +43,6 @@ export const ImageAnalysisButton = ({ form, previewUrl, isUploading }: ImageAnal
   };
 
   const getColorName = (hex: string): string => {
-    // Simplified color mapping - you might want to expand this
     const colors: Record<string, string> = {
       '#FF0000': 'Rouge',
       '#00FF00': 'Vert',
@@ -56,16 +53,22 @@ export const ImageAnalysisButton = ({ form, previewUrl, isUploading }: ImageAnal
       '#000000': 'Noir',
       '#FFFFFF': 'Blanc',
       '#808080': 'Gris',
+      '#A52A2A': 'Marron',
+      '#FFA500': 'Orange',
+      '#800080': 'Violet',
+      '#FFC0CB': 'Rose',
+      '#8B4513': 'Marron',
+      '#808000': 'Olive',
+      '#4B0082': 'Indigo'
     };
-
-    // Find the closest color (very basic implementation)
-    let closestColor = 'Couleur inconnue';
-    let minDistance = Number.MAX_VALUE;
 
     // Convert hex to RGB
     const r = parseInt(hex.slice(1, 3), 16);
     const g = parseInt(hex.slice(3, 5), 16);
     const b = parseInt(hex.slice(5, 7), 16);
+
+    let closestColor = 'Couleur inconnue';
+    let minDistance = Number.MAX_VALUE;
 
     Object.entries(colors).forEach(([colorHex, colorName]) => {
       const r2 = parseInt(colorHex.slice(1, 3), 16);
@@ -91,7 +94,7 @@ export const ImageAnalysisButton = ({ form, previewUrl, isUploading }: ImageAnal
     <Button
       type="button"
       variant="outline"
-      className="w-full"
+      className="w-full mb-4"
       onClick={analyzeUploadedImage}
       disabled={isUploading}
     >
