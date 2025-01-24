@@ -60,12 +60,18 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
     }
   };
 
+  const handleSubmit = async (values: FormValues) => {
+    if (onSuccess) {
+      onSuccess();
+    }
+  };
+
   return (
     <FormContainer
       form={form}
-      onSuccess={onSuccess}
-      isUploading={isUploading}
-      uploadError={uploadError}
+      onSubmit={handleSubmit}
+      isValid={form.formState.isValid}
+      isSubmitting={form.formState.isSubmitting}
       errors={form.formState.errors}
     >
       <div className="space-y-8">
@@ -73,9 +79,10 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
           form={form}
           isUploading={isUploading}
           previewUrl={previewUrl}
-          onImageUpload={handleImageUpload}
+          onFileUpload={handleImageUpload}
           onCameraCapture={handleCameraCapture}
           onResetPreview={resetPreview}
+          uploadError={uploadError}
         />
         <FieldsSection form={form} />
       </div>
