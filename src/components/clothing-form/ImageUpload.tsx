@@ -30,9 +30,14 @@ export const ImageUpload = ({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const imageUrl = await onFileUpload(file);
-    if (imageUrl) {
-      form.setValue("image", imageUrl, { shouldValidate: true });
+    try {
+      // Directly pass the File object, not FormData
+      const imageUrl = await onFileUpload(file);
+      if (imageUrl) {
+        form.setValue("image", imageUrl, { shouldValidate: true });
+      }
+    } catch (error) {
+      console.error("Error uploading file:", error);
     }
   };
 
