@@ -3,18 +3,30 @@ import { useImageUpload } from "@/hooks/useImageUpload";
 import { FormContainer } from "./clothing-form/FormContainer";
 import { ImageSection } from "./clothing-form/ImageSection";
 import { FieldsSection } from "./clothing-form/FieldsSection";
+import { FormValues } from "@/types/clothing";
 
 interface AddClothingFormProps {
   onSuccess?: () => void;
 }
 
 export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
-  const form = useForm({
+  const form = useForm<FormValues>({
     defaultValues: {
-      image: "",
+      image: null,
       name: "",
       category: "",
       color: "",
+      subcategory: "",
+      brand: "",
+      secondary_color: "",
+      size: "",
+      material: "",
+      notes: "",
+      imageUrl: "",
+      is_for_sale: false,
+      purchase_price: null,
+      selling_price: null,
+      location: null,
     },
   });
   
