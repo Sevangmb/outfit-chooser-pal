@@ -1,44 +1,35 @@
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { UseFormReturn } from "react-hook-form";
-import { FormValues } from "@/types/clothing";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Ruler, Scissors } from "lucide-react";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useState } from "react";
-import { cn } from "@/lib/utils";
-import { Check, ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { Check, ChevronsUpDown, Ruler, Tag } from "lucide-react";
+import { UseFormReturn } from "react-hook-form";
+import { FormValues } from "@/types/clothing";
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+
+const materials = [
+  { value: "coton", label: "Coton" },
+  { value: "laine", label: "Laine" },
+  { value: "polyester", label: "Polyester" },
+  { value: "nylon", label: "Nylon" },
+  { value: "soie", label: "Soie" },
+  { value: "lin", label: "Lin" },
+  { value: "cuir", label: "Cuir" },
+  { value: "denim", label: "Denim" },
+];
 
 interface DetailsFieldsProps {
   form: UseFormReturn<FormValues>;
 }
 
 export const DetailsFields = ({ form }: DetailsFieldsProps) => {
-  const [openMaterial, setOpenMaterial] = useState(false);
-
-  const { data: materials = [], isLoading: materialsLoading } = useQuery({
-    queryKey: ['materials'],
-    queryFn: async () => {
-      console.log("Fetching materials...");
-      const { data, error } = await supabase
-        .from('clothing_materials')
-        .select('*')
-        .order('name');
-      if (error) {
-        console.error("Error fetching materials:", error);
-        throw error;
-      }
-      console.log("Materials fetched:", data);
-      return data || [];
-    }
-  });
+  const [open, setOpen] = useState(false);
 
   return (
-    <>
+    <div className="space-y-4">
       <FormField
         control={form.control}
         name="size"
@@ -49,7 +40,7 @@ export const DetailsFields = ({ form }: DetailsFieldsProps) => {
               Taille
             </FormLabel>
             <FormControl>
-              <Input placeholder="S, M, L, 42, etc." {...field} />
+              <Input placeholder="S, M, L, XL, 42, etc." {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -60,23 +51,25 @@ export const DetailsFields = ({ form }: DetailsFieldsProps) => {
         control={form.control}
         name="material"
         render={({ field }) => (
-          <FormItem>
+          <FormItem className="flex flex-col">
             <FormLabel className="flex items-center gap-2">
-              <Scissors className="h-4 w-4" />
+              <Tag className="h-4 w-4" />
               Matière
             </FormLabel>
-            <Popover open={openMaterial} onOpenChange={setOpenMaterial}>
+            <Popover open={open} onOpenChange={setOpen}>
               <PopoverTrigger asChild>
                 <FormControl>
                   <Button
                     variant="outline"
                     role="combobox"
-                    aria-expanded={openMaterial}
-                    className="w-full justify-between"
-                    disabled={materialsLoading}
+                    aria-expanded={open}
+                    className={cn(
+                      "w-full justify-between",
+                      !field.value && "text-muted-foreground"
+                    )}
                   >
                     {field.value
-                      ? materials?.find((material) => material.name === field.value)?.name
+                      ? materials.find((material) => material.value === field.value)?.label
                       : "Sélectionner une matière"}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
@@ -87,22 +80,22 @@ export const DetailsFields = ({ form }: DetailsFieldsProps) => {
                   <CommandInput placeholder="Rechercher une matière..." />
                   <CommandEmpty>Aucune matière trouvée.</CommandEmpty>
                   <CommandGroup>
-                    {(materials || []).map((material) => (
+                    {materials.map((material) => (
                       <CommandItem
-                        key={material.id}
-                        value={material.name}
+                        key={material.value}
+                        value={material.value}
                         onSelect={() => {
-                          form.setValue("material", material.name);
-                          setOpenMaterial(false);
+                          form.setValue("material", material.value);
+                          setOpen(false);
                         }}
                       >
                         <Check
                           className={cn(
                             "mr-2 h-4 w-4",
-                            field.value === material.name ? "opacity-100" : "opacity-0"
+                            field.value === material.value ? "opacity-100" : "opacity-0"
                           )}
                         />
-                        {material.name}
+                        {material.label}
                       </CommandItem>
                     ))}
                   </CommandGroup>
@@ -121,16 +114,16 @@ export const DetailsFields = ({ form }: DetailsFieldsProps) => {
           <FormItem>
             <FormLabel>Notes</FormLabel>
             <FormControl>
-              <Textarea 
-                placeholder="Notes personnelles (optionnel)" 
-                className="resize-none" 
-                {...field} 
+              <Textarea
+                placeholder="Ajoutez des notes sur ce vêtement..."
+                className="resize-none"
+                {...field}
               />
             </FormControl>
             <FormMessage />
           </FormItem>
         )}
       />
-    </>
+    </div>
   );
 };
