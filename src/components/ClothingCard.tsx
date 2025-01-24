@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Shirt } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { useEffect } from "react";
 
 interface ClothingCardProps {
   image?: string;
@@ -11,6 +12,39 @@ interface ClothingCardProps {
 
 export const ClothingCard = ({ image, name, category, color }: ClothingCardProps) => {
   console.log("Rendering ClothingCard with image:", image);
+
+  useEffect(() => {
+    if (image) {
+      // Vérifie l'URL de l'image au montage du composant
+      validateImageUrl(image);
+    }
+  }, [image]);
+
+  const validateImageUrl = async (url: string) => {
+    try {
+      const response = await fetch(url);
+      console.log("Image validation response:", {
+        url,
+        status: response.status,
+        ok: response.ok,
+        contentType: response.headers.get('content-type'),
+        contentLength: response.headers.get('content-length')
+      });
+
+      if (!response.ok) {
+        console.error("Invalid image URL:", {
+          url,
+          status: response.status,
+          statusText: response.statusText
+        });
+      }
+    } catch (error) {
+      console.error("Error validating image URL:", {
+        url,
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  };
 
   // Détermine le type de contenu en fonction de l'URL
   const getContentType = (url: string) => {
@@ -32,23 +66,6 @@ export const ClothingCard = ({ image, name, category, color }: ClothingCardProps
 
   // Vérifie si l'URL de l'image est valide
   const isValidImageUrl = image && getContentType(image);
-  
-  // Log pour le débogage
-  if (image) {
-    console.log("Image content type:", getContentType(image));
-    
-    fetch(image)
-      .then(response => {
-        console.log("Image response:", {
-          contentType: response.headers.get('content-type'),
-          status: response.status,
-          url: response.url
-        });
-      })
-      .catch(error => {
-        console.error("Error fetching image:", error);
-      });
-  }
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow border-secondary/50 hover:border-primary/30 bg-background/50 backdrop-blur-sm">
