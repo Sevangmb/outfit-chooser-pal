@@ -30,6 +30,7 @@ export const ClothingCard = ({ id, name, category, color, image }: ClothingCardP
   const [isLoading, setIsLoading] = useState(true);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [imageError, setImageError] = useState(false);
 
   const handleDelete = async () => {
     try {
@@ -83,6 +84,7 @@ export const ClothingCard = ({ id, name, category, color, image }: ClothingCardP
       try {
         // Check if the image is already a full URL
         if (image.startsWith('http')) {
+          console.log("Loading image from URL:", image);
           setImageUrl(image);
           setIsLoading(false);
           return;
@@ -93,6 +95,7 @@ export const ClothingCard = ({ id, name, category, color, image }: ClothingCardP
         
         if (!fileName) {
           console.error("Invalid image path:", image);
+          setImageError(true);
           throw new Error("Invalid image path");
         }
 
@@ -101,9 +104,11 @@ export const ClothingCard = ({ id, name, category, color, image }: ClothingCardP
           .from('clothes')
           .getPublicUrl(fileName);
 
+        console.log("Generated public URL:", publicUrl);
         setImageUrl(publicUrl);
       } catch (error) {
         console.error("Error loading image:", error);
+        setImageError(true);
       } finally {
         setIsLoading(false);
       }
@@ -121,11 +126,15 @@ export const ClothingCard = ({ id, name, category, color, image }: ClothingCardP
               <div className="flex h-full items-center justify-center bg-muted">
                 <Shirt className="h-8 w-8 animate-pulse text-muted-foreground" />
               </div>
-            ) : imageUrl ? (
+            ) : imageUrl && !imageError ? (
               <img
                 src={imageUrl}
                 alt={name}
                 className="object-cover transition-all group-hover:scale-105"
+                onError={(e) => {
+                  console.error("Error loading image:", imageUrl);
+                  setImageError(true);
+                }}
               />
             ) : (
               <div className="flex h-full items-center justify-center bg-muted">
