@@ -120,18 +120,23 @@ export const UserFiles = () => {
   const handleFileClick = async (file: any) => {
     if (file.content_type.startsWith('image/')) {
       try {
-        const { data } = supabase.storage
+        console.log("Attempting to get public URL for file:", file.file_path);
+        
+        const { data: { publicUrl } } = supabase.storage
           .from('user_files')
           .getPublicUrl(file.file_path);
 
-        if (!data.publicUrl) {
-          console.error("No public URL returned");
+        if (!publicUrl) {
+          console.error("No public URL returned for file:", file.file_path);
           toast.error("Erreur lors de la récupération de l'image");
           return;
         }
 
-        console.log("Image public URL:", data.publicUrl);
-        setPreviewImage(data.publicUrl);
+        // Verify the URL structure
+        const url = new URL(publicUrl);
+        console.log("Generated public URL:", url.toString());
+        
+        setPreviewImage(publicUrl);
       } catch (error) {
         console.error("Error handling file click:", error);
         toast.error("Erreur lors de l'affichage de l'image");
@@ -202,6 +207,11 @@ export const UserFiles = () => {
               src={previewImage} 
               alt="Aperçu" 
               className="w-full h-auto rounded-lg"
+              onError={(e) => {
+                console.error("Error loading image:", previewImage);
+                toast.error("Erreur lors du chargement de l'image");
+                setPreviewImage(null);
+              }}
             />
           )}
         </DialogContent>
