@@ -4,25 +4,13 @@ export const uploadImageToSupabase = async (file: File): Promise<string | null> 
   try {
     console.log("Starting image upload to Supabase:", file.name);
     
-    // Generate a timestamp-based filename to avoid collisions
+    // Generate a unique filename using timestamp and UUID
     const timestamp = new Date().toISOString().replace(/[^0-9]/g, "");
-    const randomId = Math.random().toString(36).substring(2, 15);
+    const uuid = crypto.randomUUID();
     const fileExt = file.name.split('.').pop();
-    const fileName = `${timestamp}_${randomId}.${fileExt}`;
+    const fileName = `${timestamp}_${uuid}.${fileExt}`;
     
     console.log("Generated filename:", fileName);
-
-    // First check if the file already exists
-    const { data: existingFile } = await supabase.storage
-      .from('clothes')
-      .list('', {
-        search: fileName
-      });
-
-    if (existingFile && existingFile.length > 0) {
-      console.error("File already exists:", fileName);
-      throw new Error('File already exists');
-    }
 
     // Upload the file
     const { data: uploadData, error: uploadError } = await supabase.storage
