@@ -1,9 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ClothingCard } from "@/components/ClothingCard";
+import { AddClothingButton } from "@/components/AddClothingButton";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { AddClothingDialog } from "@/components/AddClothingDialog";
 
 interface Clothing {
   id: number;
@@ -42,6 +42,11 @@ const Index = () => {
     }
   }, [error]);
 
+  const handleAddClothing = () => {
+    console.log("Ouvrir le formulaire d'ajout");
+    toast("Cette fonctionnalité sera bientôt disponible !");
+  };
+
   if (isLoading) {
     return <div>Chargement...</div>;
   }
@@ -50,7 +55,7 @@ const Index = () => {
     <div className="container py-8 px-4 mx-auto">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-semibold">Ma Garde-robe</h1>
-        <AddClothingDialog />
+        <AddClothingButton onClick={handleAddClothing} />
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
