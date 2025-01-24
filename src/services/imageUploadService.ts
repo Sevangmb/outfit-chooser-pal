@@ -1,4 +1,29 @@
 import { supabase } from "@/integrations/supabase/client";
+import Resizer from "react-image-file-resizer";
+
+const resizeFile = (file: File): Promise<Blob> => {
+  return new Promise((resolve) => {
+    Resizer.imageFileResizer(
+      file,
+      800, // max width
+      800, // max height
+      "JPEG",
+      80, // quality
+      0, // rotation
+      (uri) => {
+        if (uri instanceof Blob) {
+          resolve(uri);
+        } else {
+          // If it's a base64 string, convert it to Blob
+          fetch(uri as string)
+            .then(res => res.blob())
+            .then(blob => resolve(blob));
+        }
+      },
+      "blob"
+    );
+  });
+};
 
 export const uploadImageToSupabase = async (file: File): Promise<string> => {
   console.log("Starting image upload to Supabase:", {
@@ -7,19 +32,16 @@ export const uploadImageToSupabase = async (file: File): Promise<string> => {
     fileSize: file.size
   });
 
-  if (!file.type.startsWith('image/')) {
-    throw new Error(`Invalid file type: ${file.type}. Only images are allowed.`);
-  }
-
   try {
-    // Generate a unique filename with proper extension
+    // Resize and optimize the image before upload
+    const optimizedBlob = await resizeFile(file);
     const fileExt = file.name.split('.').pop() || 'jpg';
     const filePath = `${crypto.randomUUID()}.${fileExt}`;
 
     const { data, error: uploadError } = await supabase.storage
       .from('clothes')
-      .upload(filePath, file, {
-        contentType: file.type,
+      .upload(filePath, optimizedBlob, {
+        contentType: 'image/jpeg',
         cacheControl: '3600',
         upsert: false
       });
@@ -36,18 +58,11 @@ export const uploadImageToSupabase = async (file: File): Promise<string> => {
 
     console.log("Upload successful:", data);
 
-    // Get the public URL
     const { data: { publicUrl } } = supabase.storage
       .from('clothes')
       .getPublicUrl(data.path);
 
-    // Verify the URL is accessible
-    const response = await fetch(publicUrl);
-    if (!response.ok) {
-      throw new Error(`Failed to verify uploaded image: ${response.status}`);
-    }
-
-    console.log("Image URL verified and accessible:", publicUrl);
+    console.log("Image URL generated:", publicUrl);
     return publicUrl;
   } catch (error) {
     console.error("Error in uploadImageToSupabase:", error);
