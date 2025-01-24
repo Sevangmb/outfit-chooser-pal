@@ -21,21 +21,16 @@ export const uploadImageToSupabase = async (file: File): Promise<string | null> 
       });
 
     if (uploadError) {
-      console.error("Error uploading to Supabase:", uploadError);
+      console.error("Upload error:", uploadError);
       throw uploadError;
     }
 
     console.log("Upload successful, getting public URL");
     
-    // Get the public URL
-    const { data: { publicUrl }, error: urlError } = supabase.storage
+    // Get the public URL - this method doesn't return an error
+    const { data: { publicUrl } } = supabase.storage
       .from('clothes')
       .getPublicUrl(fileName);
-
-    if (urlError) {
-      console.error("Error getting public URL:", urlError);
-      throw urlError;
-    }
 
     console.log("Successfully generated public URL:", publicUrl);
     return publicUrl;
