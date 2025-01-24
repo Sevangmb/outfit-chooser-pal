@@ -1,19 +1,12 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { FollowList } from "@/components/social/FollowList";
-import { ProfileStats } from "@/components/social/ProfileStats";
-import { UserOutfits } from "@/components/social/UserOutfits";
-import { UserFiles } from "@/components/files/UserFiles";
-import { Button } from "@/components/ui/button";
-import { Settings, Shield } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { ProfileHeader } from "@/components/profile/ProfileHeader";
+import { ProfileContent } from "@/components/profile/ProfileContent";
 
 const Profile = () => {
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
 
   const { data: session } = useQuery({
@@ -119,60 +112,15 @@ const Profile = () => {
     <div className="min-h-screen bg-secondary/30">
       <div className="container py-8 px-4 mx-auto mt-16">
         <Card className="max-w-2xl mx-auto">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Avatar className="w-20 h-20">
-                <AvatarImage src="https://images.unsplash.com/photo-1527576539890-dfa815648363" />
-                <AvatarFallback>
-                  {profile.email?.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <h2 className="text-2xl font-semibold text-primary">{profile.email}</h2>
-                <p className="text-sm text-muted-foreground">
-                  Membre depuis le {new Date(profile.created_at).toLocaleDateString()}
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              {isAdmin && (
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => navigate("/admin")}
-                  className="border-primary/20 hover:bg-primary/10"
-                >
-                  <Shield className="h-4 w-4" />
-                  <span className="sr-only">Administration</span>
-                </Button>
-              )}
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => navigate("/settings")}
-                className="border-primary/20 hover:bg-primary/10"
-              >
-                <Settings className="h-4 w-4" />
-                <span className="sr-only">Paramètres</span>
-              </Button>
-            </div>
+          <CardHeader>
+            <ProfileHeader 
+              email={profile.email}
+              createdAt={profile.created_at}
+              isAdmin={isAdmin || false}
+            />
           </CardHeader>
-          <CardContent className="space-y-6">
-            <>
-              <ProfileStats userId={profile.id} />
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-primary">Mes fichiers</h3>
-                <UserFiles />
-              </div>
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-primary">Mes tenues</h3>
-                <UserOutfits userId={profile.id} />
-              </div>
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-primary">Abonnements</h3>
-                <FollowList userId={profile.id} />
-              </div>
-            </>
+          <CardContent>
+            <ProfileContent userId={profile.id} />
           </CardContent>
         </Card>
       </div>
