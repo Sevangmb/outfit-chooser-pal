@@ -12,12 +12,22 @@ export const useImageUpload = () => {
     setUploadError(null);
 
     try {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        throw new Error('Invalid file type. Only images are allowed.');
+      }
+
       // Create preview URL
       const preview = URL.createObjectURL(file);
       setPreviewUrl(preview);
 
+      // Generate unique filename using UUID
+      const fileExt = file.name.split('.').pop() || 'jpg';
+      const fileName = `${crypto.randomUUID()}.${fileExt}`;
+      console.log("Generated unique filename:", fileName);
+
       // Upload to Supabase
-      const imageUrl = await uploadImageToSupabase(file);
+      const imageUrl = await uploadImageToSupabase(file, fileName);
       console.log("Upload successful, URL:", imageUrl);
       
       return imageUrl;

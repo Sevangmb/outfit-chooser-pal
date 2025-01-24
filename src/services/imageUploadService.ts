@@ -1,8 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
 
-export const uploadImageToSupabase = async (file: File): Promise<string> => {
+export const uploadImageToSupabase = async (file: File, fileName: string): Promise<string> => {
   console.log("Starting image upload to Supabase:", {
-    fileName: file.name,
+    fileName,
     fileType: file.type,
     fileSize: file.size
   });
@@ -10,11 +10,6 @@ export const uploadImageToSupabase = async (file: File): Promise<string> => {
   if (!file.type.startsWith('image/')) {
     throw new Error(`Invalid file type: ${file.type}. Only images are allowed.`);
   }
-
-  // Generate a unique filename using UUID
-  const fileExt = file.type.split('/')[1];
-  const fileName = `${crypto.randomUUID()}.${fileExt}`;
-  console.log("Generated unique filename:", fileName);
 
   try {
     const { data, error } = await supabase.storage
