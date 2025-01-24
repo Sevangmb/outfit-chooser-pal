@@ -35,31 +35,43 @@ export const ClothingCard = ({ id, image, name, category, color }: ClothingCardP
 
     const loadImage = async () => {
       try {
-        // Try to get a fresh signed URL for the image
+        // Check if the image URL is a Supabase storage URL
         if (image.includes('supabase.co')) {
-          const path = image.split('/public/clothes/')[1];
-          if (path) {
-            const { data: { signedUrl }, error } = await supabase.storage
-              .from('clothes')
-              .createSignedUrl(path, 3600);
-
-            if (error) {
-              console.error("Error getting signed URL:", error);
-              throw error;
-            }
-
-            if (signedUrl) {
-              setImageUrl(signedUrl);
-              return;
-            }
+          const path = image.split('/clothes/')[1];
+          if (!path) {
+            console.error("Invalid image path format:", image);
+            throw new Error("Invalid image path");
           }
+
+          console.log("Attempting to get signed URL for path:", path);
+          
+          const { data: { signedUrl }, error: signedUrlError } = await supabase.storage
+            .from('clothes')
+            .createSignedUrl(path, 3600); // 1 hour expiry
+
+          if (signedUrlError) {
+            console.error("Error getting signed URL:", signedUrlError);
+            throw signedUrlError;
+          }
+
+          if (!signedUrl) {
+            console.error("No signed URL received for path:", path);
+            throw new Error("Failed to get signed URL");
+          }
+
+          console.log("Successfully obtained signed URL for:", name);
+          setImageUrl(signedUrl);
+        } else {
+          // If not a Supabase URL, use the original URL
+          console.log("Using original image URL:", image);
+          setImageUrl(image);
         }
-        // Fallback to original URL if not a Supabase URL or if getting signed URL fails
-        setImageUrl(image);
       } catch (error) {
-        console.error("Error loading image:", error);
+        console.error("Error loading image for:", name, error);
         setImageError(true);
-        toast.error(`Erreur de chargement de l'image pour ${name}`);
+        toast.error(`Erreur de chargement de l'image pour ${name}`, {
+          description: "L'image n'est plus disponible ou a été supprimée"
+        });
       } finally {
         setIsLoading(false);
       }
