@@ -697,7 +697,13 @@ export type Database = {
         | "remove_banned_word"
         | "update_setting"
       app_role: "admin" | "user"
-      setting_type: "general" | "notification" | "legal"
+      setting_type:
+        | "general"
+        | "notification"
+        | "legal"
+        | "appearance"
+        | "social"
+        | "security"
     }
     CompositeTypes: {
       [_ in never]: never
