@@ -7,6 +7,80 @@ const corsHeaders = {
 
 const HUGGING_FACE_API_URL = "https://api-inference.huggingface.co/models/microsoft/resnet-50"
 
+// Mapping of common clothing terms to our categories
+const categoryMappings: Record<string, string> = {
+  // Hauts
+  'shirt': 'Hauts',
+  'tshirt': 'Hauts',
+  't-shirt': 'Hauts',
+  'sweater': 'Hauts',
+  'hoodie': 'Hauts',
+  'blouse': 'Hauts',
+  'top': 'Hauts',
+  'pull': 'Hauts',
+  'chemise': 'Hauts',
+  
+  // Bas
+  'pants': 'Bas',
+  'jeans': 'Bas',
+  'shorts': 'Bas',
+  'skirt': 'Bas',
+  'trousers': 'Bas',
+  'pantalon': 'Bas',
+  'jean': 'Bas',
+  
+  // Chaussures
+  'shoes': 'Chaussures',
+  'sneakers': 'Chaussures',
+  'boots': 'Chaussures',
+  'sandals': 'Chaussures',
+  'running': 'Chaussures',
+  'chaussures': 'Chaussures',
+  'basket': 'Chaussures',
+  
+  // Robes
+  'dress': 'Robes',
+  'gown': 'Robes',
+  'robe': 'Robes',
+  
+  // Manteaux
+  'coat': 'Manteaux',
+  'jacket': 'Manteaux',
+  'blazer': 'Manteaux',
+  'manteau': 'Manteaux',
+  'veste': 'Manteaux',
+  
+  // Accessoires
+  'hat': 'Accessoires',
+  'cap': 'Accessoires',
+  'scarf': 'Accessoires',
+  'belt': 'Accessoires',
+  'accessory': 'Accessoires',
+  'accessories': 'Accessoires',
+  'chapeau': 'Accessoires',
+  'casquette': 'Accessoires',
+  'écharpe': 'Accessoires',
+  'ceinture': 'Accessoires'
+}
+
+function detectCategory(label: string): string {
+  // Convert to lowercase for case-insensitive matching
+  const normalizedLabel = label.toLowerCase();
+  
+  // Check each word in the label against our mappings
+  const words = normalizedLabel.split(/[\s,]+/);
+  for (const word of words) {
+    if (categoryMappings[word]) {
+      console.log(`Detected category '${categoryMappings[word]}' from word '${word}'`);
+      return categoryMappings[word];
+    }
+  }
+  
+  // Default to "Hauts" if no category is detected
+  console.log("No specific category detected, defaulting to Hauts");
+  return "Hauts";
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -62,19 +136,34 @@ serve(async (req) => {
     let detectedName = ""
 
     if (topResult) {
+      // Extract name from the label
       detectedName = topResult.label
         .split(',')[0] // Take first part before comma
         .split(' ')[0] // Take first word
         .toLowerCase() // Convert to lowercase
+      
+      // Detect category based on the full label
+      const category = detectCategory(topResult.label)
+      
+      return new Response(
+        JSON.stringify({ 
+          name: detectedName,
+          category: category,
+          confidence: topResult.score || 0 
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
     return new Response(
       JSON.stringify({ 
-        name: detectedName,
-        confidence: topResult?.score || 0 
+        name: "",
+        category: "Hauts",
+        confidence: 0 
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
+
   } catch (error) {
     console.error('Error:', error)
     return new Response(
