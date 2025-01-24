@@ -1,6 +1,6 @@
 import { UseFormReturn } from "react-hook-form";
 import { FormValues } from "@/types/clothing";
-import { ImageUploadTabs } from "./ImageUploadTabs";
+import { ImageUpload } from "./ImageUpload";
 import { ImageAnalysisButton } from "./ImageAnalysisButton";
 
 interface ImageSectionProps {
@@ -10,7 +10,6 @@ interface ImageSectionProps {
   uploadError: string | null;
   onFileUpload: (file: File) => Promise<string | null>;
   onCameraCapture: () => Promise<void>;
-  onUrlUpload: (url: string) => Promise<void>;
 }
 
 export const ImageSection = ({
@@ -19,19 +18,17 @@ export const ImageSection = ({
   previewUrl,
   uploadError,
   onFileUpload,
-  onCameraCapture,
-  onUrlUpload
+  onCameraCapture
 }: ImageSectionProps) => {
   return (
     <div className="space-y-4">
-      <ImageUploadTabs
+      <ImageUpload
         form={form}
         isUploading={isUploading}
         previewUrl={previewUrl}
         uploadError={uploadError}
         onFileUpload={onFileUpload}
         onCameraCapture={onCameraCapture}
-        onUrlUpload={onUrlUpload}
       />
 
       {previewUrl && (

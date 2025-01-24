@@ -16,6 +16,7 @@ export const useImageAnalysis = (form: UseFormReturn<FormValues>) => {
       // Analyze image for category
       const analysis = await analyzeImage(previewUrl);
       if (analysis?.category) {
+        console.log("Setting category to:", analysis.category);
         form.setValue("category", analysis.category, { shouldValidate: true });
         toast.success(`Catégorie détectée : ${analysis.category}`);
       }
@@ -25,6 +26,7 @@ export const useImageAnalysis = (form: UseFormReturn<FormValues>) => {
       if (dominantColor && dominantColor !== '#000000') {
         console.log('Setting color to:', dominantColor);
         form.setValue("color", dominantColor, { shouldValidate: true });
+        toast.success(`Couleur principale détectée`);
       }
     } catch (error) {
       console.error("Error analyzing image:", error);

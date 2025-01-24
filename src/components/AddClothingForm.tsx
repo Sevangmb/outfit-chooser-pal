@@ -58,32 +58,6 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
     }
   };
 
-  const handleUrlUpload = async (url: string) => {
-    try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`Erreur HTTP: ${response.status}`);
-      }
-      
-      const blob = await response.blob();
-      if (!blob.type.startsWith('image/')) {
-        throw new Error("Le fichier n'est pas une image valide");
-      }
-      
-      const file = new File([blob], "url-image.jpg", { type: blob.type });
-      const imageUrl = await handleImageUpload(file);
-      
-      if (imageUrl) {
-        form.setValue("image", imageUrl, { shouldValidate: true });
-        form.setValue("imageUrl", "");
-        toast.success("Image téléchargée avec succès");
-      }
-    } catch (error) {
-      console.error("Error downloading image from URL:", error);
-      toast.error("Erreur lors du téléchargement de l'image depuis l'URL");
-    }
-  };
-
   return (
     <FormContainer
       form={form}
@@ -100,7 +74,6 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
           uploadError={uploadError}
           onFileUpload={handleImageUpload}
           onCameraCapture={handleCameraCapture}
-          onUrlUpload={handleUrlUpload}
         />
         <FieldsSection form={form} />
       </div>
