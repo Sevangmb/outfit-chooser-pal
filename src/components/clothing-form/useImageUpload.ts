@@ -1,51 +1,80 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { validateImageFile } from "@/utils/imageValidation";
-import { uploadImageToSupabase } from "@/services/imageUploadService";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useImageUpload = () => {
   const [isUploading, setIsUploading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
-  const uploadImage = async (file: File): Promise<string | null> => {
+  const handleImageUpload = async (file: File): Promise<string | null> => {
+    console.log("Starting image upload process:", file.name);
     setIsUploading(true);
-    console.log("Début de l'upload de l'image:", file.name);
+    setUploadError(null);
 
     try {
-      const isValid = await validateImageFile(file);
-      if (!isValid) {
-        toast.error("Format d'image invalide. Utilisez JPG, PNG, GIF ou WEBP.");
-        return null;
+      if (!file.type.startsWith('image/')) {
+        throw new Error('Format de fichier invalide. Seules les images sont autorisées.');
       }
 
-      // Upload direct sans optimisation
-      const publicUrl = await uploadImageToSupabase(file);
-      console.log("URL publique reçue:", publicUrl);
-      
-      if (!publicUrl) {
-        throw new Error("Échec de l'upload de l'image");
+      // Create preview URL
+      const preview = URL.createObjectURL(file);
+      console.log("Created preview URL:", preview);
+      setPreviewUrl(preview);
+
+      // Generate unique filename
+      const timestamp = new Date().toISOString().replace(/[^0-9]/g, "");
+      const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const fileName = `${timestamp}_${crypto.randomUUID()}.${fileExt}`;
+
+      console.log("Uploading file to Supabase:", fileName);
+
+      // Upload to Supabase
+      const { data, error: uploadError } = await supabase.storage
+        .from('clothes')
+        .upload(fileName, file, {
+          cacheControl: '31536000',
+          upsert: false
+        });
+
+      if (uploadError) {
+        console.error("Upload error:", uploadError);
+        throw uploadError;
       }
 
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('clothes')
+        .getPublicUrl(fileName);
+
+      console.log("Upload successful, public URL:", publicUrl);
       toast.success("Image téléchargée avec succès");
       return publicUrl;
 
     } catch (error) {
-      console.error("Erreur lors de l'upload:", error);
-      
-      // Message d'erreur spécifique pour le rejet par l'utilisateur
-      if (error instanceof Error && error.message.includes("rejected")) {
-        toast.error("Upload annulé par l'utilisateur");
-      } else {
-        toast.error("Erreur lors de l'upload de l'image");
-      }
-      
+      console.error("Error during image upload:", error);
+      const errorMessage = error instanceof Error ? error.message : "Erreur lors du téléchargement de l'image";
+      setUploadError(errorMessage);
+      toast.error(errorMessage);
       return null;
     } finally {
       setIsUploading(false);
     }
   };
 
+  const resetPreview = () => {
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
+    setUploadError(null);
+  };
+
   return {
-    uploadImage,
-    isUploading
+    isUploading,
+    previewUrl,
+    uploadError,
+    handleImageUpload,
+    resetPreview
   };
 };
