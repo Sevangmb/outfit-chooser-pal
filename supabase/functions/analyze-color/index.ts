@@ -139,17 +139,43 @@ serve(async (req) => {
 
   try {
     console.log("Received request:", req.method);
-    const requestData = await req.json();
-    console.log("Request data:", requestData);
+    
+    // Parse request body
+    let requestData;
+    try {
+      requestData = await req.json();
+      console.log("Request data:", requestData);
+    } catch (error) {
+      console.error("Error parsing request body:", error);
+      return new Response(
+        JSON.stringify({ error: "Invalid JSON in request body" }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
 
     if (!requestData || !requestData.hexColor) {
-      throw new Error('Missing hexColor in request body');
+      return new Response(
+        JSON.stringify({ error: 'Missing hexColor in request body' }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
     }
 
     const { hexColor } = requestData;
     
     if (!hexColor || !/^#[0-9A-F]{6}$/i.test(hexColor)) {
-      throw new Error('Invalid hex color format');
+      return new Response(
+        JSON.stringify({ error: 'Invalid hex color format' }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
     }
 
     const colorName = findClosestColor(hexColor);
@@ -177,7 +203,7 @@ serve(async (req) => {
       JSON.stringify({ error: error.message }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400
+        status: 500
       }
     );
   }
