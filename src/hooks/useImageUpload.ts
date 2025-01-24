@@ -1,11 +1,7 @@
 import { useState } from "react";
 import { uploadImageToSupabase } from "@/services/imageUploadService";
 import { toast } from "sonner";
-import { pipeline, env } from '@huggingface/transformers';
-
-// Configure transformers.js
-env.allowLocalModels = false;
-env.useBrowserCache = false;
+import { pipeline } from '@huggingface/transformers';
 
 const MAX_IMAGE_DIMENSION = 1024;
 
