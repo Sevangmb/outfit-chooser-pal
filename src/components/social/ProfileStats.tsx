@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { ChartContainer } from "@/components/ui/chart";
 
 interface ProfileStatsProps {
   userId: string;
@@ -83,6 +83,17 @@ export const ProfileStats = ({ userId }: ProfileStatsProps) => {
     "#0EA5E9", "#1EAEDB", "#33C3F0", "#0FA0CE", "#D3E4FD"
   ];
 
+  const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: any[] }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-background border border-border p-2 rounded-lg shadow-lg">
+          <p className="text-sm">{`${payload[0].name}: ${payload[0].value}`}</p>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex justify-around py-4 border-y border-border">
@@ -114,7 +125,7 @@ export const ProfileStats = ({ userId }: ProfileStatsProps) => {
               <BarChart data={categoryStats || []}>
                 <XAxis dataKey="name" />
                 <YAxis />
-                <Tooltip content={<ChartTooltipContent />} />
+                <Tooltip content={CustomTooltip} />
                 <Bar dataKey="value" fill="var(--color-category)" />
               </BarChart>
             </ChartContainer>
@@ -142,18 +153,7 @@ export const ProfileStats = ({ userId }: ProfileStatsProps) => {
                   />
                 ))}
               </Pie>
-              <Tooltip 
-                content={({ active, payload }) => {
-                  if (active && payload && payload.length) {
-                    return (
-                      <div className="bg-background border border-border p-2 rounded-lg shadow-lg">
-                        <p className="text-sm">{`${payload[0].name}: ${payload[0].value}`}</p>
-                      </div>
-                    );
-                  }
-                  return null;
-                }}
-              />
+              <Tooltip content={CustomTooltip} />
             </PieChart>
           </div>
         </div>
