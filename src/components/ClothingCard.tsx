@@ -12,27 +12,31 @@ interface ClothingCardProps {
 
 export const ClothingCard = ({ image, name, category, color }: ClothingCardProps) => {
   const [imageError, setImageError] = useState(false);
+  const [isValidatingImage, setIsValidatingImage] = useState(true);
   
   console.log("Rendering ClothingCard with image:", image);
 
   useEffect(() => {
     if (image) {
       validateImageUrl(image);
+    } else {
+      setIsValidatingImage(false);
     }
   }, [image]);
 
   const validateImageUrl = async (url: string) => {
     try {
-      const response = await fetch(url);
+      setIsValidatingImage(true);
+      const response = await fetch(url, { method: 'HEAD' });
+      
       console.log("Image validation response:", {
         url,
         status: response.status,
         ok: response.ok,
         contentType: response.headers.get('content-type'),
-        contentLength: response.headers.get('content-length')
       });
 
-      if (!response.ok) {
+      if (!response.ok || !response.headers.get('content-type')?.startsWith('image/')) {
         console.error("Invalid image URL:", {
           url,
           status: response.status,
@@ -46,6 +50,8 @@ export const ClothingCard = ({ image, name, category, color }: ClothingCardProps
         error: error instanceof Error ? error.message : String(error)
       });
       setImageError(true);
+    } finally {
+      setIsValidatingImage(false);
     }
   };
 
@@ -53,7 +59,7 @@ export const ClothingCard = ({ image, name, category, color }: ClothingCardProps
     <Card className="overflow-hidden hover:shadow-lg transition-shadow border-secondary/50 hover:border-primary/30 bg-background/50 backdrop-blur-sm">
       <CardHeader className="p-0">
         <AspectRatio ratio={4/3}>
-          {image && !imageError ? (
+          {image && !imageError && !isValidatingImage ? (
             <img
               src={image}
               alt={name}
