@@ -3,13 +3,14 @@ import { supabase } from "@/integrations/supabase/client";
 export const uploadImageToSupabase = async (file: File): Promise<string> => {
   console.log("Uploading to Supabase:", file.name);
   
-  const fileExt = "png"; // Always use PNG extension
+  // Garder l'extension d'origine du fichier
+  const fileExt = file.name.split('.').pop() || file.type.split('/')[1];
   const fileName = `${Math.random()}.${fileExt}`;
 
   const { data, error } = await supabase.storage
     .from('clothes')
     .upload(fileName, file, {
-      contentType: "image/png",
+      contentType: file.type, // Utiliser le type MIME d'origine
       upsert: false
     });
 
