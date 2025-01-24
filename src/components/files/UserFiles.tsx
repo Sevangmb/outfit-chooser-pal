@@ -1,16 +1,9 @@
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Upload, Trash2, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { FileUploadForm } from "./FileUploadForm";
+import { FileList } from "./FileList";
+import { FilePreviewDialog } from "./FilePreviewDialog";
 
 export const UserFiles = () => {
   const [uploading, setUploading] = useState(false);
@@ -25,14 +18,12 @@ export const UserFiles = () => {
       setUploading(true);
       console.log("Starting file upload:", file.name);
 
-      // Get current user
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         toast.error("Utilisateur non connecté");
         return;
       }
 
-      // Upload to Storage
       const fileExt = file.name.split('.').pop();
       const filePath = `${crypto.randomUUID()}.${fileExt}`;
 
@@ -46,7 +37,6 @@ export const UserFiles = () => {
         return;
       }
 
-      // Save file metadata
       const { error: dbError } = await supabase
         .from('user_files')
         .insert({
@@ -92,16 +82,14 @@ export const UserFiles = () => {
     }
   };
 
-  const deleteFile = async (fileId: string, filePath: string) => {
+  const handleFileDelete = async (fileId: string, filePath: string) => {
     try {
-      // Delete from storage
       const { error: storageError } = await supabase.storage
         .from('user_files')
         .remove([filePath]);
 
       if (storageError) throw storageError;
 
-      // Delete from database
       const { error: dbError } = await supabase
         .from('user_files')
         .delete()
@@ -122,26 +110,21 @@ export const UserFiles = () => {
       try {
         console.log("Attempting to get public URL for file:", file.file_path);
         
-        // Get the public URL using Supabase's getPublicUrl method
         const { data } = supabase.storage
           .from('user_files')
           .getPublicUrl(file.file_path);
 
-        const publicUrl = data.publicUrl;
-
-        if (!publicUrl) {
+        if (!data.publicUrl) {
           console.error("No public URL returned for file:", file.file_path);
           toast.error("Erreur lors de la récupération de l'image");
           return;
         }
 
-        // Log the URL for debugging
-        console.log("Generated public URL:", publicUrl);
+        console.log("Generated public URL:", data.publicUrl);
         
-        // Validate the URL
         try {
-          new URL(publicUrl);
-          setPreviewImage(publicUrl);
+          new URL(data.publicUrl);
+          setPreviewImage(data.publicUrl);
         } catch (urlError) {
           console.error("Invalid URL generated:", urlError);
           toast.error("URL de l'image invalide");
@@ -153,78 +136,25 @@ export const UserFiles = () => {
     }
   };
 
-  // Fetch files on component mount
   useEffect(() => {
     fetchFiles();
   }, []);
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-4">
-        <Input
-          type="file"
-          onChange={handleFileUpload}
-          disabled={uploading}
-          className="flex-1"
-        />
-        <Button disabled={uploading}>
-          <Upload className="w-4 h-4 mr-2" />
-          {uploading ? "Upload en cours..." : "Upload"}
-        </Button>
-      </div>
-
-      <div className="grid gap-4">
-        {files.map((file) => (
-          <div
-            key={file.id}
-            className="flex items-center justify-between p-4 bg-background/50 backdrop-blur-sm rounded-lg border border-secondary/50 cursor-pointer"
-            onClick={() => handleFileClick(file)}
-          >
-            <div className="flex items-center gap-3">
-              <FileText className="w-5 h-5 text-muted-foreground" />
-              <div>
-                <p className="font-medium">{file.filename}</p>
-                <p className="text-sm text-muted-foreground">
-                  {new Date(file.created_at).toLocaleDateString()}
-                </p>
-              </div>
-            </div>
-            <Button
-              variant="destructive"
-              size="icon"
-              onClick={(e) => {
-                e.stopPropagation();
-                deleteFile(file.id, file.file_path);
-              }}
-            >
-              <Trash2 className="w-4 h-4" />
-            </Button>
-          </div>
-        ))}
-      </div>
-
-      <Dialog open={!!previewImage} onOpenChange={() => setPreviewImage(null)}>
-        <DialogContent className="sm:max-w-[800px]">
-          <DialogHeader>
-            <DialogTitle>Aperçu de l'image</DialogTitle>
-            <DialogDescription>
-              Cliquez en dehors de la fenêtre pour fermer
-            </DialogDescription>
-          </DialogHeader>
-          {previewImage && (
-            <img 
-              src={previewImage} 
-              alt="Aperçu" 
-              className="w-full h-auto rounded-lg"
-              onError={(e) => {
-                console.error("Error loading image:", previewImage);
-                toast.error("Erreur lors du chargement de l'image");
-                setPreviewImage(null);
-              }}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+      <FileUploadForm 
+        uploading={uploading}
+        onFileUpload={handleFileUpload}
+      />
+      <FileList 
+        files={files}
+        onFileClick={handleFileClick}
+        onFileDelete={handleFileDelete}
+      />
+      <FilePreviewDialog 
+        previewImage={previewImage}
+        onOpenChange={(open) => !open && setPreviewImage(null)}
+      />
     </div>
   );
 };
