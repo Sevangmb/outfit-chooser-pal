@@ -55,7 +55,7 @@ export const MessagingSection = () => {
               content,
               created_at,
               sender_id,
-              sender:profiles!user_messages_sender_id_fkey(email)
+              sender:profiles(email)
             `)
             .eq("group_id", Number(selectedConversation.id))
             .order("created_at", { ascending: true });
