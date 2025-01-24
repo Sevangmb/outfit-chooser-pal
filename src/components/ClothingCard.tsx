@@ -3,20 +3,30 @@ import { Eye, Shirt, Trash2 } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ClothingDetailsDialog } from "./ClothingDetailsDialog";
-import { toast } from "sonner";
+import { ClothingDetailsDialog } from "@/components/ClothingDetailsDialog";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface ClothingCardProps {
   id: number;
-  image?: string;
   name: string;
   category: string;
   color: string;
+  image?: string | null;
 }
 
-export const ClothingCard = ({ id, image, name, category, color }: ClothingCardProps) => {
-  const [imageError, setImageError] = useState(false);
+export const ClothingCard = ({ id, name, category, color, image }: ClothingCardProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -65,28 +75,24 @@ export const ClothingCard = ({ id, image, name, category, color }: ClothingCardP
   
   useEffect(() => {
     if (!image) {
-      console.log("No image provided for clothing item:", name);
       setIsLoading(false);
       return;
     }
 
-    // Reset states when image URL changes
-    setImageError(false);
-    setIsLoading(true);
-    setImageUrl(null);
-
     const loadImage = async () => {
       try {
-        // Use the public URL directly if it's already a public URL
-        if (image.includes('/object/public/')) {
-          console.log("Using public URL directly:", image);
+        // Check if the image is already a full URL
+        if (image.startsWith('http')) {
           setImageUrl(image);
+          setIsLoading(false);
           return;
         }
 
-        // Extract the filename from the path
+        // Extract filename from path
         const fileName = image.split('/').pop();
+        
         if (!fileName) {
+          console.error("Invalid image path:", image);
           throw new Error("Invalid image path");
         }
 
@@ -95,108 +101,87 @@ export const ClothingCard = ({ id, image, name, category, color }: ClothingCardP
           .from('clothes')
           .getPublicUrl(fileName);
 
-        console.log("Successfully obtained public URL for:", name);
         setImageUrl(publicUrl);
       } catch (error) {
-        console.error("Error loading image for:", name, error);
-        setImageError(true);
-        toast.error(`Erreur de chargement de l'image pour ${name}`, {
-          description: "L'image n'est plus disponible ou a été supprimée"
-        });
-
-        // Update the database to remove the invalid image reference
-        try {
-          const { error: updateError } = await supabase
-            .from('clothes')
-            .update({ image: null })
-            .eq('id', id);
-
-          if (updateError) {
-            console.error("Error updating clothing record:", updateError);
-          } else {
-            console.log("Successfully removed invalid image reference for:", name);
-          }
-        } catch (updateError) {
-          console.error("Error updating clothing record:", updateError);
-        }
+        console.error("Error loading image:", error);
       } finally {
         setIsLoading(false);
       }
     };
 
     loadImage();
-  }, [image, name, id]);
+  }, [image]);
 
   return (
     <>
-      <Card className="overflow-hidden hover:shadow-lg transition-shadow border-secondary/50 hover:border-primary/30 bg-background/50 backdrop-blur-sm">
+      <Card className="group relative overflow-hidden transition-shadow hover:shadow-md">
         <CardHeader className="p-0">
-          <AspectRatio ratio={4/3}>
-            {imageUrl && !imageError ? (
-              <div className="relative w-full h-full">
-                {isLoading && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-secondary/30">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                  </div>
-                )}
-                <img
-                  src={imageUrl}
-                  alt={name}
-                  className={`w-full h-full object-cover bg-secondary/30 transition-opacity duration-300 ${
-                    isLoading ? 'opacity-0' : 'opacity-100'
-                  }`}
-                  loading="lazy"
-                  decoding="async"
-                  onLoad={() => setIsLoading(false)}
-                  onError={() => {
-                    console.error("Image error event triggered for:", imageUrl);
-                    setImageError(true);
-                    setIsLoading(false);
-                  }}
-                />
+          <AspectRatio ratio={1}>
+            {isLoading ? (
+              <div className="flex h-full items-center justify-center bg-muted">
+                <Shirt className="h-8 w-8 animate-pulse text-muted-foreground" />
               </div>
+            ) : imageUrl ? (
+              <img
+                src={imageUrl}
+                alt={name}
+                className="object-cover transition-all group-hover:scale-105"
+              />
             ) : (
-              <div className="w-full h-full bg-secondary/30 flex items-center justify-center">
-                <Shirt className="w-16 h-16 text-primary/40" />
+              <div className="flex h-full items-center justify-center bg-muted">
+                <Shirt className="h-8 w-8 text-muted-foreground" />
               </div>
             )}
           </AspectRatio>
         </CardHeader>
         <CardContent className="p-4">
-          <div className="flex justify-between items-start mb-2">
-            <div>
-              <h3 className="font-medium mb-1 text-primary">{name}</h3>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="space-y-2">
+            <h3 className="font-semibold">{name}</h3>
+            <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-1 text-sm text-muted-foreground">
                 <span>{category}</span>
-                <span>•</span>
                 <span>{color}</span>
               </div>
-            </div>
-            <div className="flex gap-2">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-8 w-8" 
-                onClick={() => setIsDetailsOpen(true)}
-              >
-                <Eye className="h-4 w-4 text-muted-foreground hover:text-primary" />
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-8 w-8 hover:bg-destructive/10" 
-                onClick={handleDelete}
-              >
-                <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8" 
+                  onClick={() => setIsDetailsOpen(true)}
+                >
+                  <Eye className="h-4 w-4 text-muted-foreground hover:text-primary" />
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-8 w-8 hover:bg-destructive/10"
+                    >
+                      <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Cette action est irréversible. Le vêtement et son image seront définitivement supprimés.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Annuler</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDelete}>Supprimer</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             </div>
           </div>
         </CardContent>
       </Card>
-
       <ClothingDetailsDialog
-        isOpen={isDetailsOpen}
-        onClose={() => setIsDetailsOpen(false)}
+        open={isDetailsOpen}
+        onOpenChange={setIsDetailsOpen}
         clothingId={id}
       />
     </>
