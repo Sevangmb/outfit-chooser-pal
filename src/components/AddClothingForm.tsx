@@ -125,7 +125,7 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
       } else {
         const { error } = await supabase
           .from('clothes')
-          .insert([clothingData]);
+          .insert(clothingData);
 
         if (error) throw error;
         toast.success("Vêtement ajouté avec succès");

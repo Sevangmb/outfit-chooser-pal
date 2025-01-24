@@ -2,8 +2,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 interface ClothingDetailsDialogProps {
   isOpen: boolean;
@@ -13,6 +14,7 @@ interface ClothingDetailsDialogProps {
 
 export const ClothingDetailsDialog = ({ isOpen, onClose, clothingId }: ClothingDetailsDialogProps) => {
   const navigate = useNavigate();
+  const [isOwner, setIsOwner] = useState(false);
   
   const { data: clothing, isLoading } = useQuery({
     queryKey: ['clothing', clothingId],
@@ -35,6 +37,17 @@ export const ClothingDetailsDialog = ({ isOpen, onClose, clothingId }: ClothingD
     enabled: isOpen && !!clothingId,
   });
 
+  useEffect(() => {
+    const checkOwnership = async () => {
+      if (clothing) {
+        const { data: { user } } = await supabase.auth.getUser();
+        setIsOwner(clothing.user_id === user?.id);
+      }
+    };
+
+    checkOwnership();
+  }, [clothing]);
+
   const handleEdit = () => {
     console.log("Redirecting to edit page with clothing:", clothing);
     onClose();
@@ -54,9 +67,6 @@ export const ClothingDetailsDialog = ({ isOpen, onClose, clothingId }: ClothingD
   }
 
   if (!clothing) return null;
-
-  const { data: { user } } = await supabase.auth.getUser();
-  const isOwner = clothing.user_id === user?.id;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
