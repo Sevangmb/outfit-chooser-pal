@@ -1,11 +1,11 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { pipeline } from "@huggingface/transformers";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+const HUGGING_FACE_API_URL = "https://api-inference.huggingface.co/models/microsoft/resnet-50";
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -16,22 +16,31 @@ serve(async (req) => {
     const { imageUrl } = await req.json();
     console.log("Analyzing image:", imageUrl);
 
-    // Create image classification pipeline
-    const classifier = await pipeline(
-      "image-classification",
-      "onnx-community/mobilenetv4_conv_small.e2400_r224_in1k",
-      { device: "webgpu" }
-    );
+    // Fetch the image data
+    const imageResponse = await fetch(imageUrl);
+    const imageBlob = await imageResponse.blob();
 
-    // Classify the image
-    const results = await classifier(imageUrl);
+    // Send image to Hugging Face API
+    const response = await fetch(HUGGING_FACE_API_URL, {
+      headers: {
+        'Authorization': `Bearer ${Deno.env.get('HUGGING_FACE_API_KEY')}`,
+        'Content-Type': 'application/json'
+      },
+      method: "POST",
+      body: imageBlob
+    });
+
+    if (!response.ok) {
+      throw new Error(`Hugging Face API error: ${response.statusText}`);
+    }
+
+    const results = await response.json();
     console.log("Classification results:", results);
 
     // Get the most likely label
     const topResult = results[0];
     let detectedName = "";
 
-    // Clean up the label (remove categories and keep just the item name)
     if (topResult) {
       detectedName = topResult.label
         .split(',')[0] // Take first part before comma
