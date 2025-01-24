@@ -5,7 +5,7 @@ export const uploadImageToSupabase = async (file: File): Promise<string | null> 
   try {
     console.log("Starting image upload to Supabase:", file.name);
     
-    // Generate a unique filename
+    // Générer un nom de fichier unique avec timestamp
     const timestamp = new Date().toISOString().replace(/[^0-9]/g, "");
     const uuid = crypto.randomUUID();
     const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
@@ -13,11 +13,11 @@ export const uploadImageToSupabase = async (file: File): Promise<string | null> 
     
     console.log("Generated filename:", fileName);
 
-    // Upload with better quality settings
+    // Upload avec des paramètres de qualité optimisés
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('clothes')
       .upload(fileName, file, {
-        cacheControl: '31536000', // Cache for 1 year
+        cacheControl: '31536000', // Cache pour 1 an
         contentType: file.type,
         upsert: false
       });
@@ -27,7 +27,7 @@ export const uploadImageToSupabase = async (file: File): Promise<string | null> 
       throw uploadError;
     }
 
-    // Get the public URL
+    // Récupérer l'URL publique
     const { data: { publicUrl } } = supabase.storage
       .from('clothes')
       .getPublicUrl(fileName);

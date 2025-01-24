@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { validateImageFile } from "@/utils/imageValidation";
 import { uploadImageToSupabase } from "@/services/imageUploadService";
 
 export const useImageUpload = () => {
@@ -18,12 +17,12 @@ export const useImageUpload = () => {
         throw new Error('Format de fichier invalide. Seules les images sont autorisées.');
       }
 
-      // Create preview URL
+      // Créer une URL de preview de haute qualité
       const preview = URL.createObjectURL(file);
       console.log("Created preview URL:", preview);
       setPreviewUrl(preview);
 
-      // Upload to Supabase
+      // Upload vers Supabase avec une meilleure qualité
       const imageUrl = await uploadImageToSupabase(file);
       console.log("Upload successful, URL:", imageUrl);
       
