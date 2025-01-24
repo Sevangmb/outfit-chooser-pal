@@ -54,10 +54,10 @@ const removeBackground = async (imageElement: HTMLImageElement): Promise<Blob> =
         device: 'webgpu',
       });
     } catch (error) {
-      console.log('WebGPU not available, falling back to CPU');
-      // If WebGPU fails, fall back to CPU
+      console.log('WebGPU not available, falling back to WASM');
+      // If WebGPU fails, fall back to WASM
       segmenter = await pipeline('image-segmentation', 'Xenova/segformer-b0-finetuned-ade-512-512', {
-        device: 'cpu',
+        device: 'wasm',
       });
     }
     
