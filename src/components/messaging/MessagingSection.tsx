@@ -57,7 +57,7 @@ export const MessagingSection = () => {
               sender_id,
               sender:profiles!user_messages_sender_id_fkey(email)
             `)
-            .eq("group_id", selectedConversation.id)
+            .eq("group_id", Number(selectedConversation.id))
             .order("created_at", { ascending: true });
         }
 
@@ -88,7 +88,7 @@ export const MessagingSection = () => {
           table: selectedConversation.type === 'direct' ? 'user_messages' : 'group_messages',
           filter: selectedConversation.type === 'direct' 
             ? `or(sender_id.eq.${selectedConversation.id},recipient_id.eq.${selectedConversation.id})`
-            : `group_id=eq.${selectedConversation.id}`
+            : `group_id=eq.${Number(selectedConversation.id)}`
         },
         (payload) => {
           console.log('New message received:', payload);
