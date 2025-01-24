@@ -92,25 +92,32 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
 
   const handleSubmit = async (values: FormValues) => {
     try {
+      if (!values.name || !values.category || !values.color) {
+        toast.error("Veuillez remplir tous les champs obligatoires");
+        return;
+      }
+
+      const clothingData = {
+        name: values.name,
+        category: values.category,
+        subcategory: values.subcategory,
+        brand: values.brand,
+        color: values.color,
+        secondary_color: values.secondary_color,
+        size: values.size,
+        material: values.material,
+        notes: values.notes,
+        image: values.image,
+        is_for_sale: values.is_for_sale,
+        purchase_price: values.purchase_price,
+        selling_price: values.selling_price,
+        location: values.location,
+      };
+
       if (mode === 'edit' && existingClothing?.id) {
         const { error } = await supabase
           .from('clothes')
-          .update({
-            name: values.name,
-            category: values.category,
-            subcategory: values.subcategory,
-            brand: values.brand,
-            color: values.color,
-            secondary_color: values.secondary_color,
-            size: values.size,
-            material: values.material,
-            notes: values.notes,
-            image: values.image,
-            is_for_sale: values.is_for_sale,
-            purchase_price: values.purchase_price,
-            selling_price: values.selling_price,
-            location: values.location,
-          })
+          .update(clothingData)
           .eq('id', existingClothing.id);
 
         if (error) throw error;
@@ -118,7 +125,7 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
       } else {
         const { error } = await supabase
           .from('clothes')
-          .insert([values]);
+          .insert([clothingData]);
 
         if (error) throw error;
         toast.success("Vêtement ajouté avec succès");

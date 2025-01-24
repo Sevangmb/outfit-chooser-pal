@@ -55,7 +55,8 @@ export const ClothingDetailsDialog = ({ isOpen, onClose, clothingId }: ClothingD
 
   if (!clothing) return null;
 
-  const isOwner = clothing.user_id === (supabase.auth.getUser()?.data?.user?.id);
+  const { data: { user } } = await supabase.auth.getUser();
+  const isOwner = clothing.user_id === user?.id;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
