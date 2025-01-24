@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useCallback, useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { verifyImageUrl } from "@/utils/imageValidation";
 
 interface ImageUploadTabsProps {
   form: UseFormReturn<FormValues>;
@@ -28,6 +29,7 @@ export const ImageUploadTabs = ({
   onCameraCapture,
 }: ImageUploadTabsProps) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [imageUrl, setImageUrl] = useState<string>("");
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -60,6 +62,28 @@ export const ImageUploadTabs = ({
     }
   };
 
+  const handleUrlSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!imageUrl) {
+      toast.error("Veuillez entrer une URL");
+      return;
+    }
+
+    try {
+      const isValid = await verifyImageUrl(imageUrl);
+      if (!isValid) {
+        toast.error("L'URL ne pointe pas vers une image valide");
+        return;
+      }
+
+      form.setValue("image", imageUrl, { shouldValidate: true });
+      toast.success("Image importée avec succès");
+    } catch (error) {
+      console.error("URL import error:", error);
+      toast.error("Erreur lors de l'import de l'image");
+    }
+  };
+
   return (
     <FormItem>
       <FormLabel>Image</FormLabel>
@@ -82,6 +106,26 @@ export const ImageUploadTabs = ({
           >
             <Camera className="h-4 w-4" />
           </Button>
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex gap-2">
+            <Input
+              type="url"
+              placeholder="URL de l'image"
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              className="flex-1"
+            />
+            <Button
+              type="button"
+              onClick={handleUrlSubmit}
+              disabled={isUploading || !imageUrl}
+              variant="outline"
+            >
+              <Upload className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
         {selectedFile && (
