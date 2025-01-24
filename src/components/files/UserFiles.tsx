@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Upload, Trash2, FileText } from "lucide-react";
@@ -31,6 +31,13 @@ export const UserFiles = () => {
         return;
       }
 
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Utilisateur non connecté");
+        return;
+      }
+
       // Save file metadata
       const { error: dbError } = await supabase
         .from('user_files')
@@ -39,6 +46,7 @@ export const UserFiles = () => {
           file_path: filePath,
           content_type: file.type,
           size: file.size,
+          user_id: user.id
         });
 
       if (dbError) {
@@ -59,9 +67,13 @@ export const UserFiles = () => {
 
   const fetchFiles = async () => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
       const { data, error } = await supabase
         .from('user_files')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -98,7 +110,7 @@ export const UserFiles = () => {
   };
 
   // Fetch files on component mount
-  useState(() => {
+  useEffect(() => {
     fetchFiles();
   }, []);
 
