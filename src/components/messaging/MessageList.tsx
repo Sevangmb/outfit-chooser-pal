@@ -4,6 +4,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
 
 interface Message {
   id: number;
@@ -46,6 +47,18 @@ interface MessageListProps {
 }
 
 export const MessageList = ({ onSelectConversation, selectedConversation }: MessageListProps) => {
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (!sessionError && sessionData?.session?.user) {
+        setCurrentUserId(sessionData.session.user.id);
+      }
+    };
+    getUser();
+  }, []);
+
   const { data: directMessages = [], isLoading: isLoadingDirect } = useQuery({
     queryKey: ["messages"],
     queryFn: async () => {
@@ -109,11 +122,9 @@ export const MessageList = ({ onSelectConversation, selectedConversation }: Mess
   }
 
   const uniqueConversations = directMessages.reduce((acc, message) => {
-    const { data: sessionData } = supabase.auth.getSession();
-    if (!sessionData?.session?.user) return acc;
-
-    const user = sessionData.session.user;
-    const otherUserId = message.sender_id === user.id 
+    if (!currentUserId) return acc;
+    
+    const otherUserId = message.sender_id === currentUserId 
       ? message.recipient_id 
       : message.sender_id;
     
@@ -121,7 +132,7 @@ export const MessageList = ({ onSelectConversation, selectedConversation }: Mess
       acc.push({
         type: "direct" as const,
         id: otherUserId,
-        name: message.sender_id === user.id ? message.recipient.email : message.sender.email,
+        name: message.sender_id === currentUserId ? message.recipient.email : message.sender.email,
         lastMessage: message.content,
         timestamp: message.created_at,
       });
