@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Shirt } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface ClothingCardProps {
   image?: string;
@@ -11,11 +11,12 @@ interface ClothingCardProps {
 }
 
 export const ClothingCard = ({ image, name, category, color }: ClothingCardProps) => {
+  const [imageError, setImageError] = useState(false);
+  
   console.log("Rendering ClothingCard with image:", image);
 
   useEffect(() => {
     if (image) {
-      // Vérifie l'URL de l'image au montage du composant
       validateImageUrl(image);
     }
   }, [image]);
@@ -37,47 +38,32 @@ export const ClothingCard = ({ image, name, category, color }: ClothingCardProps
           status: response.status,
           statusText: response.statusText
         });
+        setImageError(true);
       }
     } catch (error) {
       console.error("Error validating image URL:", {
         url,
         error: error instanceof Error ? error.message : String(error)
       });
+      setImageError(true);
     }
   };
-
-  // Détermine le type de contenu en fonction de l'URL
-  const getContentType = (url: string) => {
-    const extension = url.split('.').pop()?.toLowerCase();
-    switch (extension) {
-      case 'png':
-        return 'image/png';
-      case 'jpg':
-      case 'jpeg':
-        return 'image/jpeg';
-      case 'webp':
-        return 'image/webp';
-      case 'gif':
-        return 'image/gif';
-      default:
-        return null;
-    }
-  };
-
-  // Vérifie si l'URL de l'image est valide
-  const isValidImageUrl = image && getContentType(image);
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow border-secondary/50 hover:border-primary/30 bg-background/50 backdrop-blur-sm">
       <CardHeader className="p-0">
         <AspectRatio ratio={4/3}>
-          {isValidImageUrl ? (
+          {image && !imageError ? (
             <img
               src={image}
               alt={name}
               className="w-full h-full object-cover bg-secondary/30"
               loading="lazy"
               decoding="async"
+              onError={() => {
+                console.error("Image load error for:", image);
+                setImageError(true);
+              }}
               onLoad={(e) => {
                 const img = e.target as HTMLImageElement;
                 console.log("Image loaded successfully:", {
@@ -88,11 +74,6 @@ export const ClothingCard = ({ image, name, category, color }: ClothingCardProps
                   displayHeight: img.height,
                   currentSrc: img.currentSrc
                 });
-              }}
-              onError={(e) => {
-                console.error("Image load error:", e);
-                const imgElement = e.target as HTMLImageElement;
-                imgElement.src = "placeholder.svg";
               }}
             />
           ) : (
