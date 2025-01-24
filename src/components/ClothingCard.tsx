@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Eye, Shirt } from "lucide-react";
+import { Eye, Shirt, Trash2 } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,48 @@ export const ClothingCard = ({ id, image, name, category, color }: ClothingCardP
   const [isLoading, setIsLoading] = useState(true);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+
+  const handleDelete = async () => {
+    try {
+      // If there's an image, delete it from storage first
+      if (image) {
+        // Extract the filename from the path or URL
+        const fileName = image.split('/').pop();
+        if (fileName) {
+          console.log("Deleting image from storage:", fileName);
+          const { error: storageError } = await supabase.storage
+            .from('clothes')
+            .remove([fileName]);
+
+          if (storageError) {
+            console.error("Error deleting image from storage:", storageError);
+            toast.error("Erreur lors de la suppression de l'image");
+            return;
+          }
+        }
+      }
+
+      // Delete the clothing record from the database
+      const { error: dbError } = await supabase
+        .from('clothes')
+        .delete()
+        .eq('id', id);
+
+      if (dbError) {
+        console.error("Error deleting clothing record:", dbError);
+        toast.error("Erreur lors de la suppression du vêtement");
+        return;
+      }
+
+      toast.success("Vêtement supprimé avec succès");
+      
+      // Refresh the page or update the UI as needed
+      window.location.reload();
+    } catch (error) {
+      console.error("Error in deletion process:", error);
+      toast.error("Une erreur est survenue lors de la suppression");
+    }
+  };
   
   useEffect(() => {
     if (!image) {
@@ -48,7 +90,7 @@ export const ClothingCard = ({ id, image, name, category, color }: ClothingCardP
           throw new Error("Invalid image path");
         }
 
-        // Get the public URL for the image - note that getPublicUrl doesn't return an error
+        // Get the public URL for the image
         const { data: { publicUrl } } = supabase.storage
           .from('clothes')
           .getPublicUrl(fileName);
@@ -130,14 +172,24 @@ export const ClothingCard = ({ id, image, name, category, color }: ClothingCardP
                 <span>{color}</span>
               </div>
             </div>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-8 w-8" 
-              onClick={() => setIsDetailsOpen(true)}
-            >
-              <Eye className="h-4 w-4 text-muted-foreground hover:text-primary" />
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-8 w-8" 
+                onClick={() => setIsDetailsOpen(true)}
+              >
+                <Eye className="h-4 w-4 text-muted-foreground hover:text-primary" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-8 w-8 hover:bg-destructive/10" 
+                onClick={handleDelete}
+              >
+                <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
