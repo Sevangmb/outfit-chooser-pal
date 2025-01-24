@@ -24,7 +24,6 @@ const categoryMappings: Record<string, string> = {
   'jersey': 'Hauts',
   'maillot': 'Hauts',
   
-  // Bas
   'pants': 'Bas',
   'jeans': 'Bas',
   'shorts': 'Bas',
@@ -37,7 +36,6 @@ const categoryMappings: Record<string, string> = {
   'culotte': 'Bas',
   'bermuda': 'Bas',
   
-  // Chaussures
   'shoes': 'Chaussures',
   'sneakers': 'Chaussures',
   'boots': 'Chaussures',
@@ -55,19 +53,16 @@ const categoryMappings: Record<string, string> = {
   'mocassin': 'Chaussures',
   'espadrille': 'Chaussures',
   
-  // Robes
   'dress': 'Robes',
   'gown': 'Robes',
   'robe': 'Robes',
   
-  // Manteaux
   'coat': 'Manteaux',
   'jacket': 'Manteaux',
   'blazer': 'Manteaux',
   'manteau': 'Manteaux',
   'veste': 'Manteaux',
   
-  // Accessoires
   'hat': 'Accessoires',
   'cap': 'Accessoires',
   'scarf': 'Accessoires',
