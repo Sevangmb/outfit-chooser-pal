@@ -11,23 +11,10 @@ const getBase64FromUrl = async (url: string): Promise<string> => {
   });
 };
 
-export const analyzeImage = async (imageUrl: string): Promise<{ category?: string, name?: string } | null> => {
+export const analyzeImage = async (imageUrl: string): Promise<{ category?: string, name?: string, subcategory?: string } | null> => {
   try {
     console.log("Starting image analysis for:", imageUrl);
     
-    // Load the image to get dimensions
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    await new Promise((resolve, reject) => {
-      img.onload = resolve;
-      img.onerror = reject;
-      img.src = imageUrl;
-    });
-
-    // Calculate ratio
-    const ratio = img.width / img.height;
-    console.log("Image ratio:", ratio);
-
     // Convert image to base64
     const imageBase64 = await getBase64FromUrl(imageUrl);
 
@@ -43,22 +30,23 @@ export const analyzeImage = async (imageUrl: string): Promise<{ category?: strin
 
     console.log("Analysis results:", analysisData);
 
-    // Detect category based on proportions
-    let category = "Hauts"; // default
-    if (ratio > 1.5) {
-      console.log("Detected: Chaussures (wide ratio)");
-      category = "Chaussures";
-    } else if (ratio < 0.7) {
-      console.log("Detected: Pantalon (tall ratio)");
-      category = "Bas";
-    } else if (ratio >= 0.7 && ratio <= 0.9) {
-      console.log("Detected: Hauts (medium-tall ratio)");
-      category = "Hauts";
+    // Map detected clothing name to subcategory for tops
+    let subcategory = null;
+    if (analysisData?.category === "Hauts") {
+      const name = analysisData.name?.toLowerCase() || "";
+      if (name.includes("t-shirt") || name.includes("tshirt") || name.includes("tee")) {
+        subcategory = "T-shirt";
+      } else if (name.includes("chemise") || name.includes("shirt") && !name.includes("t-shirt")) {
+        subcategory = "Chemise";
+      } else if (name.includes("pull") || name.includes("sweater") || name.includes("sweatshirt")) {
+        subcategory = "Pull";
+      }
     }
 
     return { 
-      category,
-      name: analysisData?.name 
+      category: analysisData?.category,
+      name: analysisData?.name,
+      subcategory 
     };
   } catch (error) {
     console.error("Error analyzing image:", error);

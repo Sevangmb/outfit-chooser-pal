@@ -13,17 +13,25 @@ export const useImageAnalysis = (form: UseFormReturn<FormValues>) => {
     try {
       toast.info("Analyse de l'image en cours...");
       
-      // Analyze image for category and name
+      // Analyze image for category, name, and subcategory
       const analysis = await analyzeImage(previewUrl);
+      
       if (analysis?.category) {
         console.log("Setting detected category:", analysis.category);
         form.setValue("category", analysis.category, { shouldValidate: true });
         toast.success(`Catégorie détectée : ${analysis.category}`);
       }
+      
       if (analysis?.name) {
         console.log("Setting detected name:", analysis.name);
         form.setValue("name", analysis.name, { shouldValidate: true });
         toast.success(`Nom détecté : ${analysis.name}`);
+      }
+
+      if (analysis?.subcategory) {
+        console.log("Setting detected subcategory:", analysis.subcategory);
+        form.setValue("subcategory", analysis.subcategory, { shouldValidate: true });
+        toast.success(`Sous-catégorie détectée : ${analysis.subcategory}`);
       }
 
       // Extract dominant color
