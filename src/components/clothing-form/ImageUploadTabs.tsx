@@ -73,8 +73,10 @@ export const ImageUploadTabs = ({
     }
 
     try {
-      const isValid = await verifyImageUrl(imageUrl);
-      if (!isValid) {
+      const response = await fetch(imageUrl);
+      const contentType = response.headers.get('content-type');
+      
+      if (!contentType || !contentType.startsWith('image/')) {
         toast.error("L'URL ne pointe pas vers une image valide");
         return;
       }
