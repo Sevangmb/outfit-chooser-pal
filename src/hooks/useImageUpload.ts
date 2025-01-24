@@ -1,20 +1,19 @@
 import { useState } from "react";
-import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export const useImageUpload = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
-  const handleImageUpload = async (file: File): Promise<string | null> => {
-    console.log("Starting image upload process:", file.name);
-    setIsUploading(true);
-    setUploadError(null);
-
+  const handleFileUpload = async (file: File): Promise<string | null> => {
     try {
+      setIsUploading(true);
+      setUploadError(null);
+
       if (!file.type.startsWith('image/')) {
-        throw new Error('Format de fichier invalide. Seules les images sont autorisées.');
+        throw new Error('Invalid file format. Only images are allowed.');
       }
 
       // Create preview URL
@@ -33,12 +32,13 @@ export const useImageUpload = () => {
       const { data, error: uploadError } = await supabase.storage
         .from('clothes')
         .upload(fileName, file, {
-          cacheControl: '31536000',
+          cacheControl: '3600',
           upsert: false
         });
 
       if (uploadError) {
-        console.error("Upload error:", uploadError);
+        console.error("Error uploading file:", uploadError);
+        setUploadError(uploadError.message);
         throw uploadError;
       }
 
@@ -47,13 +47,13 @@ export const useImageUpload = () => {
         .from('clothes')
         .getPublicUrl(fileName);
 
-      console.log("Upload successful, public URL:", publicUrl);
-      toast.success("Image téléchargée avec succès");
-      return publicUrl;
+      console.log("File uploaded successfully:", publicUrl);
+      toast.success('Image uploaded successfully');
 
+      return publicUrl;
     } catch (error) {
-      console.error("Error during image upload:", error);
-      const errorMessage = error instanceof Error ? error.message : "Erreur lors du téléchargement de l'image";
+      console.error("Error in handleFileUpload:", error);
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred while uploading the image';
       setUploadError(errorMessage);
       toast.error(errorMessage);
       return null;
@@ -63,10 +63,7 @@ export const useImageUpload = () => {
   };
 
   const resetPreview = () => {
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-      setPreviewUrl(null);
-    }
+    setPreviewUrl(null);
     setUploadError(null);
   };
 
@@ -74,7 +71,7 @@ export const useImageUpload = () => {
     isUploading,
     previewUrl,
     uploadError,
-    handleImageUpload,
-    resetPreview
+    handleFileUpload,
+    resetPreview,
   };
 };
