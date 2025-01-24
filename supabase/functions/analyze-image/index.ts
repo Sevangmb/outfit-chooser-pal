@@ -9,7 +9,6 @@ const HUGGING_FACE_API_URL = "https://api-inference.huggingface.co/models/micros
 
 // Mapping of common clothing terms to our categories
 const categoryMappings: Record<string, string> = {
-  // Hauts
   'shirt': 'Hauts',
   'tshirt': 'Hauts',
   't-shirt': 'Hauts',
@@ -81,6 +80,49 @@ const categoryMappings: Record<string, string> = {
   'ceinture': 'Accessoires'
 }
 
+async function getImageDimensions(base64Data: string): Promise<{ width: number; height: number }> {
+  try {
+    // Remove data URL prefix if present
+    const base64Image = base64Data.includes('base64,') 
+      ? base64Data.split('base64,')[1] 
+      : base64Data;
+
+    // Convert base64 to Uint8Array
+    const binaryString = atob(base64Image);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+
+    // Create blob from Uint8Array
+    const blob = new Blob([bytes], { type: 'image/jpeg' });
+    
+    // Get dimensions from image header
+    const arrayBuffer = await blob.arrayBuffer();
+    const view = new DataView(arrayBuffer);
+    
+    // Skip JPEG header
+    let offset = 2;
+    
+    while (offset < view.byteLength) {
+      // Check for Start Of Frame marker
+      if (view.getUint8(offset) === 0xFF && view.getUint8(offset + 1) === 0xC0) {
+        const height = view.getUint16(offset + 5);
+        const width = view.getUint16(offset + 7);
+        return { width, height };
+      }
+      offset += 1;
+    }
+    
+    // Default dimensions if we can't read them
+    console.log("Could not read image dimensions, using defaults");
+    return { width: 800, height: 800 };
+  } catch (error) {
+    console.error("Error getting image dimensions:", error);
+    return { width: 800, height: 800 };
+  }
+}
+
 function detectCategory(label: string, imageRatio: number): string {
   // Convert to lowercase for case-insensitive matching
   const normalizedLabel = label.toLowerCase();
@@ -99,20 +141,16 @@ function detectCategory(label: string, imageRatio: number): string {
   console.log("No category detected from words, using image ratio:", imageRatio);
   
   // Use image proportions to help determine category
-  if (imageRatio > 1.3) { // Wide image
+  if (imageRatio > 1.3) {
     console.log("Wide image ratio detected - likely Chaussures");
     return "Chaussures";
-  } else if (imageRatio < 0.7) { // Tall image
+  } else if (imageRatio < 0.7) {
     console.log("Tall image ratio detected - likely Bas");
     return "Bas";
-  } else if (imageRatio >= 0.7 && imageRatio <= 1.3) { // Square-ish image
+  } else {
     console.log("Square-ish image ratio detected - likely Hauts");
     return "Hauts";
   }
-  
-  // Default fallback
-  console.log("No specific category detected, defaulting to Hauts");
-  return "Hauts";
 }
 
 serve(async (req) => {
@@ -129,6 +167,11 @@ serve(async (req) => {
       throw new Error('No image data provided');
     }
 
+    // Get image dimensions
+    const dimensions = await getImageDimensions(imageBase64);
+    const imageRatio = dimensions.width / dimensions.height;
+    console.log("Image ratio calculated:", imageRatio);
+
     // Remove the data URL prefix if present
     const base64Data = imageBase64.includes('base64,') 
       ? imageBase64.split('base64,')[1] 
@@ -144,17 +187,6 @@ serve(async (req) => {
     // Create blob from Uint8Array
     const imageBlob = new Blob([bytes], { type: 'image/jpeg' });
     console.log("Image blob created, size:", imageBlob.size);
-
-    // Calculate image ratio
-    const img = new Image();
-    const imageUrl = URL.createObjectURL(imageBlob);
-    await new Promise((resolve, reject) => {
-      img.onload = resolve;
-      img.onerror = reject;
-      img.src = imageUrl;
-    });
-    const imageRatio = img.width / img.height;
-    console.log("Image ratio calculated:", imageRatio);
 
     // Send image to Hugging Face API
     const response = await fetch(HUGGING_FACE_API_URL, {
