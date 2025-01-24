@@ -55,23 +55,28 @@ export const ClothingDetailsDialog = ({ isOpen, onClose, clothingId }: ClothingD
     const analyzeColor = async () => {
       if (clothing?.color && clothing.color.startsWith('#')) {
         try {
-          const response = await fetch(
-            'https://bjydiorocaixosezpylh.supabase.co/functions/v1/analyze-color',
-            {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY}`,
-              },
-              body: JSON.stringify({ hexColor: clothing.color }),
-            }
-          );
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session?.access_token) {
+            console.error('No access token available');
+            return;
+          }
 
-          if (!response.ok) throw new Error('Failed to analyze color');
+          const { data, error } = await supabase.functions.invoke('analyze-color', {
+            body: { hexColor: clothing.color },
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+            },
+          });
 
-          const data = await response.json();
-          setColorName(data.colorName);
-          setColorPalette(data.palette);
+          if (error) {
+            console.error('Error analyzing color:', error);
+            throw error;
+          }
+
+          if (data) {
+            setColorName(data.colorName);
+            setColorPalette(data.palette);
+          }
         } catch (error) {
           console.error('Error analyzing color:', error);
           toast.error("Erreur lors de l'analyse de la couleur");
