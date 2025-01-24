@@ -22,6 +22,10 @@ export const useClothingForm = (onSuccess?: (values: FormValues) => void) => {
       notes: "",
       image: null,
       imageUrl: "",
+      is_for_sale: false,
+      purchase_price: null,
+      selling_price: null,
+      location: "",
     },
     mode: "onChange",
   });
@@ -65,6 +69,10 @@ export const useClothingForm = (onSuccess?: (values: FormValues) => void) => {
           notes: values.notes || null,
           image: values.image,
           user_id: user.id,
+          is_for_sale: values.is_for_sale || false,
+          purchase_price: values.purchase_price || null,
+          selling_price: values.selling_price || null,
+          location: values.location || null,
         })
         .select()
         .single();

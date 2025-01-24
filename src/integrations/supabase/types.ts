@@ -167,10 +167,14 @@ export type Database = {
           created_at: string
           id: number
           image: string | null
+          is_for_sale: boolean | null
+          location: string | null
           material: string | null
           name: string
           notes: string | null
+          purchase_price: number | null
           secondary_color: string | null
+          selling_price: number | null
           size: string | null
           subcategory: string | null
           user_id: string | null
@@ -182,10 +186,14 @@ export type Database = {
           created_at?: string
           id?: never
           image?: string | null
+          is_for_sale?: boolean | null
+          location?: string | null
           material?: string | null
           name: string
           notes?: string | null
+          purchase_price?: number | null
           secondary_color?: string | null
+          selling_price?: number | null
           size?: string | null
           subcategory?: string | null
           user_id?: string | null
@@ -197,10 +205,14 @@ export type Database = {
           created_at?: string
           id?: never
           image?: string | null
+          is_for_sale?: boolean | null
+          location?: string | null
           material?: string | null
           name?: string
           notes?: string | null
+          purchase_price?: number | null
           secondary_color?: string | null
+          selling_price?: number | null
           size?: string | null
           subcategory?: string | null
           user_id?: string | null

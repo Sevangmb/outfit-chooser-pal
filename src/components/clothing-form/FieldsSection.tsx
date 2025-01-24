@@ -4,6 +4,7 @@ import { BasicFields } from "./fields/BasicFields";
 import { CategoryFields } from "./fields/CategoryFields";
 import { ColorFields } from "./fields/ColorFields";
 import { DetailsFields } from "./fields/DetailsFields";
+import { SaleFields } from "./fields/SaleFields";
 
 interface FieldsSectionProps {
   form: UseFormReturn<FormValues>;
@@ -16,6 +17,7 @@ export const FieldsSection = ({ form }: FieldsSectionProps) => {
       <CategoryFields form={form} />
       <ColorFields form={form} />
       <DetailsFields form={form} />
+      <SaleFields form={form} />
     </div>
   );
 };
