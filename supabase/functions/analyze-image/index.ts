@@ -19,6 +19,11 @@ const categoryMappings: Record<string, string> = {
   'top': 'Hauts',
   'pull': 'Hauts',
   'chemise': 'Hauts',
+  'polo': 'Hauts',
+  'sweatshirt': 'Hauts',
+  'tank': 'Hauts',
+  'jersey': 'Hauts',
+  'maillot': 'Hauts',
   
   // Bas
   'pants': 'Bas',
@@ -28,6 +33,10 @@ const categoryMappings: Record<string, string> = {
   'trousers': 'Bas',
   'pantalon': 'Bas',
   'jean': 'Bas',
+  'legging': 'Bas',
+  'jogger': 'Bas',
+  'culotte': 'Bas',
+  'bermuda': 'Bas',
   
   // Chaussures
   'shoes': 'Chaussures',
@@ -37,6 +46,15 @@ const categoryMappings: Record<string, string> = {
   'running': 'Chaussures',
   'chaussures': 'Chaussures',
   'basket': 'Chaussures',
+  'tennis': 'Chaussures',
+  'footwear': 'Chaussures',
+  'shoe': 'Chaussures',
+  'trainer': 'Chaussures',
+  'boot': 'Chaussures',
+  'sandal': 'Chaussures',
+  'slipper': 'Chaussures',
+  'mocassin': 'Chaussures',
+  'espadrille': 'Chaussures',
   
   // Robes
   'dress': 'Robes',
@@ -63,9 +81,10 @@ const categoryMappings: Record<string, string> = {
   'ceinture': 'Accessoires'
 }
 
-function detectCategory(label: string): string {
+function detectCategory(label: string, imageRatio: number): string {
   // Convert to lowercase for case-insensitive matching
   const normalizedLabel = label.toLowerCase();
+  console.log("Analyzing label:", normalizedLabel);
   
   // Check each word in the label against our mappings
   const words = normalizedLabel.split(/[\s,]+/);
@@ -76,7 +95,22 @@ function detectCategory(label: string): string {
     }
   }
   
-  // Default to "Hauts" if no category is detected
+  // If no specific word match, use image proportions as a fallback
+  console.log("No category detected from words, using image ratio:", imageRatio);
+  
+  // Use image proportions to help determine category
+  if (imageRatio > 1.3) { // Wide image
+    console.log("Wide image ratio detected - likely Chaussures");
+    return "Chaussures";
+  } else if (imageRatio < 0.7) { // Tall image
+    console.log("Tall image ratio detected - likely Bas");
+    return "Bas";
+  } else if (imageRatio >= 0.7 && imageRatio <= 1.3) { // Square-ish image
+    console.log("Square-ish image ratio detected - likely Hauts");
+    return "Hauts";
+  }
+  
+  // Default fallback
   console.log("No specific category detected, defaulting to Hauts");
   return "Hauts";
 }
@@ -84,34 +118,45 @@ function detectCategory(label: string): string {
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { imageBase64 } = await req.json()
-    console.log("Received image data for analysis")
+    const { imageBase64 } = await req.json();
+    console.log("Received image data for analysis");
 
     if (!imageBase64) {
-      throw new Error('No image data provided')
+      throw new Error('No image data provided');
     }
 
     // Remove the data URL prefix if present
     const base64Data = imageBase64.includes('base64,') 
       ? imageBase64.split('base64,')[1] 
-      : imageBase64
+      : imageBase64;
 
     // Convert base64 to Uint8Array
-    const binaryString = atob(base64Data)
-    const bytes = new Uint8Array(binaryString.length)
+    const binaryString = atob(base64Data);
+    const bytes = new Uint8Array(binaryString.length);
     for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i)
+      bytes[i] = binaryString.charCodeAt(i);
     }
 
     // Create blob from Uint8Array
-    const imageBlob = new Blob([bytes], { type: 'image/jpeg' })
-    console.log("Image blob created, size:", imageBlob.size)
+    const imageBlob = new Blob([bytes], { type: 'image/jpeg' });
+    console.log("Image blob created, size:", imageBlob.size);
 
-    // Send image to Hugging Face API with proper headers and error handling
+    // Calculate image ratio
+    const img = new Image();
+    const imageUrl = URL.createObjectURL(imageBlob);
+    await new Promise((resolve, reject) => {
+      img.onload = resolve;
+      img.onerror = reject;
+      img.src = imageUrl;
+    });
+    const imageRatio = img.width / img.height;
+    console.log("Image ratio calculated:", imageRatio);
+
+    // Send image to Hugging Face API
     const response = await fetch(HUGGING_FACE_API_URL, {
       headers: {
         'Authorization': `Bearer ${Deno.env.get('HUGGING_FACE_API_KEY')}`,
@@ -119,31 +164,31 @@ serve(async (req) => {
       },
       method: "POST",
       body: imageBlob
-    })
+    });
 
     if (!response.ok) {
-      console.error('Hugging Face API error:', response.status, response.statusText)
-      const errorText = await response.text()
-      console.error('Error details:', errorText)
-      throw new Error(`Hugging Face API error: ${response.statusText || 'Unknown error'}`)
+      console.error('Hugging Face API error:', response.status, response.statusText);
+      const errorText = await response.text();
+      console.error('Error details:', errorText);
+      throw new Error(`Hugging Face API error: ${response.statusText || 'Unknown error'}`);
     }
 
-    const results = await response.json()
-    console.log("Classification results:", results)
+    const results = await response.json();
+    console.log("Classification results:", results);
 
     // Get the most likely label
-    const topResult = results[0]
-    let detectedName = ""
+    const topResult = results[0];
+    let detectedName = "";
 
     if (topResult) {
       // Extract name from the label
       detectedName = topResult.label
         .split(',')[0] // Take first part before comma
         .split(' ')[0] // Take first word
-        .toLowerCase() // Convert to lowercase
+        .toLowerCase(); // Convert to lowercase
       
-      // Detect category based on the full label
-      const category = detectCategory(topResult.label)
+      // Detect category based on both the label and image ratio
+      const category = detectCategory(topResult.label, imageRatio);
       
       return new Response(
         JSON.stringify({ 
@@ -152,7 +197,7 @@ serve(async (req) => {
           confidence: topResult.score || 0 
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      );
     }
 
     return new Response(
@@ -162,16 +207,16 @@ serve(async (req) => {
         confidence: 0 
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+    );
 
   } catch (error) {
-    console.error('Error:', error)
+    console.error('Error:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500 
       }
-    )
+    );
   }
-})
+});
