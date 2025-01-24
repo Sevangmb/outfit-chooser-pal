@@ -10,6 +10,7 @@ interface ImageSectionProps {
   uploadError: string | null;
   onFileUpload: (file: File) => Promise<string | null>;
   onCameraCapture: () => Promise<void>;
+  onResetPreview: () => void;
 }
 
 export const ImageSection = ({
@@ -18,7 +19,8 @@ export const ImageSection = ({
   previewUrl,
   uploadError,
   onFileUpload,
-  onCameraCapture
+  onCameraCapture,
+  onResetPreview
 }: ImageSectionProps) => {
   return (
     <div className="space-y-4 bg-background/50 backdrop-blur-sm rounded-lg border border-border p-6">
@@ -29,6 +31,7 @@ export const ImageSection = ({
         uploadError={uploadError}
         onFileUpload={onFileUpload}
         onCameraCapture={onCameraCapture}
+        onResetPreview={onResetPreview}
       />
 
       {previewUrl && (

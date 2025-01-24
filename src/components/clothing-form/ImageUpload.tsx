@@ -1,4 +1,4 @@
-import { Camera, Upload } from "lucide-react";
+import { Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormControl, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -14,6 +14,7 @@ interface ImageUploadProps {
   uploadError: string | null;
   onFileUpload: (file: File) => Promise<string | null>;
   onCameraCapture: () => Promise<void>;
+  onResetPreview: () => void;
 }
 
 export const ImageUpload = ({
@@ -23,6 +24,7 @@ export const ImageUpload = ({
   uploadError,
   onFileUpload,
   onCameraCapture,
+  onResetPreview
 }: ImageUploadProps) => {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
