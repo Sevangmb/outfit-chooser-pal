@@ -21,7 +21,7 @@ export const ImageSection = ({
   onCameraCapture
 }: ImageSectionProps) => {
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 bg-background/50 backdrop-blur-sm rounded-lg border border-border p-6">
       <ImageUpload
         form={form}
         isUploading={isUploading}
