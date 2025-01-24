@@ -20,9 +20,14 @@ export const ClothingCard = ({ id, image, name, category, color }: ClothingCardP
   
   useEffect(() => {
     if (!image) {
+      console.log("No image provided for clothing item:", name);
       setIsLoading(false);
       return;
     }
+
+    // Reset states when image URL changes
+    setImageError(false);
+    setIsLoading(true);
 
     const img = new Image();
     img.src = image;
@@ -33,17 +38,30 @@ export const ClothingCard = ({ id, image, name, category, color }: ClothingCardP
       setImageError(false);
     };
 
-    img.onerror = () => {
-      console.error("Image failed to load:", image);
+    img.onerror = (error) => {
+      console.error("Image failed to load:", image, error);
       setIsLoading(false);
       setImageError(true);
     };
+
+    // Try to fetch the image to verify it's accessible
+    fetch(image, { method: 'HEAD' })
+      .then(response => {
+        if (!response.ok) {
+          console.error("Image URL is not accessible:", image, response.status);
+          setImageError(true);
+        }
+      })
+      .catch(error => {
+        console.error("Error checking image URL:", image, error);
+        setImageError(true);
+      });
 
     return () => {
       img.onload = null;
       img.onerror = null;
     };
-  }, [image]);
+  }, [image, name]);
 
   return (
     <>
@@ -65,6 +83,10 @@ export const ClothingCard = ({ id, image, name, category, color }: ClothingCardP
                   }`}
                   loading="lazy"
                   decoding="async"
+                  onError={() => {
+                    console.error("Image error event triggered for:", image);
+                    setImageError(true);
+                  }}
                 />
               </div>
             ) : (
