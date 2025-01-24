@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { FollowList } from "@/components/social/FollowList";
 import { ProfileStats } from "@/components/social/ProfileStats";
 import { UserOutfits } from "@/components/social/UserOutfits";
+import { UserFiles } from "@/components/files/UserFiles";
 import { Button } from "@/components/ui/button";
 import { Settings, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -159,6 +160,10 @@ const Profile = () => {
           <CardContent className="space-y-6">
             <>
               <ProfileStats userId={profile.id} />
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-primary">Mes fichiers</h3>
+                <UserFiles />
+              </div>
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-primary">Mes tenues</h3>
                 <UserOutfits userId={profile.id} />

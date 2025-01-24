@@ -629,6 +629,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_files: {
+        Row: {
+          content_type: string | null
+          created_at: string
+          description: string | null
+          file_path: string
+          filename: string
+          id: string
+          size: number | null
+          user_id: string
+        }
+        Insert: {
+          content_type?: string | null
+          created_at?: string
+          description?: string | null
+          file_path: string
+          filename: string
+          id?: string
+          size?: number | null
+          user_id: string
+        }
+        Update: {
+          content_type?: string | null
+          created_at?: string
+          description?: string | null
+          file_path?: string
+          filename?: string
+          id?: string
+          size?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_messages: {
         Row: {
           content: string
