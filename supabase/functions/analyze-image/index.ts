@@ -14,19 +14,27 @@ serve(async (req) => {
 
   try {
     const { imageBase64 } = await req.json();
-    console.log("Analyzing image data");
+    console.log("Received image data for analysis");
 
     if (!imageBase64) {
       throw new Error('No image data provided');
     }
 
-    // Convert base64 to blob
-    const binaryData = atob(imageBase64.split(',')[1]);
-    const array = new Uint8Array(binaryData.length);
-    for (let i = 0; i < binaryData.length; i++) {
-      array[i] = binaryData.charCodeAt(i);
+    // Remove the data URL prefix if present
+    const base64Data = imageBase64.includes('base64,') 
+      ? imageBase64.split('base64,')[1] 
+      : imageBase64;
+
+    // Convert base64 to Uint8Array
+    const binaryString = atob(base64Data);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
     }
-    const imageBlob = new Blob([array], { type: 'image/jpeg' });
+
+    // Create blob from Uint8Array
+    const imageBlob = new Blob([bytes], { type: 'image/jpeg' });
+    console.log("Image blob created, size:", imageBlob.size);
 
     // Send image to Hugging Face API
     const response = await fetch(HUGGING_FACE_API_URL, {
