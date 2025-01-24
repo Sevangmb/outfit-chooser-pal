@@ -29,6 +29,7 @@ export const ClothingSection = ({ title, items, isMobile = false }: ClothingSect
           items.map((item) => (
             <div key={item.id}>
               <ClothingCard
+                id={item.id}
                 image={item.image}
                 name={item.name}
                 category={item.category}
@@ -51,6 +52,7 @@ export const ClothingSection = ({ title, items, isMobile = false }: ClothingSect
             items.map((item) => (
               <div key={item.id} className="flex-none w-[250px]">
                 <ClothingCard
+                  id={item.id}
                   image={item.image}
                   name={item.name}
                   category={item.category}
