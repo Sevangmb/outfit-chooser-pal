@@ -1,17 +1,9 @@
-import { Header } from "@/components/Header";
-import { OutfitFeed } from "@/components/feed/OutfitFeed";
-import { BottomNav } from "@/components/BottomNav";
+import { MessagingSection } from "@/components/messaging/MessagingSection";
 
-const Index = () => {
+export default function Index() {
   return (
-    <div className="min-h-screen bg-secondary/30 pb-20">
-      <Header className="container py-8" />
-      <div className="container py-8 px-4 mx-auto">
-        <OutfitFeed />
-      </div>
-      <BottomNav />
+    <div className="container mx-auto py-6">
+      <MessagingSection />
     </div>
   );
-};
-
-export default Index;
+}
