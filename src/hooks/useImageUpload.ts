@@ -46,9 +46,20 @@ const loadImage = (file: File): Promise<HTMLImageElement> => {
 const removeBackground = async (imageElement: HTMLImageElement): Promise<Blob> => {
   try {
     console.log('Starting background removal process...');
-    const segmenter = await pipeline('image-segmentation', 'Xenova/segformer-b0-finetuned-ade-512-512', {
-      device: 'webgpu',
-    });
+    
+    // Try to create the pipeline with WebGPU first
+    let segmenter;
+    try {
+      segmenter = await pipeline('image-segmentation', 'Xenova/segformer-b0-finetuned-ade-512-512', {
+        device: 'webgpu',
+      });
+    } catch (error) {
+      console.log('WebGPU not available, falling back to CPU');
+      // If WebGPU fails, fall back to CPU
+      segmenter = await pipeline('image-segmentation', 'Xenova/segformer-b0-finetuned-ade-512-512', {
+        device: 'cpu',
+      });
+    }
     
     // Convert HTMLImageElement to canvas
     const canvas = document.createElement('canvas');
