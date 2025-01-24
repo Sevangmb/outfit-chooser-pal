@@ -8,6 +8,7 @@ import Admin from "@/pages/Admin";
 import Contest from "@/pages/Contest";
 import Discover from "@/pages/Discover";
 import Favorites from "@/pages/Favorites";
+import Messages from "@/pages/Messages";
 import LandingPage from "@/pages/LandingPage";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { PublicRoute } from "./PublicRoute";
@@ -37,6 +38,14 @@ export const AppRoutes = () => {
           <PublicRoute>
             <Auth />
           </PublicRoute>
+        }
+      />
+      <Route
+        path="/messages"
+        element={
+          <ProtectedRoute>
+            <Messages />
+          </ProtectedRoute>
         }
       />
       <Route

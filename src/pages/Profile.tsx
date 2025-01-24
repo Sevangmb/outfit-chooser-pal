@@ -10,7 +10,6 @@ import { Settings, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { MessagingSection } from "@/components/messaging/MessagingSection";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -160,7 +159,6 @@ const Profile = () => {
           <CardContent className="space-y-6">
             <>
               <ProfileStats userId={profile.id} />
-              <MessagingSection />
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-primary">Mes tenues</h3>
                 <UserOutfits userId={profile.id} />

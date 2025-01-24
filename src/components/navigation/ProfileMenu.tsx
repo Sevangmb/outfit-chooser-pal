@@ -78,6 +78,9 @@ export const ProfileMenu = ({ isActive }: ProfileMenuProps) => {
         <DropdownMenuItem onClick={() => navigate("/profile")}>
           Profil
         </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => navigate("/messages")}>
+          Messages
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={() => navigate("/notifications")}>
           Notifications {notificationsCount > 0 && `(${notificationsCount})`}
         </DropdownMenuItem>
