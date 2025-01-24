@@ -5,6 +5,14 @@ import { useNavigate } from "react-router-dom";
 import { FormContainer } from "./clothing-form/FormContainer";
 import { ImageSection } from "./clothing-form/ImageSection";
 import { FieldsSection } from "./clothing-form/FieldsSection";
+import { Share2 } from "lucide-react";
+import { Button } from "./ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 
 interface AddClothingFormProps {
   onSuccess?: () => void;
@@ -21,6 +29,37 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
   });
   
   const { isUploading, previewUrl, uploadError, handleImageUpload, resetPreview } = useImageUpload();
+
+  const handleShare = (platform: string) => {
+    const shareUrl = window.location.href;
+    const shareText = "Découvrez mon nouveau vêtement sur Lovable!";
+    
+    let shareLink = '';
+    switch (platform) {
+      case 'twitter':
+        shareLink = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+        break;
+      case 'facebook':
+        shareLink = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+        break;
+      case 'linkedin':
+        shareLink = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+        break;
+      default:
+        if (navigator.share) {
+          navigator.share({
+            title: "Lovable",
+            text: shareText,
+            url: shareUrl,
+          }).catch(console.error);
+          return;
+        }
+    }
+    
+    if (shareLink) {
+      window.open(shareLink, '_blank', 'width=600,height=400');
+    }
+  };
 
   const handleCameraCapture = async () => {
     try {
@@ -67,6 +106,31 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
       errors={errors}
     >
       <div className="space-y-8">
+        <div className="flex justify-end">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon">
+                <Share2 className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => handleShare('twitter')}>
+                Partager sur Twitter
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleShare('facebook')}>
+                Partager sur Facebook
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleShare('linkedin')}>
+                Partager sur LinkedIn
+              </DropdownMenuItem>
+              {navigator.share && (
+                <DropdownMenuItem onClick={() => handleShare('native')}>
+                  Partager...
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
         <ImageSection
           form={form}
           isUploading={isUploading}
