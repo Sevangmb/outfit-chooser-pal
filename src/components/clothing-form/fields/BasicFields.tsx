@@ -1,13 +1,8 @@
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
 import { FormValues } from "@/types/clothing";
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Tag } from "lucide-react";
 
 interface BasicFieldsProps {
   form: UseFormReturn<FormValues>;
@@ -21,9 +16,12 @@ export const BasicFields = ({ form }: BasicFieldsProps) => {
         name="name"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Nom</FormLabel>
+            <FormLabel className="flex items-center gap-2">
+              <Tag className="h-4 w-4" />
+              Nom
+            </FormLabel>
             <FormControl>
-              <Input placeholder="Ex: T-shirt blanc" {...field} />
+              <Input placeholder="Ex: T-shirt blanc préféré" {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -32,12 +30,15 @@ export const BasicFields = ({ form }: BasicFieldsProps) => {
 
       <FormField
         control={form.control}
-        name="image"
+        name="brand"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>URL de l'image</FormLabel>
+            <FormLabel className="flex items-center gap-2">
+              <Tag className="h-4 w-4" />
+              Marque (optionnel)
+            </FormLabel>
             <FormControl>
-              <Input readOnly value={field.value || ''} />
+              <Input placeholder="Ex: Nike, Zara, etc." {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
