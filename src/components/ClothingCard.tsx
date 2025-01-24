@@ -18,6 +18,7 @@ export const ClothingCard = ({ id, image, name, category, color }: ClothingCardP
   const [imageError, setImageError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
   
   useEffect(() => {
     if (!image) {
@@ -29,52 +30,41 @@ export const ClothingCard = ({ id, image, name, category, color }: ClothingCardP
     // Reset states when image URL changes
     setImageError(false);
     setIsLoading(true);
+    setImageUrl(null);
 
-    const img = new Image();
-    img.src = image;
-
-    img.onload = () => {
-      console.log("Image loaded successfully:", image);
-      setIsLoading(false);
-      setImageError(false);
-    };
-
-    img.onerror = (error) => {
-      console.error("Image failed to load:", image, error);
-      setIsLoading(false);
-      setImageError(true);
-      toast.error(`Erreur de chargement de l'image pour ${name}`);
-    };
-
-    // Verify image content type and accessibility
-    const verifyImage = async () => {
+    const loadImage = async () => {
       try {
-        const response = await fetch(image, { method: 'HEAD' });
-        if (!response.ok) {
-          console.error("Image URL is not accessible:", image, response.status);
-          setImageError(true);
-          toast.error(`Image inaccessible pour ${name}`);
-          return;
-        }
+        // Try to get a fresh signed URL for the image
+        if (image.includes('supabase.co')) {
+          const path = image.split('/public/clothes/')[1];
+          if (path) {
+            const { data: { signedUrl }, error } = await supabase.storage
+              .from('clothes')
+              .createSignedUrl(path, 3600);
 
-        const contentType = response.headers.get('content-type');
-        if (!contentType?.startsWith('image/')) {
-          console.error("Invalid content type for image:", contentType);
-          setImageError(true);
-          toast.error(`Type de contenu invalide pour l'image de ${name}`);
+            if (error) {
+              console.error("Error getting signed URL:", error);
+              throw error;
+            }
+
+            if (signedUrl) {
+              setImageUrl(signedUrl);
+              return;
+            }
+          }
         }
+        // Fallback to original URL if not a Supabase URL or if getting signed URL fails
+        setImageUrl(image);
       } catch (error) {
-        console.error("Error verifying image:", image, error);
+        console.error("Error loading image:", error);
         setImageError(true);
+        toast.error(`Erreur de chargement de l'image pour ${name}`);
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    verifyImage();
-
-    return () => {
-      img.onload = null;
-      img.onerror = null;
-    };
+    loadImage();
   }, [image, name]);
 
   return (
@@ -82,7 +72,7 @@ export const ClothingCard = ({ id, image, name, category, color }: ClothingCardP
       <Card className="overflow-hidden hover:shadow-lg transition-shadow border-secondary/50 hover:border-primary/30 bg-background/50 backdrop-blur-sm">
         <CardHeader className="p-0">
           <AspectRatio ratio={4/3}>
-            {image && !imageError ? (
+            {imageUrl && !imageError ? (
               <div className="relative w-full h-full">
                 {isLoading && (
                   <div className="absolute inset-0 flex items-center justify-center bg-secondary/30">
@@ -90,16 +80,18 @@ export const ClothingCard = ({ id, image, name, category, color }: ClothingCardP
                   </div>
                 )}
                 <img
-                  src={image}
+                  src={imageUrl}
                   alt={name}
                   className={`w-full h-full object-cover bg-secondary/30 transition-opacity duration-300 ${
                     isLoading ? 'opacity-0' : 'opacity-100'
                   }`}
                   loading="lazy"
                   decoding="async"
+                  onLoad={() => setIsLoading(false)}
                   onError={() => {
-                    console.error("Image error event triggered for:", image);
+                    console.error("Image error event triggered for:", imageUrl);
                     setImageError(true);
+                    setIsLoading(false);
                   }}
                 />
               </div>

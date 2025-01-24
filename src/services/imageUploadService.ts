@@ -7,7 +7,7 @@ export const uploadImageToSupabase = async (file: File): Promise<string | null> 
     // Generate a unique filename using timestamp and UUID
     const timestamp = new Date().toISOString().replace(/[^0-9]/g, "");
     const uuid = crypto.randomUUID();
-    const fileExt = file.name.split('.').pop();
+    const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
     const fileName = `${timestamp}_${uuid}.${fileExt}`;
     
     console.log("Generated filename:", fileName);
@@ -16,7 +16,7 @@ export const uploadImageToSupabase = async (file: File): Promise<string | null> 
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('clothes')
       .upload(fileName, file, {
-        contentType: file.type, // Ensure correct content type is set
+        contentType: file.type,
         cacheControl: '3600',
         upsert: false
       });
@@ -26,16 +26,21 @@ export const uploadImageToSupabase = async (file: File): Promise<string | null> 
       throw uploadError;
     }
 
-    // Get the public URL
-    const { data: { publicUrl } } = supabase.storage
+    // Get the public URL using the createSignedUrl method
+    const { data: { signedUrl }, error: signedUrlError } = await supabase.storage
       .from('clothes')
-      .getPublicUrl(fileName);
+      .createSignedUrl(fileName, 31536000); // 1 year expiry
 
-    // Verify the URL is accessible and returns proper content type
+    if (signedUrlError) {
+      console.error("Error getting signed URL:", signedUrlError);
+      throw signedUrlError;
+    }
+
+    // Verify the URL is accessible
     try {
-      const response = await fetch(publicUrl, { method: 'HEAD' });
+      const response = await fetch(signedUrl, { method: 'HEAD' });
       if (!response.ok) {
-        console.error("Generated URL is not accessible:", publicUrl, response.status);
+        console.error("Generated URL is not accessible:", signedUrl, response.status);
         throw new Error('Generated URL is not accessible');
       }
       
@@ -45,14 +50,13 @@ export const uploadImageToSupabase = async (file: File): Promise<string | null> 
         throw new Error('Invalid content type for uploaded image');
       }
       
-      console.log("Successfully verified URL accessibility:", publicUrl);
+      console.log("Successfully verified URL accessibility:", signedUrl);
     } catch (error) {
       console.error("Error verifying URL accessibility:", error);
       throw error;
     }
 
-    console.log("Successfully generated public URL:", publicUrl);
-    return publicUrl;
+    return signedUrl;
 
   } catch (error) {
     console.error("Error in uploadImageToSupabase:", error);
