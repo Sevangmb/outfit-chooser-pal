@@ -1,5 +1,7 @@
 export const analyzeImage = async (imageUrl: string): Promise<{ category?: string } | null> => {
   try {
+    console.log("Starting image analysis for:", imageUrl);
+    
     // Chargement de l'image
     const img = new Image();
     img.crossOrigin = "anonymous";
@@ -9,15 +11,23 @@ export const analyzeImage = async (imageUrl: string): Promise<{ category?: strin
       img.src = imageUrl;
     });
 
-    // Pour l'instant, on simule une détection basique basée sur les proportions de l'image
+    // Calcul du ratio de l'image
     const ratio = img.width / img.height;
-    
+    console.log("Image ratio:", ratio);
+
+    // Détection basée sur les proportions de l'image
     if (ratio > 1.5) {
+      console.log("Detected: Chaussures (wide ratio)");
       return { category: "Chaussures" };
     } else if (ratio < 0.7) {
-      return { category: "Pantalon" };
+      console.log("Detected: Pantalon (tall ratio)");
+      return { category: "Bas" };
+    } else if (ratio >= 0.7 && ratio <= 0.9) {
+      console.log("Detected: Hauts (medium-tall ratio)");
+      return { category: "Hauts" };
     } else {
-      return { category: "T-shirt" };
+      console.log("No specific category detected, defaulting to Hauts");
+      return { category: "Hauts" };
     }
   } catch (error) {
     console.error("Error analyzing image:", error);
