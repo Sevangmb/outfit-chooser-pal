@@ -1,6 +1,6 @@
 import { UseFormReturn } from "react-hook-form";
 import { FormValues } from "@/types/clothing";
-import { ImageUpload } from "./ImageUpload";
+import { ImageUploadTabs } from "./ImageUploadTabs";
 import { ImageAnalysisButton } from "./ImageAnalysisButton";
 
 interface ImageSectionProps {
@@ -22,15 +22,20 @@ export const ImageSection = ({
   onCameraCapture,
   onResetPreview
 }: ImageSectionProps) => {
+  const handleUrlUpload = async (url: string) => {
+    form.setValue("image", url, { shouldValidate: true });
+  };
+
   return (
     <div className="space-y-4 bg-background/50 backdrop-blur-sm rounded-lg border border-border p-6">
-      <ImageUpload
+      <ImageUploadTabs
         form={form}
         isUploading={isUploading}
         previewUrl={previewUrl}
         uploadError={uploadError}
         onFileUpload={onFileUpload}
         onCameraCapture={onCameraCapture}
+        onUrlUpload={handleUrlUpload}
         onResetPreview={onResetPreview}
       />
 
