@@ -1,12 +1,13 @@
 import { BottomNav } from "@/components/BottomNav";
 import { Input } from "@/components/ui/input";
-import { Compass, Search, Sparkles, TrendingUp, Users } from "lucide-react";
+import { Compass, MapPin, Search, Sparkles, Store, TrendingUp, Users } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RecommendedOutfits } from "@/components/discover/RecommendedOutfits";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ShopSection } from "@/components/shop/ShopSection";
 
 const Discover = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -96,6 +97,10 @@ const Discover = () => {
               <Users className="h-4 w-4" />
               Nouveautés
             </TabsTrigger>
+            <TabsTrigger value="shops" className="gap-2">
+              <Store className="h-4 w-4" />
+              Boutiques
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="trending" className="space-y-6">
@@ -130,6 +135,10 @@ const Discover = () => {
                 Aucun nouvel ajout pour le moment
               </div>
             ) : null}
+          </TabsContent>
+
+          <TabsContent value="shops">
+            <ShopSection />
           </TabsContent>
         </Tabs>
       </div>

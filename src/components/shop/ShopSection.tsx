@@ -1,26 +1,33 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { CreateShopDialog } from "./CreateShopDialog";
-import { ShopProfileCard } from "./ShopProfileCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ShopClothesTab } from "./ShopClothesTab";
+import { MapPin, List } from "lucide-react";
 import { ShopLocationTab } from "./ShopLocationTab";
+import { ShopProfileCard } from "./ShopProfileCard";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const ShopSection = () => {
-  const { data: shopProfile, isLoading } = useQuery({
-    queryKey: ["shopProfile"],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return null;
+  const [viewMode, setViewMode] = useState<"map" | "list">("map");
 
+  const { data: shops, isLoading } = useQuery({
+    queryKey: ["shops"],
+    queryFn: async () => {
+      console.log("Fetching shops...");
       const { data, error } = await supabase
         .from("shop_profiles")
-        .select("*, shop_profile_categories(category_id, shop_categories(name))")
-        .eq("user_id", user.id)
-        .maybeSingle();
+        .select(`
+          *,
+          shop_profile_categories (
+            shop_categories (
+              name
+            )
+          )
+        `)
+        .eq("status", "active");
 
-      if (error && error.code !== "PGRST116") {
-        console.error("Error fetching shop profile:", error);
+      if (error) {
+        console.error("Error fetching shops:", error);
         throw error;
       }
 
@@ -30,36 +37,50 @@ export const ShopSection = () => {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center p-4">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="space-y-4">
+        <Skeleton className="h-[400px] w-full rounded-lg" />
+        <div className="grid gap-4 md:grid-cols-2">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-[200px] rounded-lg" />
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      {shopProfile ? (
-        <div className="space-y-6">
-          <ShopProfileCard shop={shopProfile} />
-          <Tabs defaultValue="clothes" className="w-full">
-            <TabsList className="w-full">
-              <TabsTrigger value="clothes" className="flex-1">Vêtements en vente</TabsTrigger>
-              <TabsTrigger value="location" className="flex-1">Localisation</TabsTrigger>
-            </TabsList>
-            <TabsContent value="clothes">
-              <ShopClothesTab shopId={shopProfile.id} />
-            </TabsContent>
-            <TabsContent value="location">
-              <ShopLocationTab shop={shopProfile} />
-            </TabsContent>
-          </Tabs>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold">Boutiques</h2>
+        <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "map" | "list")} className="w-auto">
+          <TabsList>
+            <TabsTrigger value="map" className="gap-2">
+              <MapPin className="h-4 w-4" />
+              Carte
+            </TabsTrigger>
+            <TabsTrigger value="list" className="gap-2">
+              <List className="h-4 w-4" />
+              Liste
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
+
+      {viewMode === "map" && shops && shops.length > 0 && (
+        <ShopLocationTab shop={shops[0]} />
+      )}
+
+      {viewMode === "list" && (
+        <div className="grid gap-4 md:grid-cols-2">
+          {shops?.map((shop) => (
+            <ShopProfileCard key={shop.id} shop={shop} />
+          ))}
         </div>
-      ) : (
-        <div className="text-center space-y-4 py-8">
-          <p className="text-muted-foreground">
-            Vous n'avez pas encore de profil boutique
-          </p>
-          <CreateShopDialog />
+      )}
+
+      {shops?.length === 0 && (
+        <div className="text-center py-8 text-muted-foreground">
+          Aucune boutique disponible pour le moment
         </div>
       )}
     </div>
