@@ -719,6 +719,8 @@ export type Database = {
           description: string | null
           id: string
           is_verified: boolean | null
+          latitude: number | null
+          longitude: number | null
           name: string
           phone: string | null
           status: string | null
@@ -732,6 +734,8 @@ export type Database = {
           description?: string | null
           id?: string
           is_verified?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
           name: string
           phone?: string | null
           status?: string | null
@@ -745,6 +749,8 @@ export type Database = {
           description?: string | null
           id?: string
           is_verified?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
           name?: string
           phone?: string | null
           status?: string | null
