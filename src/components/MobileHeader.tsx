@@ -6,7 +6,6 @@ import {
   NavigationMenu,
   NavigationMenuContent,
   NavigationMenuItem,
-  NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
@@ -21,6 +20,13 @@ export const MobileHeader = () => {
         { name: "Voir mon placard", path: "/closet" },
         { name: "Ajouter un vêtement", path: "/add" },
         { name: "Mes favoris", path: "/favorites" },
+      ],
+    },
+    {
+      title: "Ma Boutique",
+      items: [
+        { name: "Voir ma boutique", path: "/shop" },
+        { name: "Vendre un vêtement", path: "/add?sale=true" },
       ],
     },
     {
