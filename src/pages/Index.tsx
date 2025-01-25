@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { WeatherWidget } from "@/components/weather/WeatherWidget";
+import { AIFeatures } from "@/components/feed/AIFeatures";
 
 const Index = () => {
   const [messages, setMessages] = useState([]);
@@ -80,6 +81,7 @@ const Index = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="space-y-6">
         <WeatherWidget />
+        <AIFeatures />
         <h1 className="text-2xl font-bold">Fil d'actualité</h1>
         <div className="space-y-4">
           {messages.length === 0 ? (
