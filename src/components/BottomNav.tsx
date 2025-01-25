@@ -12,7 +12,7 @@ export const BottomNav = () => {
     {
       icon: Home,
       label: "Accueil",
-      path: "/",
+      path: "/app",
       ariaLabel: "Aller à l'accueil",
     },
     {
