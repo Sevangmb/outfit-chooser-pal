@@ -17,27 +17,37 @@ import { ShopSection } from "@/components/shop/ShopSection";
 export const AppRoutes = () => {
   return (
     <Routes>
-      <Route element={<PublicRoute>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/auth" element={<Auth />} />
-        </Routes>
-      </PublicRoute>} />
+      <Route
+        path="/"
+        element={
+          <PublicRoute>
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/auth" element={<Auth />} />
+            </Routes>
+          </PublicRoute>
+        }
+      />
 
-      <Route element={<ProtectedRoute>
-        <Routes>
-          <Route path="/app" element={<Index />} />
-          <Route path="/closet" element={<Closet />} />
-          <Route path="/add" element={<Add />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/messages" element={<Messages />} />
-          <Route path="/discover" element={<Discover />} />
-          <Route path="/favorites" element={<Favorites />} />
-          <Route path="/contest" element={<Contest />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/shop" element={<ShopSection />} />
-        </Routes>
-      </ProtectedRoute>} />
+      <Route
+        path="/*"
+        element={
+          <ProtectedRoute>
+            <Routes>
+              <Route path="/app" element={<Index />} />
+              <Route path="/closet" element={<Closet />} />
+              <Route path="/add" element={<Add />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/messages" element={<Messages />} />
+              <Route path="/discover" element={<Discover />} />
+              <Route path="/favorites" element={<Favorites />} />
+              <Route path="/contest" element={<Contest />} />
+              <Route path="/admin" element={<Admin />} />
+              <Route path="/shop" element={<ShopSection />} />
+            </Routes>
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   );
 };
