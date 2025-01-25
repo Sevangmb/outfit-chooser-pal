@@ -45,7 +45,7 @@ export const ClothingCard = ({ id, name, category, color, image, rating = 0 }: C
         .select('*')
         .eq('clothes_id', id)
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle(); // Changed from .single() to .maybeSingle()
 
       setHasVoted(!!vote);
     } catch (error) {
@@ -75,7 +75,7 @@ export const ClothingCard = ({ id, name, category, color, image, rating = 0 }: C
       } else {
         const { error } = await supabase
           .from('clothes_votes')
-          .insert({ clothes_id: id });
+          .insert({ clothes_id: id, user_id: user.id }); // Added user_id to the insert
 
         if (error) throw error;
         setVoteCount(prev => prev + 1);
