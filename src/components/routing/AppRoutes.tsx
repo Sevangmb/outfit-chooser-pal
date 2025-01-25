@@ -12,6 +12,7 @@ import Messages from "@/pages/Messages";
 import LandingPage from "@/pages/LandingPage";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { PublicRoute } from "./PublicRoute";
+import { GeneralSettings } from "@/components/admin/GeneralSettings";
 
 export const AppRoutes = () => {
   return (
@@ -77,6 +78,14 @@ export const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <Admin />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute>
+            <GeneralSettings />
           </ProtectedRoute>
         }
       />
