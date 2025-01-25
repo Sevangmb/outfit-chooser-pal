@@ -1,10 +1,9 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button"; // Ajout de l'import manquant
+import { Button } from "@/components/ui/button";
 import { useEffect } from "react";
 import { useInView } from "react-intersection-observer";
-import ReactPullToRefresh from "react-pull-to-refresh";
 import { toast } from "sonner";
 import { FeedHeader } from "./FeedHeader";
 import { AIFeatures } from "./AIFeatures";
@@ -104,18 +103,6 @@ export const OutfitFeed = () => {
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const handleRefresh = async () => {
-    console.log("Refreshing feed...");
-    try {
-      await refetch();
-      return Promise.resolve();
-    } catch (error) {
-      console.error("Error refreshing feed:", error);
-      toast.error("Erreur lors du rafraîchissement");
-      return Promise.reject(error);
-    }
-  };
-
   if (error) {
     return (
       <div className="text-center py-12 space-y-6">
@@ -126,44 +113,37 @@ export const OutfitFeed = () => {
   }
 
   return (
-    <ReactPullToRefresh
-      onRefresh={handleRefresh}
-      className="relative min-h-screen"
-      style={{
-        textAlign: 'center',
-        position: 'relative'
-      }}
-    >
-      <div className="space-y-6">
+    <div className="space-y-6">
+      <div className="sticky top-0 z-10 bg-background pb-4">
         <FeedHeader />
         <AIFeatures />
-
-        <div className="relative">
-          {isRefetching && !isFetchingNextPage && (
-            <div className="absolute top-0 left-0 right-0 flex justify-center py-4 bg-background/80 backdrop-blur-sm z-10">
-              <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-primary" />
-            </div>
-          )}
-
-          {isLoading && (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {[...Array(6)].map((_, i) => (
-                <Skeleton key={i} className="h-[400px] rounded-xl" />
-              ))}
-            </div>
-          )}
-
-          {!isLoading && data?.pages[0].outfits.length === 0 && <EmptyFeed />}
-
-          {!isLoading && data?.pages[0].outfits.length > 0 && (
-            <OutfitGrid 
-              outfits={data.pages.flatMap((page) => page.outfits)}
-              isFetchingNextPage={isFetchingNextPage}
-              observerRef={ref}
-            />
-          )}
-        </div>
       </div>
-    </ReactPullToRefresh>
+
+      <div className="relative">
+        {isRefetching && !isFetchingNextPage && (
+          <div className="absolute top-0 left-0 right-0 flex justify-center py-4 bg-background/80 backdrop-blur-sm z-10">
+            <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-primary" />
+          </div>
+        )}
+
+        {isLoading && (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {[...Array(6)].map((_, i) => (
+              <Skeleton key={i} className="h-[400px] rounded-xl" />
+            ))}
+          </div>
+        )}
+
+        {!isLoading && data?.pages[0].outfits.length === 0 && <EmptyFeed />}
+
+        {!isLoading && data?.pages[0].outfits.length > 0 && (
+          <OutfitGrid 
+            outfits={data.pages.flatMap((page) => page.outfits)}
+            isFetchingNextPage={isFetchingNextPage}
+            observerRef={ref}
+          />
+        )}
+      </div>
+    </div>
   );
 };
