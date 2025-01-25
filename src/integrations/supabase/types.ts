@@ -661,6 +661,99 @@ export type Database = {
         }
         Relationships: []
       }
+      shop_categories: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      shop_profile_categories: {
+        Row: {
+          category_id: string
+          created_at: string
+          shop_profile_id: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          shop_profile_id: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          shop_profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shop_profile_categories_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "shop_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shop_profile_categories_shop_profile_id_fkey"
+            columns: ["shop_profile_id"]
+            isOneToOne: false
+            referencedRelation: "shop_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shop_profiles: {
+        Row: {
+          address: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_verified: boolean | null
+          name: string
+          phone: string | null
+          status: string | null
+          updated_at: string
+          user_id: string
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_verified?: boolean | null
+          name: string
+          phone?: string | null
+          status?: string | null
+          updated_at?: string
+          user_id: string
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_verified?: boolean | null
+          name?: string
+          phone?: string | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
       user_files: {
         Row: {
           content_type: string | null

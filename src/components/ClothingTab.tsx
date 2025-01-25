@@ -1,5 +1,6 @@
 import { AddClothingDialog } from "./AddClothingDialog";
 import { ClothingSection } from "./ClothingSection";
+import { ShopSection } from "./shop/ShopSection";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -85,10 +86,19 @@ export const ClothingTab = ({ showFriendsClothes = false }: ClothingTabProps) =>
           {!showFriendsClothes && <AddClothingDialog />}
         </div>
       ) : (
-        <div className={`space-y-8 ${isMobile ? 'px-2' : ''}`}>
-          <ClothingSection title="Hauts" items={tops} isMobile={isMobile} />
-          <ClothingSection title="Bas" items={bottoms} isMobile={isMobile} />
-          <ClothingSection title="Chaussures" items={shoes} isMobile={isMobile} />
+        <div className="space-y-8">
+          <div className={`space-y-8 ${isMobile ? 'px-2' : ''}`}>
+            <ClothingSection title="Hauts" items={tops} isMobile={isMobile} />
+            <ClothingSection title="Bas" items={bottoms} isMobile={isMobile} />
+            <ClothingSection title="Chaussures" items={shoes} isMobile={isMobile} />
+          </div>
+          
+          {!showFriendsClothes && (
+            <div className="border-t pt-8">
+              <h2 className="text-xl font-semibold text-primary mb-4">Ma Boutique</h2>
+              <ShopSection />
+            </div>
+          )}
         </div>
       )}
     </>
