@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
-import { Cloud, CloudRain, Sun, Loader2 } from "lucide-react";
+import { Cloud, CloudRain, Sun, Loader2, CloudSun, Moon, Snowflake, CloudFog } from "lucide-react";
 
 interface WeatherData {
   temperature: number;
@@ -25,7 +25,7 @@ export const WeatherWidget = () => {
         console.log("Fetching weather for coordinates:", latitude, longitude);
         
         const response = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code`
+          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code,is_day`
         );
 
         if (!response.ok) {
@@ -52,9 +52,43 @@ export const WeatherWidget = () => {
 
   const getWeatherIcon = (code: number) => {
     // WMO Weather interpretation codes (https://open-meteo.com/en/docs)
-    if (code === 0) return <Sun className="h-6 w-6 text-yellow-500" />;
-    if (code >= 51 && code <= 67) return <CloudRain className="h-6 w-6 text-blue-500" />;
-    return <Cloud className="h-6 w-6 text-gray-500" />;
+    switch (true) {
+      case code === 0: // Clear sky
+        return <Sun className="h-6 w-6 text-yellow-500" />;
+      case code === 1 || code === 2: // Partly cloudy
+        return <CloudSun className="h-6 w-6 text-gray-500" />;
+      case code === 3: // Overcast
+        return <Cloud className="h-6 w-6 text-gray-500" />;
+      case code >= 51 && code <= 67: // Drizzle and Rain
+        return <CloudRain className="h-6 w-6 text-blue-500" />;
+      case code >= 71 && code <= 77: // Snow
+        return <Snowflake className="h-6 w-6 text-blue-300" />;
+      case code >= 45 && code <= 48: // Foggy
+        return <CloudFog className="h-6 w-6 text-gray-400" />;
+      default:
+        return <Cloud className="h-6 w-6 text-gray-500" />;
+    }
+  };
+
+  const getWeatherDescription = (code: number) => {
+    switch (true) {
+      case code === 0:
+        return "Ciel dégagé";
+      case code === 1:
+        return "Peu nuageux";
+      case code === 2:
+        return "Partiellement nuageux";
+      case code === 3:
+        return "Couvert";
+      case code >= 51 && code <= 67:
+        return "Pluie";
+      case code >= 71 && code <= 77:
+        return "Neige";
+      case code >= 45 && code <= 48:
+        return "Brouillard";
+      default:
+        return "Conditions variables";
+    }
   };
 
   if (error) {
@@ -68,7 +102,14 @@ export const WeatherWidget = () => {
   return (
     <Card className="p-4">
       <div className="flex items-center justify-between">
-        <h3 className="font-medium">Météo locale</h3>
+        <div>
+          <h3 className="font-medium">Météo locale</h3>
+          {weather && !loading && (
+            <p className="text-sm text-muted-foreground">
+              {getWeatherDescription(weather.weatherCode)}
+            </p>
+          )}
+        </div>
         {loading ? (
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         ) : weather ? (
