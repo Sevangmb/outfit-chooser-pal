@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { User, Upload } from "lucide-react";
+import { Store, Upload, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   Dialog,
@@ -20,6 +20,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useState } from "react";
 import { UserFiles } from "../files/UserFiles";
+import { CreateShopDialog } from "../shop/CreateShopDialog";
 
 interface ProfileMenuProps {
   isActive: boolean;
@@ -29,6 +30,7 @@ export const ProfileMenu = ({ isActive }: ProfileMenuProps) => {
   const navigate = useNavigate();
   const { data: notificationsCount } = useNotifications();
   const [showFilesDialog, setShowFilesDialog] = useState(false);
+  const [showShopDialog, setShowShopDialog] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -86,7 +88,12 @@ export const ProfileMenu = ({ isActive }: ProfileMenuProps) => {
           <DropdownMenuLabel>Mon compte</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => navigate("/profile")}>
+            <User className="w-4 h-4 mr-2" />
             Profil
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setShowShopDialog(true)}>
+            <Store className="w-4 h-4 mr-2" />
+            Ma boutique
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setShowFilesDialog(true)}>
             <Upload className="w-4 h-4 mr-2" />
@@ -111,6 +118,15 @@ export const ProfileMenu = ({ isActive }: ProfileMenuProps) => {
             <DialogTitle>Mes fichiers</DialogTitle>
           </DialogHeader>
           <UserFiles />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showShopDialog} onOpenChange={setShowShopDialog}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Ma boutique</DialogTitle>
+          </DialogHeader>
+          <CreateShopDialog />
         </DialogContent>
       </Dialog>
     </>
