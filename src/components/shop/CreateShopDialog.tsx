@@ -1,18 +1,9 @@
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { DialogDescription } from "@/components/ui/dialog";
 import { ShopProfileForm } from "./ShopProfileForm";
-import { Building2 } from "lucide-react";
 import { Tables } from "@/integrations/supabase/types";
 
 interface CreateShopDialogProps {
-  existingShop?: Tables<"shop_profiles">;
+  existingShop?: Tables<"shop_profiles"> | null;
 }
 
 export const CreateShopDialog = ({ existingShop }: CreateShopDialogProps) => {

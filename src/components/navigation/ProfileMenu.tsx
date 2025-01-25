@@ -44,6 +44,8 @@ export const ProfileMenu = ({ isActive }: ProfileMenuProps) => {
         .from("shop_profiles")
         .select("*")
         .eq("user_id", user.id)
+        .eq("status", "approved")
+        .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
 

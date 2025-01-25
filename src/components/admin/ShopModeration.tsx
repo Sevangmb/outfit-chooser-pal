@@ -18,19 +18,19 @@ interface ShopProfile {
   id: string;
   user_id: string;
   name: string;
-  description: string;
-  address: string;
-  phone: string;
-  website: string;
+  description: string | null;
+  address: string | null;
+  phone: string | null;
+  website: string | null;
   created_at: string;
   updated_at: string;
-  is_verified: boolean;
-  status: string;
-  latitude: number;
-  longitude: number;
+  is_verified: boolean | null;
+  status: string | null;
+  latitude: number | null;
+  longitude: number | null;
   profiles: {
     email: string;
-  } | null;
+  };
 }
 
 const ShopModeration = () => {
@@ -48,7 +48,7 @@ const ShopModeration = () => {
         .from('shop_profiles')
         .select(`
           *,
-          profiles (
+          profiles:user_id (
             email
           )
         `)
@@ -60,6 +60,7 @@ const ShopModeration = () => {
         throw shopError;
       }
 
+      console.log("Fetched shop data:", shopData);
       return shopData as ShopProfile[];
     }
   });
