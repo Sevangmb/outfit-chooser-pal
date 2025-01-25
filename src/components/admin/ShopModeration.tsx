@@ -28,9 +28,7 @@ interface ShopProfile {
   status: string;
   latitude: number;
   longitude: number;
-  user: {
-    email: string;
-  };
+  user_email?: string;
 }
 
 const ShopModeration = () => {
@@ -41,22 +39,41 @@ const ShopModeration = () => {
     queryKey: ['pending-shops'],
     queryFn: async () => {
       console.log("Fetching pending shops...");
-      const { data, error } = await supabase
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
+      // D'abord, récupérer les boutiques
+      const { data: shopData, error: shopError } = await supabase
         .from('shop_profiles')
-        .select(`
-          *,
-          user:profiles(email)
-        `)
+        .select('*')
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching shops:', error);
-        throw error;
+      if (shopError) {
+        console.error('Error fetching shops:', shopError);
+        throw shopError;
       }
 
-      console.log("Fetched shops:", data);
-      return data as ShopProfile[];
+      // Ensuite, récupérer les emails des utilisateurs
+      const userIds = shopData?.map(shop => shop.user_id) || [];
+      const { data: userData, error: userError } = await supabase
+        .from('profiles')
+        .select('id, email')
+        .in('id', userIds);
+
+      if (userError) {
+        console.error('Error fetching user emails:', userError);
+        throw userError;
+      }
+
+      // Combiner les données
+      const shopsWithEmail = shopData?.map(shop => ({
+        ...shop,
+        user_email: userData?.find(user => user.id === shop.user_id)?.email
+      }));
+
+      console.log("Fetched shops with emails:", shopsWithEmail);
+      return shopsWithEmail as ShopProfile[];
     }
   });
 
@@ -86,7 +103,7 @@ const ShopModeration = () => {
   const filteredShops = shops?.filter(shop =>
     shop.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     shop.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    shop.user.email.toLowerCase().includes(searchTerm.toLowerCase())
+    shop.user_email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (isLoading) {
@@ -124,7 +141,7 @@ const ShopModeration = () => {
             {filteredShops?.map((shop) => (
               <TableRow key={shop.id}>
                 <TableCell>{shop.name}</TableCell>
-                <TableCell>{shop.user.email}</TableCell>
+                <TableCell>{shop.user_email}</TableCell>
                 <TableCell className="max-w-xs truncate">
                   {shop.description}
                 </TableCell>

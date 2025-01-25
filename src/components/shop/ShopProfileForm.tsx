@@ -23,6 +23,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Tables } from "@/integrations/supabase/types";
 
 const formSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
@@ -35,17 +36,21 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-export const ShopProfileForm = () => {
+interface ShopProfileFormProps {
+  existingShop?: Tables<"shop_profiles"> | null;
+}
+
+export const ShopProfileForm = ({ existingShop }: ShopProfileFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      description: "",
-      address: "",
-      phone: "",
-      website: "",
+      name: existingShop?.name || "",
+      description: existingShop?.description || "",
+      address: existingShop?.address || "",
+      phone: existingShop?.phone || "",
+      website: existingShop?.website || "",
       categories: [],
     },
   });
@@ -71,56 +76,79 @@ export const ShopProfileForm = () => {
   const onSubmit = async (data: FormData) => {
     try {
       setIsSubmitting(true);
-      console.log("Creating shop profile with data:", data);
+      console.log("Creating/updating shop profile with data:", data);
 
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        toast.error("Vous devez être connecté pour créer une boutique");
+        toast.error("Vous devez être connecté pour gérer une boutique");
         return;
       }
 
-      const { data: profile, error: profileError } = await supabase
-        .from("shop_profiles")
-        .insert({
-          name: data.name,
-          description: data.description,
-          address: data.address,
-          phone: data.phone,
-          website: data.website,
-          user_id: user.id,
-          status: "pending",
-        })
-        .select()
-        .single();
+      if (existingShop) {
+        // Update existing shop
+        const { error: updateError } = await supabase
+          .from("shop_profiles")
+          .update({
+            name: data.name,
+            description: data.description,
+            address: data.address,
+            phone: data.phone,
+            website: data.website,
+          })
+          .eq("id", existingShop.id);
 
-      if (profileError) {
-        console.error("Error creating shop profile:", profileError);
-        toast.error("Erreur lors de la création de la boutique");
-        return;
-      }
-
-      if (data.categories.length > 0) {
-        const categoryLinks = data.categories.map((categoryId) => ({
-          shop_profile_id: profile.id,
-          category_id: categoryId,
-        }));
-
-        const { error: categoriesError } = await supabase
-          .from("shop_profile_categories")
-          .insert(categoryLinks);
-
-        if (categoriesError) {
-          console.error("Error linking categories:", categoriesError);
-          toast.error("Erreur lors de l'ajout des catégories");
+        if (updateError) {
+          console.error("Error updating shop profile:", updateError);
+          toast.error("Erreur lors de la mise à jour de la boutique");
           return;
         }
-      }
 
-      toast.success("Profil boutique créé avec succès");
-      form.reset();
+        toast.success("Profil boutique mis à jour avec succès");
+      } else {
+        // Create new shop
+        const { data: profile, error: profileError } = await supabase
+          .from("shop_profiles")
+          .insert({
+            name: data.name,
+            description: data.description,
+            address: data.address,
+            phone: data.phone,
+            website: data.website,
+            user_id: user.id,
+            status: "pending",
+          })
+          .select()
+          .single();
+
+        if (profileError) {
+          console.error("Error creating shop profile:", profileError);
+          toast.error("Erreur lors de la création de la boutique");
+          return;
+        }
+
+        if (data.categories.length > 0) {
+          const categoryLinks = data.categories.map((categoryId) => ({
+            shop_profile_id: profile.id,
+            category_id: categoryId,
+          }));
+
+          const { error: categoriesError } = await supabase
+            .from("shop_profile_categories")
+            .insert(categoryLinks);
+
+          if (categoriesError) {
+            console.error("Error linking categories:", categoriesError);
+            toast.error("Erreur lors de l'ajout des catégories");
+            return;
+          }
+        }
+
+        toast.success("Profil boutique créé avec succès");
+        form.reset();
+      }
     } catch (error) {
-      console.error("Error creating shop profile:", error);
-      toast.error("Erreur lors de la création du profil boutique");
+      console.error("Error managing shop profile:", error);
+      toast.error("Erreur lors de la gestion du profil boutique");
     } finally {
       setIsSubmitting(false);
     }
