@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 
 interface ShopLocationTabProps {
   shop: {
@@ -13,31 +13,31 @@ interface ShopLocationTabProps {
 
 export const ShopLocationTab = ({ shop }: ShopLocationTabProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
+  const map = useRef<L.Map | null>(null);
 
   useEffect(() => {
     if (!mapContainer.current || !shop.latitude || !shop.longitude) return;
 
-    mapboxgl.accessToken = process.env.MAPBOX_PUBLIC_TOKEN || '';
-    
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/streets-v12',
-      center: [shop.longitude, shop.latitude],
-      zoom: 15
-    });
+    // Initialize map if not already initialized
+    if (!map.current) {
+      map.current = L.map(mapContainer.current).setView([shop.latitude, shop.longitude], 15);
 
-    // Add marker
-    new mapboxgl.Marker()
-      .setLngLat([shop.longitude, shop.latitude])
-      .setPopup(new mapboxgl.Popup().setHTML(`<h3>${shop.name}</h3><p>${shop.address}</p>`))
-      .addTo(map.current);
+      // Add OpenStreetMap tiles
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(map.current);
 
-    // Add navigation controls
-    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+      // Add marker for the shop
+      L.marker([shop.latitude, shop.longitude])
+        .addTo(map.current)
+        .bindPopup(`<b>${shop.name}</b><br>${shop.address}`);
+    }
 
     return () => {
-      map.current?.remove();
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
     };
   }, [shop]);
 
