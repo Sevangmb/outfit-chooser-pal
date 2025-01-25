@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { WeatherWidget } from "@/components/weather/WeatherWidget";
 
 const Index = () => {
   const [messages, setMessages] = useState([]);
@@ -77,33 +78,36 @@ const Index = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Fil d'actualité</h1>
-      <div className="space-y-4">
-        {messages.length === 0 ? (
-          <p className="text-muted-foreground text-center py-8">
-            Aucun message récent
-          </p>
-        ) : (
-          messages.map((message) => (
-            <div
-              key={message.id}
-              className="bg-card p-4 rounded-lg shadow"
-            >
-              <div className="flex justify-between items-start mb-2">
-                <div>
-                  <p className="font-medium">{message.sender?.email}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {message.message_groups?.name}
-                  </p>
+      <div className="space-y-6">
+        <WeatherWidget />
+        <h1 className="text-2xl font-bold">Fil d'actualité</h1>
+        <div className="space-y-4">
+          {messages.length === 0 ? (
+            <p className="text-muted-foreground text-center py-8">
+              Aucun message récent
+            </p>
+          ) : (
+            messages.map((message) => (
+              <div
+                key={message.id}
+                className="bg-card p-4 rounded-lg shadow"
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <p className="font-medium">{message.sender?.email}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {message.message_groups?.name}
+                    </p>
+                  </div>
+                  <span className="text-sm text-muted-foreground">
+                    {new Date(message.created_at).toLocaleDateString()}
+                  </span>
                 </div>
-                <span className="text-sm text-muted-foreground">
-                  {new Date(message.created_at).toLocaleDateString()}
-                </span>
+                <p className="text-foreground">{message.content}</p>
               </div>
-              <p className="text-foreground">{message.content}</p>
-            </div>
-          ))
-        )}
+            ))
+          )}
+        </div>
       </div>
     </div>
   );
