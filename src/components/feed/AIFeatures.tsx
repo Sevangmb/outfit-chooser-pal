@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
+import { Search, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useState } from "react";
@@ -51,6 +51,11 @@ export const AIFeatures = () => {
         onClick={getOutfitSuggestion}
         disabled={isLoading}
       >
+        {isLoading ? (
+          <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-primary" />
+        ) : (
+          <Sparkles className="h-4 w-4" />
+        )}
         <div className="text-left">
           <div className="font-medium">Suggestions IA</div>
           <div className="text-sm text-muted-foreground">Basées sur la météo</div>
