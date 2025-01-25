@@ -15,7 +15,6 @@ export const WeatherWidget = () => {
   useEffect(() => {
     const fetchWeather = async () => {
       try {
-        // First get user's location
         const position = await new Promise<GeolocationPosition>((resolve, reject) => {
           navigator.geolocation.getCurrentPosition(resolve, reject);
         });
@@ -35,10 +34,19 @@ export const WeatherWidget = () => {
         const data = await response.json();
         console.log("Weather data received:", data);
 
-        setWeather({
+        const weatherData = {
           temperature: data.current.temperature_2m,
           weatherCode: data.current.weather_code,
-        });
+        };
+
+        setWeather(weatherData);
+
+        // Store weather data in localStorage for the AI suggestion feature
+        localStorage.setItem('weatherData', JSON.stringify({
+          temperature: data.current.temperature_2m,
+          description: getWeatherDescription(data.current.weather_code)
+        }));
+
       } catch (err) {
         console.error("Error fetching weather:", err);
         setError("Impossible de récupérer la météo");
