@@ -28,7 +28,9 @@ interface ShopProfile {
   status: string;
   latitude: number;
   longitude: number;
-  user_email?: string;
+  profiles: {
+    email: string;
+  } | null;
 }
 
 const ShopModeration = () => {
@@ -42,10 +44,14 @@ const ShopModeration = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
 
-      // D'abord, récupérer les boutiques
       const { data: shopData, error: shopError } = await supabase
         .from('shop_profiles')
-        .select('*')
+        .select(`
+          *,
+          profiles (
+            email
+          )
+        `)
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
 
@@ -54,26 +60,7 @@ const ShopModeration = () => {
         throw shopError;
       }
 
-      // Ensuite, récupérer les emails des utilisateurs
-      const userIds = shopData?.map(shop => shop.user_id) || [];
-      const { data: userData, error: userError } = await supabase
-        .from('profiles')
-        .select('id, email')
-        .in('id', userIds);
-
-      if (userError) {
-        console.error('Error fetching user emails:', userError);
-        throw userError;
-      }
-
-      // Combiner les données
-      const shopsWithEmail = shopData?.map(shop => ({
-        ...shop,
-        user_email: userData?.find(user => user.id === shop.user_id)?.email
-      }));
-
-      console.log("Fetched shops with emails:", shopsWithEmail);
-      return shopsWithEmail as ShopProfile[];
+      return shopData as ShopProfile[];
     }
   });
 
@@ -103,7 +90,7 @@ const ShopModeration = () => {
   const filteredShops = shops?.filter(shop =>
     shop.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     shop.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    shop.user_email?.toLowerCase().includes(searchTerm.toLowerCase())
+    shop.profiles?.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (isLoading) {
@@ -141,7 +128,7 @@ const ShopModeration = () => {
             {filteredShops?.map((shop) => (
               <TableRow key={shop.id}>
                 <TableCell>{shop.name}</TableCell>
-                <TableCell>{shop.user_email}</TableCell>
+                <TableCell>{shop.profiles?.email}</TableCell>
                 <TableCell className="max-w-xs truncate">
                   {shop.description}
                 </TableCell>

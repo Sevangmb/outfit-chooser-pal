@@ -12,7 +12,7 @@ import { Building2 } from "lucide-react";
 import { Tables } from "@/integrations/supabase/types";
 
 interface CreateShopDialogProps {
-  existingShop?: Tables<"shop_profiles"> | null;
+  existingShop?: Tables<"shop_profiles">;
 }
 
 export const CreateShopDialog = ({ existingShop }: CreateShopDialogProps) => {
