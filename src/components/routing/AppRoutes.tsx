@@ -1,118 +1,39 @@
 import { Routes, Route } from "react-router-dom";
-import Index from "@/pages/Index";
-import Auth from "@/pages/Auth";
-import Closet from "@/pages/Closet";
-import Add from "@/pages/Add";
-import Profile from "@/pages/Profile";
-import Admin from "@/pages/Admin";
-import Contest from "@/pages/Contest";
-import Discover from "@/pages/Discover";
-import Favorites from "@/pages/Favorites";
-import Messages from "@/pages/Messages";
-import LandingPage from "@/pages/LandingPage";
+import { Index } from "@/pages/Index";
+import { Auth } from "@/pages/Auth";
+import { LandingPage } from "@/pages/LandingPage";
+import { Closet } from "@/pages/Closet";
+import { Add } from "@/pages/Add";
+import { Profile } from "@/pages/Profile";
+import { Messages } from "@/pages/Messages";
+import { Discover } from "@/pages/Discover";
+import { Favorites } from "@/pages/Favorites";
+import { Contest } from "@/pages/Contest";
+import { Admin } from "@/pages/Admin";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { PublicRoute } from "./PublicRoute";
-import { GeneralSettings } from "@/components/admin/GeneralSettings";
+import { ShopSection } from "@/components/shop/ShopSection";
 
 export const AppRoutes = () => {
   return (
     <Routes>
-      <Route
-        path="/"
-        element={
-          <ProtectedRoute>
-            <Index />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/landing"
-        element={
-          <PublicRoute>
-            <LandingPage />
-          </PublicRoute>
-        }
-      />
-      <Route
-        path="/auth"
-        element={
-          <PublicRoute>
-            <Auth />
-          </PublicRoute>
-        }
-      />
-      <Route
-        path="/messages"
-        element={
-          <ProtectedRoute>
-            <Messages />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/closet"
-        element={
-          <ProtectedRoute>
-            <Closet />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/add"
-        element={
-          <ProtectedRoute>
-            <Add />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/profile"
-        element={
-          <ProtectedRoute>
-            <Profile />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin"
-        element={
-          <ProtectedRoute>
-            <Admin />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/settings"
-        element={
-          <ProtectedRoute>
-            <GeneralSettings />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/contest"
-        element={
-          <ProtectedRoute>
-            <Contest />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/discover"
-        element={
-          <ProtectedRoute>
-            <Discover />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/favorites"
-        element={
-          <ProtectedRoute>
-            <Favorites />
-          </ProtectedRoute>
-        }
-      />
+      <Route path="/" element={<PublicRoute />}>
+        <Route index element={<LandingPage />} />
+        <Route path="auth" element={<Auth />} />
+      </Route>
+
+      <Route path="app" element={<ProtectedRoute />}>
+        <Route index element={<Index />} />
+        <Route path="closet" element={<Closet />} />
+        <Route path="add" element={<Add />} />
+        <Route path="profile" element={<Profile />} />
+        <Route path="messages" element={<Messages />} />
+        <Route path="discover" element={<Discover />} />
+        <Route path="favorites" element={<Favorites />} />
+        <Route path="contest" element={<Contest />} />
+        <Route path="admin" element={<Admin />} />
+        <Route path="shop" element={<ShopSection />} />
+      </Route>
     </Routes>
   );
 };
