@@ -24,7 +24,7 @@ export const WeatherWidget = () => {
         console.log("Fetching weather for coordinates:", latitude, longitude);
         
         const response = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code,is_day`
+          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code,is_day&timezone=auto`
         );
 
         if (!response.ok) {
@@ -44,7 +44,8 @@ export const WeatherWidget = () => {
         // Store weather data in localStorage for the AI suggestion feature
         localStorage.setItem('weatherData', JSON.stringify({
           temperature: data.current.temperature_2m,
-          description: getWeatherDescription(data.current.weather_code)
+          description: getWeatherDescription(data.current.weather_code),
+          conditions: getWeatherConditions(data.current.weather_code)
         }));
 
       } catch (err) {
@@ -99,6 +100,22 @@ export const WeatherWidget = () => {
     }
   };
 
+  const getWeatherConditions = (code: number) => {
+    const conditions = [];
+    
+    if (code >= 51 && code <= 67) {
+      conditions.push('rain');
+    }
+    if (code >= 71 && code <= 77) {
+      conditions.push('snow');
+    }
+    if (code >= 45 && code <= 48) {
+      conditions.push('fog');
+    }
+    
+    return conditions;
+  };
+
   if (error) {
     return (
       <Card className="p-4 bg-destructive/10 text-destructive">
@@ -111,7 +128,7 @@ export const WeatherWidget = () => {
     <Card className="p-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="font-medium">Météo locale</h3>
+          <h3 className="font-medium">Météo aujourd'hui</h3>
           {weather && !loading && (
             <p className="text-sm text-muted-foreground">
               {getWeatherDescription(weather.weatherCode)}

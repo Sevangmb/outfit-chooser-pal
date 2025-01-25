@@ -6,6 +6,7 @@ import { WeatherWidget } from "@/components/weather/WeatherWidget";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Card } from "@/components/ui/card";
 
 export const FeedHeader = () => {
   const navigate = useNavigate();
@@ -16,7 +17,6 @@ export const FeedHeader = () => {
     try {
       setIsLoading(true);
 
-      // Get weather data from the WeatherWidget's last fetch
       const weatherDataStr = localStorage.getItem('weatherData');
       if (!weatherDataStr) {
         toast.error("Impossible de récupérer les données météo");
@@ -28,7 +28,8 @@ export const FeedHeader = () => {
       const { data, error } = await supabase.functions.invoke('suggest-outfit', {
         body: {
           temperature: weatherData.temperature,
-          weatherDescription: weatherData.description
+          weatherDescription: weatherData.description,
+          conditions: weatherData.conditions
         }
       });
 
@@ -46,33 +47,37 @@ export const FeedHeader = () => {
   
   return (
     <div className="space-y-6">
-      <WeatherWidget />
-      
-      <div className="flex flex-col gap-4">
-        <Button 
-          variant="outline" 
-          className="flex items-center gap-2 h-auto py-4"
-          onClick={getOutfitSuggestion}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-primary" />
-          ) : (
-            <Sparkles className="h-4 w-4" />
-          )}
-          <div className="text-left">
-            <div className="font-medium">Suggestions IA</div>
-            <div className="text-sm text-muted-foreground">Basées sur la météo</div>
+      <div className="space-y-4">
+        <WeatherWidget />
+        
+        <Card className="p-4">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="font-medium">Suggestion tenue</h3>
+              <p className="text-sm text-muted-foreground">Basée sur la météo</p>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={getOutfitSuggestion}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-primary" />
+              ) : (
+                <Sparkles className="h-4 w-4" />
+              )}
+            </Button>
           </div>
-        </Button>
-
-        {suggestion && (
-          <Alert>
-            <AlertDescription className="whitespace-pre-line">
-              {suggestion}
-            </AlertDescription>
-          </Alert>
-        )}
+          
+          {suggestion ? (
+            <p className="text-sm">{suggestion}</p>
+          ) : (
+            <p className="text-sm text-muted-foreground italic">
+              Cliquez sur l'icône pour obtenir une suggestion
+            </p>
+          )}
+        </Card>
       </div>
       
       <Alert>
