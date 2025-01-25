@@ -17,6 +17,12 @@ export const FeedHeader = () => {
     try {
       setIsLoading(true);
 
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Vous devez être connecté pour obtenir une suggestion");
+        return;
+      }
+
       const weatherDataStr = localStorage.getItem('weatherData');
       if (!weatherDataStr) {
         toast.error("Impossible de récupérer les données météo");
@@ -30,7 +36,8 @@ export const FeedHeader = () => {
         body: {
           temperature: weatherData.temperature,
           weatherDescription: weatherData.description,
-          conditions: weatherData.conditions
+          conditions: weatherData.conditions,
+          userId: user.id
         }
       });
 
@@ -59,7 +66,7 @@ export const FeedHeader = () => {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="font-medium">Suggestion tenue</h3>
-                <p className="text-sm text-muted-foreground">Basée sur la météo</p>
+                <p className="text-sm text-muted-foreground">Basée sur la météo et votre garde-robe</p>
               </div>
               <Button 
                 variant="ghost" 
