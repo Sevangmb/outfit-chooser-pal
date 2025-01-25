@@ -21,20 +21,25 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useQuery } from "@tanstack/react-query";
+import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-interface ShopProfileFormData {
-  name: string;
-  description: string;
-  address: string;
-  phone: string;
-  website: string;
-  categories: string[];
-}
+const formSchema = z.object({
+  name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
+  description: z.string().optional(),
+  address: z.string().min(5, "L'adresse doit contenir au moins 5 caractères"),
+  phone: z.string().optional(),
+  website: z.string().url().optional().or(z.literal("")),
+  categories: z.array(z.string()).min(1, "Sélectionnez au moins une catégorie"),
+});
+
+type FormData = z.infer<typeof formSchema>;
 
 export const ShopProfileForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const form = useForm<ShopProfileFormData>({
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
       description: "",
@@ -48,6 +53,7 @@ export const ShopProfileForm = () => {
   const { data: categories = [] } = useQuery({
     queryKey: ["shopCategories"],
     queryFn: async () => {
+      console.log("Fetching shop categories...");
       const { data, error } = await supabase
         .from("shop_categories")
         .select("*")
@@ -62,13 +68,16 @@ export const ShopProfileForm = () => {
     },
   });
 
-  const onSubmit = async (data: ShopProfileFormData) => {
+  const onSubmit = async (data: FormData) => {
     try {
       setIsSubmitting(true);
       console.log("Creating shop profile with data:", data);
 
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("User not authenticated");
+      if (!user) {
+        toast.error("Vous devez être connecté pour créer une boutique");
+        return;
+      }
 
       const { data: profile, error: profileError } = await supabase
         .from("shop_profiles")
@@ -79,11 +88,16 @@ export const ShopProfileForm = () => {
           phone: data.phone,
           website: data.website,
           user_id: user.id,
+          status: "pending",
         })
         .select()
         .single();
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error("Error creating shop profile:", profileError);
+        toast.error("Erreur lors de la création de la boutique");
+        return;
+      }
 
       if (data.categories.length > 0) {
         const categoryLinks = data.categories.map((categoryId) => ({
@@ -95,7 +109,11 @@ export const ShopProfileForm = () => {
           .from("shop_profile_categories")
           .insert(categoryLinks);
 
-        if (categoriesError) throw categoriesError;
+        if (categoriesError) {
+          console.error("Error linking categories:", categoriesError);
+          toast.error("Erreur lors de l'ajout des catégories");
+          return;
+        }
       }
 
       toast.success("Profil boutique créé avec succès");
