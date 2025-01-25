@@ -12,7 +12,7 @@ interface FieldsSectionProps {
 
 export const FieldsSection = ({ form }: FieldsSectionProps) => {
   return (
-    <div className="space-y-8 bg-background/50 backdrop-blur-sm rounded-lg border border-border p-6">
+    <div className="space-y-8">
       <BasicFields form={form} />
       <CategoryFields form={form} />
       <ColorFields form={form} />
