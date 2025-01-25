@@ -14,7 +14,7 @@ export const ShopSection = () => {
         .from("shop_profiles")
         .select("*")
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
 
       if (error && error.code !== "PGRST116") {
         console.error("Error fetching shop profile:", error);

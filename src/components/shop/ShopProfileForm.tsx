@@ -67,17 +67,19 @@ export const ShopProfileForm = () => {
       setIsSubmitting(true);
       console.log("Creating shop profile with data:", data);
 
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("User not authenticated");
+
       const { data: profile, error: profileError } = await supabase
         .from("shop_profiles")
-        .insert([
-          {
-            name: data.name,
-            description: data.description,
-            address: data.address,
-            phone: data.phone,
-            website: data.website,
-          },
-        ])
+        .insert({
+          name: data.name,
+          description: data.description,
+          address: data.address,
+          phone: data.phone,
+          website: data.website,
+          user_id: user.id,
+        })
         .select()
         .single();
 
