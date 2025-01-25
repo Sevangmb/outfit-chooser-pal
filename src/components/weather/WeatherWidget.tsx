@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Card } from "@/components/ui/card";
 import { Cloud, CloudRain, Sun, Loader2, CloudSun, Moon, Snowflake, CloudFog } from "lucide-react";
 
 interface WeatherData {
@@ -24,7 +23,7 @@ export const WeatherWidget = () => {
         console.log("Fetching weather for coordinates:", latitude, longitude);
         
         const response = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code,is_day&timezone=auto`
+          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto`
         );
 
         if (!response.ok) {
@@ -112,20 +111,25 @@ export const WeatherWidget = () => {
     if (code >= 45 && code <= 48) {
       conditions.push('fog');
     }
+    if (weather?.temperature && weather.temperature < 10) {
+      conditions.push('cold');
+    } else if (weather?.temperature && weather.temperature > 25) {
+      conditions.push('hot');
+    }
     
     return conditions;
   };
 
   if (error) {
     return (
-      <Card className="p-4 bg-destructive/10 text-destructive">
+      <div className="text-destructive">
         <p className="text-sm">{error}</p>
-      </Card>
+      </div>
     );
   }
 
   return (
-    <Card className="p-4">
+    <div>
       <div className="flex items-center justify-between">
         <div>
           <h3 className="font-medium">Météo aujourd'hui</h3>
@@ -146,6 +150,6 @@ export const WeatherWidget = () => {
           </div>
         ) : null}
       </div>
-    </Card>
+    </div>
   );
 };
