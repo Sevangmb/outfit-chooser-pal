@@ -4,11 +4,12 @@ import { OutfitCard } from "./OutfitCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect } from "react";
 import { useInView } from "react-intersection-observer";
-import { Loader2, Search, Users } from "lucide-react";
+import { Home, Search, Users, Sparkles, CloudSun, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import ReactPullToRefresh from "react-pull-to-refresh";
 import { toast } from "sonner";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -157,41 +158,6 @@ export const OutfitFeed = () => {
     );
   }
 
-  // Initial loading state
-  if (isLoading) {
-    return (
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {[...Array(6)].map((_, i) => (
-          <Skeleton key={i} className="h-[400px] rounded-xl" />
-        ))}
-      </div>
-    );
-  }
-
-  const outfits = data?.pages.flatMap((page) => page.outfits) ?? [];
-
-  // Empty state
-  if (outfits.length === 0) {
-    return (
-      <div className="text-center py-12 space-y-6">
-        <div className="flex flex-col items-center gap-4">
-          <Users className="h-12 w-12 text-muted-foreground" />
-          <h2 className="text-xl font-semibold">Aucune tenue à afficher</h2>
-          <p className="text-muted-foreground max-w-sm">
-            Commencez à suivre d'autres utilisateurs ou explorez de nouvelles tenues pour personnaliser votre fil d'actualité
-          </p>
-        </div>
-        <Button 
-          onClick={() => navigate("/discover")}
-          className="gap-2"
-        >
-          <Search className="h-4 w-4" />
-          Explorer les tenues
-        </Button>
-      </div>
-    );
-  }
-
   return (
     <ReactPullToRefresh
       onRefresh={handleRefresh}
@@ -201,29 +167,104 @@ export const OutfitFeed = () => {
         position: 'relative'
       }}
     >
-      <div className="relative">
-        {/* Pull to refresh indicator */}
-        {isRefetching && !isFetchingNextPage && (
-          <div className="absolute top-0 left-0 right-0 flex justify-center py-4 bg-background/80 backdrop-blur-sm z-10">
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
-          </div>
-        )}
+      <div className="space-y-6">
+        {/* Challenge Banner */}
+        <Alert>
+          <Trophy className="h-4 w-4" />
+          <AlertDescription>
+            Challenge en cours : Créez votre tenue d'automne !
+            <Button variant="link" className="pl-2" onClick={() => navigate("/contest")}>
+              Participer
+            </Button>
+          </AlertDescription>
+        </Alert>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {outfits.map((outfit) => (
-            <OutfitCard key={outfit.id} outfit={outfit} />
-          ))}
+        {/* AI & Weather Suggestions */}
+        <div className="grid grid-cols-2 gap-4">
+          <Button 
+            variant="outline" 
+            className="flex items-center gap-2 h-auto py-4"
+            onClick={() => toast.info("Suggestions IA bientôt disponibles")}
+          >
+            <Sparkles className="h-4 w-4" />
+            <div className="text-left">
+              <div className="font-medium">Suggestions IA</div>
+              <div className="text-sm text-muted-foreground">Basées sur vos préférences</div>
+            </div>
+          </Button>
           
-          {/* Infinite scroll loading indicator */}
-          <div ref={ref} className="col-span-full h-20 flex items-center justify-center">
-            {isFetchingNextPage && (
-              <div className="grid grid-cols-3 gap-4 w-full">
-                {[...Array(3)].map((_, i) => (
-                  <Skeleton key={i} className="h-[400px] rounded-xl" />
-                ))}
+          <Button 
+            variant="outline" 
+            className="flex items-center gap-2 h-auto py-4"
+            onClick={() => toast.info("Suggestions météo bientôt disponibles")}
+          >
+            <CloudSun className="h-4 w-4" />
+            <div className="text-left">
+              <div className="font-medium">Météo Style</div>
+              <div className="text-sm text-muted-foreground">Parfait pour aujourd'hui</div>
+            </div>
+          </Button>
+        </div>
+
+        {/* Main Feed */}
+        <div className="relative">
+          {/* Pull to refresh indicator */}
+          {isRefetching && !isFetchingNextPage && (
+            <div className="absolute top-0 left-0 right-0 flex justify-center py-4 bg-background/80 backdrop-blur-sm z-10">
+              <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-primary" />
+            </div>
+          )}
+
+          {/* Initial loading state */}
+          {isLoading && (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {[...Array(6)].map((_, i) => (
+                <Skeleton key={i} className="h-[400px] rounded-xl" />
+              ))}
+            </div>
+          )}
+
+          {/* Empty state */}
+          {!isLoading && data?.pages[0].outfits.length === 0 && (
+            <div className="text-center py-12 space-y-6">
+              <div className="flex flex-col items-center gap-4">
+                <Home className="h-12 w-12 text-muted-foreground" />
+                <h2 className="text-xl font-semibold">Bienvenue sur votre fil d'actualité</h2>
+                <p className="text-muted-foreground max-w-sm">
+                  Commencez à suivre d'autres utilisateurs ou explorez de nouvelles tenues pour personnaliser votre fil
+                </p>
               </div>
-            )}
-          </div>
+              <Button 
+                onClick={() => navigate("/discover")}
+                className="gap-2"
+              >
+                <Search className="h-4 w-4" />
+                Explorer les tenues
+              </Button>
+            </div>
+          )}
+
+          {/* Feed content */}
+          {!isLoading && data?.pages[0].outfits.length > 0 && (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {data.pages.flatMap((page) => 
+                page.outfits.map((outfit) => (
+                  <OutfitCard key={outfit.id} outfit={outfit} />
+                ))
+              )}
+              
+              {/* Infinite scroll loading indicator */}
+              <div ref={ref} className="col-span-full h-20 flex items-center justify-center">
+                {isFetchingNextPage && (
+                  <div className="grid grid-cols-3 gap-4 w-full">
+                    {[...Array(3)].map((_, i) => (
+                      <Skeleton key={i} className="h-[400px] rounded-xl" />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </ReactPullToRefresh>
