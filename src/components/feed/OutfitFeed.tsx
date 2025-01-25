@@ -1,6 +1,7 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button"; // Ajout de l'import manquant
 import { useEffect } from "react";
 import { useInView } from "react-intersection-observer";
 import ReactPullToRefresh from "react-pull-to-refresh";
