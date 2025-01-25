@@ -21,6 +21,7 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { UserFiles } from "../files/UserFiles";
 import { CreateShopDialog } from "../shop/CreateShopDialog";
+import { useQuery } from "@tanstack/react-query";
 
 interface ProfileMenuProps {
   isActive: boolean;
@@ -31,6 +32,27 @@ export const ProfileMenu = ({ isActive }: ProfileMenuProps) => {
   const { data: notificationsCount } = useNotifications();
   const [showFilesDialog, setShowFilesDialog] = useState(false);
   const [showShopDialog, setShowShopDialog] = useState(false);
+
+  const { data: shopProfile } = useQuery({
+    queryKey: ["shopProfile"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+
+      const { data, error } = await supabase
+        .from("shop_profiles")
+        .select("*")
+        .eq("user_id", user.id)
+        .single();
+
+      if (error && error.code !== "PGRST116") {
+        console.error("Error fetching shop profile:", error);
+        return null;
+      }
+
+      return data;
+    },
+  });
 
   const handleLogout = async () => {
     try {
@@ -93,7 +115,7 @@ export const ProfileMenu = ({ isActive }: ProfileMenuProps) => {
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setShowShopDialog(true)}>
             <Store className="w-4 h-4 mr-2" />
-            Ma boutique
+            {shopProfile ? "Gérer ma boutique" : "Créer ma boutique"}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setShowFilesDialog(true)}>
             <Upload className="w-4 h-4 mr-2" />
@@ -124,9 +146,11 @@ export const ProfileMenu = ({ isActive }: ProfileMenuProps) => {
       <Dialog open={showShopDialog} onOpenChange={setShowShopDialog}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>Ma boutique</DialogTitle>
+            <DialogTitle>
+              {shopProfile ? "Gérer ma boutique" : "Créer ma boutique"}
+            </DialogTitle>
           </DialogHeader>
-          <CreateShopDialog />
+          <CreateShopDialog existingShop={shopProfile} />
         </DialogContent>
       </Dialog>
     </>
