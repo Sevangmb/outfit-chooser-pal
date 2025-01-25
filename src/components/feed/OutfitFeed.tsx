@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import ReactPullToRefresh from "react-pull-to-refresh";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { WeatherWidget } from "@/components/weather/WeatherWidget";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -179,7 +180,10 @@ export const OutfitFeed = () => {
           </AlertDescription>
         </Alert>
 
-        {/* AI & Weather Suggestions */}
+        {/* Weather Widget */}
+        <WeatherWidget />
+
+        {/* AI Suggestions */}
         <div className="grid grid-cols-2 gap-4">
           <Button 
             variant="outline" 
@@ -196,12 +200,12 @@ export const OutfitFeed = () => {
           <Button 
             variant="outline" 
             className="flex items-center gap-2 h-auto py-4"
-            onClick={() => toast.info("Suggestions météo bientôt disponibles")}
+            onClick={() => navigate("/discover")}
           >
-            <CloudSun className="h-4 w-4" />
+            <Search className="h-4 w-4" />
             <div className="text-left">
-              <div className="font-medium">Météo Style</div>
-              <div className="text-sm text-muted-foreground">Parfait pour aujourd'hui</div>
+              <div className="font-medium">Explorer</div>
+              <div className="text-sm text-muted-foreground">Découvrir de nouvelles tenues</div>
             </div>
           </Button>
         </div>
