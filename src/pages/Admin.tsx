@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Shield, Users, List, Ban, Settings, HelpCircle } from "lucide-react";
+import { Shield, Users, List, Ban, Settings, Store, HelpCircle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserManagement } from "@/components/admin/UserManagement";
 import { AuditLogs } from "@/components/admin/AuditLogs";
 import { BannedWords } from "@/components/admin/BannedWords";
 import { ContentModeration } from "@/components/admin/ContentModeration";
+import { ShopModeration } from "@/components/admin/ShopModeration";
 import { GeneralSettings } from "@/components/admin/GeneralSettings";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -116,6 +117,13 @@ const Admin = () => {
               description="Modérez le contenu signalé et gérez les infractions"
             />
           </TabsTrigger>
+          <TabsTrigger value="shops">
+            <TabHeader 
+              icon={Store} 
+              title="Boutiques" 
+              description="Gérez les demandes de création de boutique"
+            />
+          </TabsTrigger>
           <TabsTrigger value="banned-words">
             <TabHeader 
               icon={Ban} 
@@ -157,6 +165,17 @@ const Admin = () => {
             </CardHeader>
             <CardContent>
               <ContentModeration />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="shops">
+          <Card>
+            <CardHeader>
+              <CardTitle>Modération des boutiques</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ShopModeration />
             </CardContent>
           </Card>
         </TabsContent>
