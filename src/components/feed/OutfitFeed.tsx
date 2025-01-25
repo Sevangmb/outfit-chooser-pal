@@ -169,6 +169,9 @@ export const OutfitFeed = () => {
       }}
     >
       <div className="space-y-6">
+        {/* Weather Widget - Placed at the top */}
+        <WeatherWidget />
+
         {/* Challenge Banner */}
         <Alert>
           <Trophy className="h-4 w-4" />
@@ -179,9 +182,6 @@ export const OutfitFeed = () => {
             </Button>
           </AlertDescription>
         </Alert>
-
-        {/* Weather Widget */}
-        <WeatherWidget />
 
         {/* AI Suggestions */}
         <div className="grid grid-cols-2 gap-4">
