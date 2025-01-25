@@ -75,25 +75,6 @@ const Admin = () => {
     );
   }
 
-  const TabHeader = ({ icon: Icon, title, description }: { icon: any, title: string, description: string }) => (
-    <div className="flex items-center gap-2">
-      <Icon className="h-5 w-5" />
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div className="flex items-center gap-1">
-              {title}
-              <HelpCircle className="h-4 w-4 text-muted-foreground ml-1" />
-            </div>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p className="max-w-xs text-sm">{description}</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    </div>
-  );
-
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="flex items-center gap-2 mb-8">
@@ -104,67 +85,38 @@ const Admin = () => {
       <Tabs defaultValue="users" className="space-y-4">
         <TabsList className="grid grid-cols-2 md:flex md:space-x-2 gap-2 md:gap-0">
           <TabsTrigger value="users">
-            <TabHeader 
-              icon={Users} 
-              title="Utilisateurs" 
-              description="Gérez les utilisateurs, leurs rôles et leurs permissions"
-            />
-          </TabsTrigger>
-          <TabsTrigger value="moderation">
-            <TabHeader 
-              icon={Ban} 
-              title="Modération" 
-              description="Modérez le contenu signalé et gérez les infractions"
-            />
+            <Users className="h-4 w-4 mr-2" />
+            Utilisateurs
           </TabsTrigger>
           <TabsTrigger value="shops">
-            <TabHeader 
-              icon={Store} 
-              title="Boutiques" 
-              description="Gérez les demandes de création de boutique"
-            />
+            <Store className="h-4 w-4 mr-2" />
+            Boutiques
+          </TabsTrigger>
+          <TabsTrigger value="moderation">
+            <Ban className="h-4 w-4 mr-2" />
+            Modération
           </TabsTrigger>
           <TabsTrigger value="banned-words">
-            <TabHeader 
-              icon={Ban} 
-              title="Mots bannis" 
-              description="Gérez la liste des mots interdits sur la plateforme"
-            />
+            <Ban className="h-4 w-4 mr-2" />
+            Mots bannis
           </TabsTrigger>
           <TabsTrigger value="logs">
-            <TabHeader 
-              icon={List} 
-              title="Logs" 
-              description="Consultez l'historique des actions administratives"
-            />
+            <List className="h-4 w-4 mr-2" />
+            Logs
           </TabsTrigger>
           <TabsTrigger value="settings">
-            <TabHeader 
-              icon={Settings} 
-              title="Paramètres" 
-              description="Configurez les paramètres généraux de l'application"
-            />
+            <Settings className="h-4 w-4 mr-2" />
+            Paramètres
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="users" className="space-y-4">
+        <TabsContent value="users">
           <Card>
             <CardHeader>
               <CardTitle>Gestion des utilisateurs</CardTitle>
             </CardHeader>
             <CardContent>
               <UserManagement />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="moderation">
-          <Card>
-            <CardHeader>
-              <CardTitle>Modération du contenu</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ContentModeration />
             </CardContent>
           </Card>
         </TabsContent>
@@ -176,6 +128,17 @@ const Admin = () => {
             </CardHeader>
             <CardContent>
               <ShopModeration />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="moderation">
+          <Card>
+            <CardHeader>
+              <CardTitle>Modération du contenu</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ContentModeration />
             </CardContent>
           </Card>
         </TabsContent>
