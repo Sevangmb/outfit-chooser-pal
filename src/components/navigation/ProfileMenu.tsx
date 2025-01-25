@@ -36,6 +36,7 @@ export const ProfileMenu = ({ isActive }: ProfileMenuProps) => {
   const { data: shopProfile } = useQuery({
     queryKey: ["shopProfile"],
     queryFn: async () => {
+      console.log("Fetching shop profile...");
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return null;
 
@@ -43,13 +44,15 @@ export const ProfileMenu = ({ isActive }: ProfileMenuProps) => {
         .from("shop_profiles")
         .select("*")
         .eq("user_id", user.id)
-        .single();
+        .limit(1)
+        .maybeSingle();
 
       if (error && error.code !== "PGRST116") {
         console.error("Error fetching shop profile:", error);
         return null;
       }
 
+      console.log("Fetched shop profile:", data);
       return data;
     },
   });
