@@ -173,6 +173,7 @@ export type Database = {
           name: string
           notes: string | null
           purchase_price: number | null
+          rating: number | null
           secondary_color: string | null
           selling_price: number | null
           size: string | null
@@ -192,6 +193,7 @@ export type Database = {
           name: string
           notes?: string | null
           purchase_price?: number | null
+          rating?: number | null
           secondary_color?: string | null
           selling_price?: number | null
           size?: string | null
@@ -211,6 +213,7 @@ export type Database = {
           name?: string
           notes?: string | null
           purchase_price?: number | null
+          rating?: number | null
           secondary_color?: string | null
           selling_price?: number | null
           size?: string | null
@@ -218,6 +221,35 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      clothes_votes: {
+        Row: {
+          clothes_id: number | null
+          created_at: string
+          id: number
+          user_id: string | null
+        }
+        Insert: {
+          clothes_id?: number | null
+          created_at?: string
+          id?: number
+          user_id?: string | null
+        }
+        Update: {
+          clothes_id?: number | null
+          created_at?: string
+          id?: number
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clothes_votes_clothes_id_fkey"
+            columns: ["clothes_id"]
+            isOneToOne: false
+            referencedRelation: "clothes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       clothing_brands: {
         Row: {

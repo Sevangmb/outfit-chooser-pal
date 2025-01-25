@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Eye, Shirt, Trash2 } from "lucide-react";
+import { Eye, Shirt, ThumbsUp, Trash2 } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -24,19 +24,73 @@ interface ClothingCardProps {
   category: string;
   color: string;
   image?: string | null;
+  rating?: number;
 }
 
-export const ClothingCard = ({ id, name, category, color, image }: ClothingCardProps) => {
+export const ClothingCard = ({ id, name, category, color, image, rating = 0 }: ClothingCardProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [imageError, setImageError] = useState(false);
+  const [hasVoted, setHasVoted] = useState(false);
+  const [voteCount, setVoteCount] = useState(rating);
+
+  const checkUserVote = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: vote } = await supabase
+        .from('clothes_votes')
+        .select('*')
+        .eq('clothes_id', id)
+        .eq('user_id', user.id)
+        .single();
+
+      setHasVoted(!!vote);
+    } catch (error) {
+      console.error("Error checking vote:", error);
+    }
+  };
+
+  const handleVote = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Vous devez être connecté pour voter");
+        return;
+      }
+
+      if (hasVoted) {
+        const { error } = await supabase
+          .from('clothes_votes')
+          .delete()
+          .eq('clothes_id', id)
+          .eq('user_id', user.id);
+
+        if (error) throw error;
+        setVoteCount(prev => Math.max(0, prev - 1));
+        setHasVoted(false);
+        toast.success("Vote retiré");
+      } else {
+        const { error } = await supabase
+          .from('clothes_votes')
+          .insert({ clothes_id: id });
+
+        if (error) throw error;
+        setVoteCount(prev => prev + 1);
+        setHasVoted(true);
+        toast.success("Vote ajouté");
+      }
+    } catch (error) {
+      console.error("Error voting:", error);
+      toast.error("Erreur lors du vote");
+    }
+  };
 
   const handleDelete = async () => {
     try {
-      // If there's an image, delete it from storage first
       if (image) {
-        // Extract the filename from the path or URL
         const fileName = image.split('/').pop();
         if (fileName) {
           console.log("Deleting image from storage:", fileName);
@@ -52,7 +106,6 @@ export const ClothingCard = ({ id, name, category, color, image }: ClothingCardP
         }
       }
 
-      // Delete the clothing record from the database
       const { error: dbError } = await supabase
         .from('clothes')
         .delete()
@@ -65,8 +118,6 @@ export const ClothingCard = ({ id, name, category, color, image }: ClothingCardP
       }
 
       toast.success("Vêtement supprimé avec succès");
-      
-      // Refresh the page or update the UI as needed
       window.location.reload();
     } catch (error) {
       console.error("Error in deletion process:", error);
@@ -75,6 +126,7 @@ export const ClothingCard = ({ id, name, category, color, image }: ClothingCardP
   };
 
   useEffect(() => {
+    checkUserVote();
     if (!image) {
       setIsLoading(false);
       return;
@@ -82,7 +134,6 @@ export const ClothingCard = ({ id, name, category, color, image }: ClothingCardP
 
     const loadImage = async () => {
       try {
-        // Check if the image is already a full URL
         if (image.startsWith('http')) {
           console.log("Loading image from URL:", image);
           setImageUrl(image);
@@ -90,7 +141,6 @@ export const ClothingCard = ({ id, name, category, color, image }: ClothingCardP
           return;
         }
 
-        // Get the public URL for the image directly
         const { data: { publicUrl } } = supabase.storage
           .from('clothes')
           .getPublicUrl(image);
@@ -143,6 +193,19 @@ export const ClothingCard = ({ id, name, category, color, image }: ClothingCardP
                 <span>{color}</span>
               </div>
               <div className="flex gap-2">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className={`h-8 w-8 ${hasVoted ? 'text-primary' : ''}`}
+                  onClick={handleVote}
+                >
+                  <div className="flex items-center">
+                    <ThumbsUp className="h-4 w-4" />
+                    {voteCount > 0 && (
+                      <span className="ml-1 text-xs">{voteCount}</span>
+                    )}
+                  </div>
+                </Button>
                 <Button 
                   variant="ghost" 
                   size="icon" 
