@@ -24,6 +24,8 @@ export const SearchAndFilters = ({
   onReset,
 }: SearchAndFiltersProps) => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedColor, setSelectedColor] = useState("all");
 
   const handleSearch = (value: string) => {
     setSearchQuery(value);
@@ -32,14 +34,18 @@ export const SearchAndFilters = ({
 
   const handleReset = () => {
     setSearchQuery("");
+    setSelectedCategory("all");
+    setSelectedColor("all");
     onReset();
   };
 
   const handleCategoryChange = (value: string) => {
+    setSelectedCategory(value);
     onFilterCategory(value === "all" ? "" : value);
   };
 
   const handleColorChange = (value: string) => {
+    setSelectedColor(value);
     onFilterColor(value === "all" ? "" : value);
   };
 
@@ -62,7 +68,7 @@ export const SearchAndFilters = ({
         )}
       </div>
       <div className="flex gap-4">
-        <Select onValueChange={handleCategoryChange} defaultValue="all">
+        <Select value={selectedCategory} onValueChange={handleCategoryChange}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Catégorie" />
           </SelectTrigger>
@@ -73,7 +79,7 @@ export const SearchAndFilters = ({
             <SelectItem value="chaussure">Chaussures</SelectItem>
           </SelectContent>
         </Select>
-        <Select onValueChange={handleColorChange} defaultValue="all">
+        <Select value={selectedColor} onValueChange={handleColorChange}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Couleur" />
           </SelectTrigger>
