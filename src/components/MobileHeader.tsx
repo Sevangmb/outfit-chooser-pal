@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
+import { Menu, MessageSquare, Users, Bell, UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   NavigationMenu,
@@ -27,6 +27,31 @@ export const MobileHeader = () => {
       items: [
         { name: "Voir ma boutique", path: "/shop" },
         { name: "Vendre un vêtement", path: "/add?sale=true" },
+      ],
+    },
+    {
+      title: "Communauté",
+      items: [
+        { 
+          name: "Messagerie", 
+          path: "/messages",
+          icon: MessageSquare 
+        },
+        { 
+          name: "Groupes", 
+          path: "/groups",
+          icon: Users 
+        },
+        { 
+          name: "Notifications", 
+          path: "/notifications",
+          icon: Bell 
+        },
+        { 
+          name: "Trouver des amis", 
+          path: "/friends",
+          icon: UserPlus 
+        },
       ],
     },
     {
@@ -77,6 +102,7 @@ export const MobileHeader = () => {
                               navigate(item.path);
                             }}
                           >
+                            {item.icon && <item.icon className="w-4 h-4 mr-2" />}
                             {item.name}
                           </Button>
                         ))}
