@@ -86,6 +86,14 @@ export const ImageUploadTabs = ({
     }
 
     try {
+      // Validate URL format
+      const urlPattern = /^https?:\/\/.+\.(jpg|jpeg|png|webp|gif)$/i;
+      if (!urlPattern.test(imageUrl)) {
+        toast.error("L'URL doit pointer vers une image valide (JPG, PNG, WEBP ou GIF)");
+        return;
+      }
+
+      // Test if the URL points to a valid image
       const response = await fetch(imageUrl);
       const contentType = response.headers.get('content-type');
       
@@ -94,11 +102,14 @@ export const ImageUploadTabs = ({
         return;
       }
 
+      console.log("Importation de l'image depuis l'URL:", imageUrl);
+      form.setValue("image", imageUrl, { shouldValidate: true });
       await onUrlUpload(imageUrl);
       toast.success("Image importée avec succès");
     } catch (error) {
       console.error("Erreur d'import URL:", error);
       toast.error("Erreur lors de l'import de l'image");
+      form.setValue("image", null);
     }
   };
 
