@@ -23,9 +23,11 @@ serve(async (req) => {
     const formData = await req.formData();
     const file = formData.get('file');
 
-    if (!file) {
+    if (!file || !(file instanceof File)) {
       throw new Error('No file provided');
     }
+
+    console.log("Processing file upload:", file.name);
 
     const buffer = await file.arrayBuffer();
     const fileMetadata = {
@@ -38,13 +40,14 @@ serve(async (req) => {
       body: new Uint8Array(buffer),
     };
 
+    console.log("Uploading to Google Drive...");
     const response = await drive.files.create({
       requestBody: fileMetadata,
       media: media,
       fields: 'id,webViewLink',
     });
 
-    console.log('File uploaded successfully:', response.data);
+    console.log("Upload successful:", response.data);
 
     return new Response(
       JSON.stringify({

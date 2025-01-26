@@ -11,22 +11,42 @@ export const useGoogleDriveUpload = () => {
       setIsUploading(true);
       setUploadError(null);
 
+      console.log("Starting file upload to Google Drive:", file.name);
+
       const formData = new FormData();
       formData.append('file', file);
 
-      const { data: { publicUrl }, error } = await supabase.functions.invoke('upload-to-drive', {
+      const { data, error } = await supabase.functions.invoke('upload-to-drive', {
         body: formData,
       });
 
       if (error) {
+        console.error("Error uploading to Google Drive:", error);
         throw error;
       }
 
+      console.log("File uploaded successfully:", data);
       toast.success('Fichier téléchargé avec succès sur Google Drive');
-      return publicUrl;
 
+      // Store the file URL in Supabase
+      const { error: dbError } = await supabase
+        .from('user_files')
+        .insert({
+          filename: file.name,
+          file_path: data.webViewLink,
+          content_type: file.type,
+          size: file.size,
+          description: 'Uploaded to Google Drive'
+        });
+
+      if (dbError) {
+        console.error("Error storing file metadata:", dbError);
+        throw dbError;
+      }
+
+      return data.webViewLink;
     } catch (error) {
-      console.error('Error uploading to Google Drive:', error);
+      console.error('Error in upload process:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erreur lors du téléchargement';
       setUploadError(errorMessage);
       toast.error(errorMessage);

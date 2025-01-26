@@ -1,20 +1,18 @@
 import { Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { FormControl, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { UseFormReturn } from "react-hook-form";
 import { FormValues } from "@/types/clothing";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { FileUploader } from "../shared/FileUploader";
 
 interface ImageUploadProps {
   form: UseFormReturn<FormValues>;
   isUploading: boolean;
   previewUrl: string | null;
   uploadError: string | null;
-  onFileUpload: (file: File) => Promise<string | null>;
   onCameraCapture: () => Promise<void>;
-  onResetPreview: () => void;
 }
 
 export const ImageUpload = ({
@@ -22,23 +20,11 @@ export const ImageUpload = ({
   isUploading,
   previewUrl,
   uploadError,
-  onFileUpload,
   onCameraCapture,
-  onResetPreview
 }: ImageUploadProps) => {
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    try {
-      // Directly pass the File object, not FormData
-      const imageUrl = await onFileUpload(file);
-      if (imageUrl) {
-        form.setValue("image", imageUrl, { shouldValidate: true });
-      }
-    } catch (error) {
-      console.error("Error uploading file:", error);
-    }
+  const handleUploadSuccess = (url: string) => {
+    console.log("Setting image URL in form:", url);
+    form.setValue("image", url, { shouldValidate: true });
   };
 
   return (
@@ -47,12 +33,9 @@ export const ImageUpload = ({
       <div className="space-y-4">
         <div className="flex gap-2">
           <FormControl>
-            <Input
-              type="file"
+            <FileUploader
               accept="image/*"
-              onChange={handleFileChange}
-              disabled={isUploading}
-              className="flex-1"
+              onUploadSuccess={handleUploadSuccess}
             />
           </FormControl>
           <Button
