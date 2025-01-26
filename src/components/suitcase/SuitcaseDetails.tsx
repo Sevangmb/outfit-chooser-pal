@@ -24,7 +24,7 @@ export const SuitcaseDetails = () => {
             clothes (*)
           )
         `)
-        .eq("id", id)
+        .eq("id", Number(id)) // Convert string id to number
         .single();
 
       if (error) {
