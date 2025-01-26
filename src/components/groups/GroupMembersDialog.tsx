@@ -33,7 +33,7 @@ interface Member {
   is_approved: boolean;
   profiles: {
     email: string;
-  };
+  } | null;
 }
 
 interface GroupMembersDialogProps {
@@ -69,9 +69,7 @@ export const GroupMembersDialog = ({ groupId, isOpen, onClose }: GroupMembersDia
       // Transform the data to ensure it matches the Member interface
       const transformedMembers = (membersData || []).map(member => ({
         ...member,
-        profiles: {
-          email: member.profiles?.email || 'Unknown'
-        }
+        profiles: member.profiles || { email: 'Unknown' }
       }));
 
       setMembers(transformedMembers);
