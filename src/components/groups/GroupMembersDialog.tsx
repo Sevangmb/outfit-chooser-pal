@@ -49,7 +49,7 @@ export const GroupMembersDialog = ({ groupId, isOpen, onClose }: GroupMembersDia
       setLoading(true);
       console.log("Fetching group members for group:", groupId);
       
-      const { data: membersData, error } = await supabase
+      const { data, error } = await supabase
         .from("message_group_members")
         .select(`
           id,
@@ -57,7 +57,7 @@ export const GroupMembersDialog = ({ groupId, isOpen, onClose }: GroupMembersDia
           role,
           joined_at,
           is_approved,
-          profiles!inner (
+          profiles:user_id (
             email
           )
         `)
@@ -69,16 +69,16 @@ export const GroupMembersDialog = ({ groupId, isOpen, onClose }: GroupMembersDia
         return;
       }
 
-      console.log("Fetched members data:", membersData);
+      console.log("Fetched members data:", data);
       
-      if (membersData) {
-        const transformedMembers: Member[] = membersData.map(member => ({
+      if (data) {
+        const transformedMembers: Member[] = data.map(member => ({
           id: member.id,
           user_id: member.user_id,
           role: member.role,
           joined_at: member.joined_at,
           is_approved: member.is_approved,
-          user_email: member.profiles.email
+          user_email: member.profiles?.email || 'Email inconnu'
         }));
 
         setMembers(transformedMembers);
