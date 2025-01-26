@@ -11,6 +11,8 @@ serve(async (req) => {
   }
 
   try {
+    console.log("Testing OneDrive connection...");
+    
     const clientId = Deno.env.get('MICROSOFT_CLIENT_ID')
     const clientSecret = Deno.env.get('MICROSOFT_CLIENT_SECRET')
 
@@ -18,8 +20,9 @@ serve(async (req) => {
       throw new Error('Microsoft credentials not configured')
     }
 
-    // Test authentication
-    const tokenResponse = await fetch('https://login.microsoftonline.com/common/oauth2/v2.0/token', {
+    // Test authentication with Microsoft Graph API
+    const tokenUrl = 'https://login.microsoftonline.com/common/oauth2/v2.0/token';
+    const tokenResponse = await fetch(tokenUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -30,12 +33,13 @@ serve(async (req) => {
         grant_type: 'client_credentials',
         scope: 'https://graph.microsoft.com/.default',
       }),
-    })
+    });
 
-    const tokenData = await tokenResponse.json()
+    const tokenData = await tokenResponse.json();
+    console.log("Token response received");
 
     if (!tokenData.access_token) {
-      throw new Error('Failed to get access token')
+      throw new Error('Failed to get access token');
     }
 
     return new Response(
@@ -44,10 +48,10 @@ serve(async (req) => {
         message: "Successfully connected to OneDrive"
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+    );
 
   } catch (error) {
-    console.error('Error:', error)
+    console.error('Error testing OneDrive connection:', error);
     return new Response(
       JSON.stringify({
         success: false,
@@ -57,6 +61,6 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500
       }
-    )
+    );
   }
-})
+});

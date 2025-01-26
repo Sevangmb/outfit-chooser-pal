@@ -44,7 +44,7 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
     },
   });
 
-  const { isUploading, previewUrl, uploadError, handleFileUpload, resetPreview } = useImageUpload();
+  const { isUploading, previewUrl, uploadError, uploadProgress, handleFileUpload, resetPreview } = useImageUpload();
   const { handleSubmit } = useClothingFormSubmit(mode, existingClothing?.id);
   const { handleDelete } = useClothingDelete();
   const { handleCameraCapture } = useCameraCapture((imageData: string) => {
@@ -79,10 +79,11 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
           form={form}
           isUploading={isUploading}
           previewUrl={previewUrl}
+          uploadError={uploadError}
+          uploadProgress={uploadProgress}
           onFileUpload={handleFileUpload}
           onCameraCapture={handleCameraCapture}
           onResetPreview={resetPreview}
-          uploadError={uploadError}
         />
         <FieldsSection form={form} />
       </div>
