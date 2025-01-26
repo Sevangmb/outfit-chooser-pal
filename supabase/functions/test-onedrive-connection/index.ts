@@ -22,6 +22,8 @@ serve(async (req) => {
       throw new Error('Microsoft credentials not configured')
     }
 
+    console.log("Requesting access token with client credentials flow...");
+    
     // Get access token using client credentials flow
     const tokenUrl = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`
     const scope = 'https://graph.microsoft.com/.default'
@@ -33,7 +35,6 @@ serve(async (req) => {
       scope: scope
     })
 
-    console.log("Requesting access token...");
     const tokenResponse = await fetch(tokenUrl, {
       method: 'POST',
       headers: {
@@ -43,15 +44,16 @@ serve(async (req) => {
     });
 
     const tokenData = await tokenResponse.json();
-    console.log("Token response received");
-
-    if (!tokenResponse.ok || !tokenData.access_token) {
+    
+    if (!tokenResponse.ok) {
       console.error("Failed to get access token:", tokenData);
       throw new Error('Failed to get access token: ' + (tokenData.error_description || tokenData.error || 'Unknown error'));
     }
 
+    console.log("Successfully obtained access token");
+
     // Test Graph API connection
-    console.log("Testing Graph API connection...");
+    console.log("Testing Microsoft Graph API connection...");
     const graphResponse = await fetch('https://graph.microsoft.com/v1.0/me/drive', {
       headers: {
         'Authorization': `Bearer ${tokenData.access_token}`,
@@ -66,7 +68,7 @@ serve(async (req) => {
     }
 
     const graphData = await graphResponse.json();
-    console.log("Graph API connection successful:", graphData);
+    console.log("Successfully connected to Microsoft Graph API");
 
     return new Response(
       JSON.stringify({
