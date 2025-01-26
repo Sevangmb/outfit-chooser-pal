@@ -5,7 +5,7 @@ import { WeatherWidget } from "@/components/weather/WeatherWidget";
 import { AIFeatures } from "@/components/feed/AIFeatures";
 import { OutfitFeed } from "@/components/feed/OutfitFeed";
 import { Button } from "@/components/ui/button";
-import { Sparkles, LayoutList, TrendingUp, Trophy } from "lucide-react";
+import { LayoutList, Sparkles, TrendingUp, Trophy } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -34,12 +34,7 @@ const Index = () => {
         }
       });
 
-      if (error) {
-        console.error("Error getting suggestion:", error);
-        throw error;
-      }
-
-      console.log("Received suggestion:", data);
+      if (error) throw error;
       setSuggestion(data.suggestion);
 
     } catch (error) {

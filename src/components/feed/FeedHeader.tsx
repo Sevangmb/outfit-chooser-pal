@@ -1,6 +1,6 @@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Trophy, Sparkles } from "lucide-react";
+import { Trophy, Sparkles, Home } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { WeatherWidget } from "@/components/weather/WeatherWidget";
 import { useState } from "react";
@@ -23,7 +23,6 @@ export const FeedHeader = () => {
         toast.error("Vous devez être connecté pour obtenir une suggestion");
         return;
       }
-      console.log("User authenticated:", session.user.id);
 
       const weatherDataStr = localStorage.getItem('weatherData');
       if (!weatherDataStr) {
@@ -45,10 +44,7 @@ export const FeedHeader = () => {
         }
       });
 
-      if (error) {
-        console.error("Error getting suggestion:", error);
-        throw error;
-      }
+      if (error) throw error;
 
       console.log("Received suggestion:", data);
       setSuggestion(data.suggestion);
@@ -64,6 +60,11 @@ export const FeedHeader = () => {
   
   return (
     <div className="space-y-6">
+      <div className="flex items-center gap-2 mb-4">
+        <Home className="h-6 w-6 text-primary" />
+        <h1 className="text-2xl font-bold text-primary">Accueil</h1>
+      </div>
+
       <div className="space-y-4">
         <Card className="p-4">
           <WeatherWidget />
@@ -98,11 +99,11 @@ export const FeedHeader = () => {
         </Card>
       </div>
       
-      <Alert>
-        <Trophy className="h-4 w-4" />
-        <AlertDescription>
-          Challenge en cours : Créez votre tenue d'automne !
-          <Button variant="link" className="pl-2" onClick={() => navigate("/contest")}>
+      <Alert className="bg-primary/5 border-primary/20">
+        <Trophy className="h-4 w-4 text-primary" />
+        <AlertDescription className="flex items-center justify-between">
+          <span>Challenge en cours : Créez votre tenue d'automne !</span>
+          <Button variant="link" className="text-primary" onClick={() => navigate("/contest")}>
             Participer
           </Button>
         </AlertDescription>
