@@ -589,6 +589,35 @@ export type Database = {
           },
         ]
       }
+      group_comment_likes: {
+        Row: {
+          comment_id: number | null
+          created_at: string | null
+          id: number
+          user_id: string | null
+        }
+        Insert: {
+          comment_id?: number | null
+          created_at?: string | null
+          id?: never
+          user_id?: string | null
+        }
+        Update: {
+          comment_id?: number | null
+          created_at?: string | null
+          id?: never
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_comment_likes_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "group_post_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       group_join_requests: {
         Row: {
           created_at: string | null
@@ -663,6 +692,123 @@ export type Database = {
           },
         ]
       }
+      group_post_comments: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: number
+          likes_count: number | null
+          post_id: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: never
+          likes_count?: number | null
+          post_id?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: never
+          likes_count?: number | null
+          post_id?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_post_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "group_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_post_likes: {
+        Row: {
+          created_at: string | null
+          id: number
+          post_id: number | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: never
+          post_id?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: never
+          post_id?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_post_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "group_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_posts: {
+        Row: {
+          comments_count: number | null
+          content: string
+          created_at: string | null
+          group_id: number | null
+          id: number
+          image_url: string | null
+          is_announcement: boolean | null
+          is_pinned: boolean | null
+          likes_count: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          comments_count?: number | null
+          content: string
+          created_at?: string | null
+          group_id?: number | null
+          id?: never
+          image_url?: string | null
+          is_announcement?: boolean | null
+          is_pinned?: boolean | null
+          likes_count?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          comments_count?: number | null
+          content?: string
+          created_at?: string | null
+          group_id?: number | null
+          id?: never
+          image_url?: string | null
+          is_announcement?: boolean | null
+          is_pinned?: boolean | null
+          likes_count?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_posts_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "message_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       message_group_members: {
         Row: {
           group_id: number | null
@@ -700,32 +846,50 @@ export type Database = {
       }
       message_groups: {
         Row: {
+          banner_image: string | null
+          category: string | null
           cover_image: string | null
           created_at: string
           created_by: string
           description: string | null
           id: number
+          is_verified: boolean | null
+          last_activity_at: string | null
+          member_count: number | null
           name: string
+          post_count: number | null
           privacy: string | null
           rules: string | null
         }
         Insert: {
+          banner_image?: string | null
+          category?: string | null
           cover_image?: string | null
           created_at?: string
           created_by: string
           description?: string | null
           id?: number
+          is_verified?: boolean | null
+          last_activity_at?: string | null
+          member_count?: number | null
           name: string
+          post_count?: number | null
           privacy?: string | null
           rules?: string | null
         }
         Update: {
+          banner_image?: string | null
+          category?: string | null
           cover_image?: string | null
           created_at?: string
           created_by?: string
           description?: string | null
           id?: number
+          is_verified?: boolean | null
+          last_activity_at?: string | null
+          member_count?: number | null
           name?: string
+          post_count?: number | null
           privacy?: string | null
           rules?: string | null
         }
