@@ -52,41 +52,43 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
   });
 
   return (
-    <FormContainer
-      form={form}
-      onSubmit={handleSubmit}
-      isValid={form.formState.isValid}
-      isSubmitting={form.formState.isSubmitting}
-      errors={form.formState.errors}
-    >
-      <div className="space-y-8">
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold">
-            {mode === 'edit' ? 'Modifier le vêtement' : 'Ajouter un vêtement'}
-          </h2>
-          {mode === 'edit' && (
-            <Button
-              type="button"
-              variant="destructive"
-              size="icon"
-              onClick={() => existingClothing?.id && handleDelete(existingClothing.id)}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          )}
+    <div className="py-4">
+      <FormContainer
+        form={form}
+        onSubmit={handleSubmit}
+        isValid={form.formState.isValid}
+        isSubmitting={form.formState.isSubmitting}
+        errors={form.formState.errors}
+      >
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold">
+              {mode === 'edit' ? 'Modifier le vêtement' : 'Ajouter un vêtement'}
+            </h2>
+            {mode === 'edit' && (
+              <Button
+                type="button"
+                variant="destructive"
+                size="icon"
+                onClick={() => existingClothing?.id && handleDelete(existingClothing.id)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+          <ImageSection
+            form={form}
+            isUploading={isUploading}
+            previewUrl={previewUrl}
+            uploadError={uploadError}
+            uploadProgress={uploadProgress}
+            onFileUpload={handleFileUpload}
+            onCameraCapture={handleCameraCapture}
+            onResetPreview={resetPreview}
+          />
+          <FieldsSection form={form} />
         </div>
-        <ImageSection
-          form={form}
-          isUploading={isUploading}
-          previewUrl={previewUrl}
-          uploadError={uploadError}
-          uploadProgress={uploadProgress}
-          onFileUpload={handleFileUpload}
-          onCameraCapture={handleCameraCapture}
-          onResetPreview={resetPreview}
-        />
-        <FieldsSection form={form} />
-      </div>
-    </FormContainer>
+      </FormContainer>
+    </div>
   );
 };

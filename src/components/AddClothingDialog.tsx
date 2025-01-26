@@ -17,7 +17,7 @@ export const AddClothingDialog = () => {
       <DialogTrigger asChild>
         <AddClothingButton onClick={() => setOpen(true)} />
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[600px] h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Ajouter un vêtement</DialogTitle>
         </DialogHeader>
