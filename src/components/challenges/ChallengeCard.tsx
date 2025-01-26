@@ -4,18 +4,15 @@ import { Progress } from "@/components/ui/progress";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Database } from "@/integrations/supabase/types";
+
+type Challenge = Database["public"]["Tables"]["challenges"]["Row"] & {
+  participants_count?: number;
+  user_participated?: boolean;
+};
 
 interface ChallengeCardProps {
-  challenge: {
-    id: string;
-    title: string;
-    description: string;
-    start_date: string;
-    end_date: string;
-    prize: string;
-    participants_count?: number;
-    user_participated?: boolean;
-  };
+  challenge: Challenge;
   onParticipate?: () => void;
 }
 

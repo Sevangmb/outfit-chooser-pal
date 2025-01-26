@@ -15,16 +15,9 @@ import {
 import { toast } from "sonner";
 import { Trophy, Plus, Calendar as CalendarIcon } from "lucide-react";
 import { fr } from "date-fns/locale";
+import { Database } from "@/integrations/supabase/types";
 
-interface Challenge {
-  id: string;
-  title: string;
-  description: string;
-  start_date: string;
-  end_date: string;
-  prize: string;
-  is_active: boolean;
-}
+type Challenge = Database["public"]["Tables"]["challenges"]["Row"];
 
 export const ChallengeManagement = () => {
   const [newChallenge, setNewChallenge] = useState({
@@ -49,7 +42,7 @@ export const ChallengeManagement = () => {
         throw error;
       }
 
-      return data as Challenge[];
+      return data;
     },
   });
 
@@ -60,8 +53,8 @@ export const ChallengeManagement = () => {
         {
           title: newChallenge.title,
           description: newChallenge.description,
-          start_date: newChallenge.start_date,
-          end_date: newChallenge.end_date,
+          start_date: newChallenge.start_date.toISOString(),
+          end_date: newChallenge.end_date.toISOString(),
           prize: newChallenge.prize,
           is_active: true,
         },
@@ -188,7 +181,7 @@ export const ChallengeManagement = () => {
               <Button
                 variant={challenge.is_active ? "default" : "secondary"}
                 onClick={() =>
-                  toggleChallengeStatus(challenge.id, challenge.is_active)
+                  toggleChallengeStatus(challenge.id, challenge.is_active || false)
                 }
               >
                 {challenge.is_active ? "Actif" : "Inactif"}

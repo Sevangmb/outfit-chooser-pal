@@ -3,6 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { ChallengeCard } from "@/components/challenges/ChallengeCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Trophy, Target, History } from "lucide-react";
+import { Database } from "@/integrations/supabase/types";
+
+type Challenge = Database["public"]["Tables"]["challenges"]["Row"] & {
+  participants_count?: number;
+  user_participated?: boolean;
+};
 
 const Contest = () => {
   const { data: challenges = [], refetch } = useQuery({
@@ -16,7 +22,7 @@ const Contest = () => {
         .from("challenges")
         .select(`
           *,
-          challenge_participants (
+          challenge_participants!challenge_participants_challenge_id_fkey (
             user_id
           )
         `)
