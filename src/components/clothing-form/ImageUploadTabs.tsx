@@ -41,12 +41,23 @@ export const ImageUploadTabs = ({
     if (!file) return;
 
     try {
-      if (!file.type.startsWith('image/')) {
-        toast.error("Le fichier doit être une image");
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+      if (!validTypes.includes(file.type)) {
+        toast.error("Le fichier doit être une image (JPEG, PNG, WEBP ou GIF)");
+        e.target.value = ''; // Reset input
         return;
       }
 
-      console.log("Fichier sélectionné:", file.name, file.type);
+      // Validate file size (5MB)
+      const maxSize = 5 * 1024 * 1024;
+      if (file.size > maxSize) {
+        toast.error("Le fichier est trop volumineux (max 5MB)");
+        e.target.value = ''; // Reset input
+        return;
+      }
+
+      console.log("Fichier sélectionné:", file.name, file.type, file.size);
       setSelectedFile(file);
       
       const imageUrl = await onFileUpload(file);
@@ -64,6 +75,7 @@ export const ImageUploadTabs = ({
       toast.error("Erreur lors du téléchargement de l'image");
       setSelectedFile(null);
       form.setValue("image", null);
+      e.target.value = ''; // Reset input
     }
   };
 
@@ -98,7 +110,7 @@ export const ImageUploadTabs = ({
           <FormControl>
             <Input
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp,image/gif"
               onChange={handleFileChange}
               disabled={isUploading}
               className="flex-1"
