@@ -64,30 +64,6 @@ export const ImageUploadTabs = ({
     }
   };
 
-  const handleUrlSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!imageUrl) {
-      toast.error("Veuillez entrer une URL");
-      return;
-    }
-
-    try {
-      const response = await fetch(imageUrl);
-      const contentType = response.headers.get('content-type');
-      
-      if (!contentType || !contentType.startsWith('image/')) {
-        toast.error("L'URL ne pointe pas vers une image valide");
-        return;
-      }
-
-      await onUrlUpload(imageUrl);
-      toast.success("Image importée avec succès");
-    } catch (error) {
-      console.error("URL import error:", error);
-      toast.error("Erreur lors de l'import de l'image");
-    }
-  };
-
   return (
     <FormItem>
       <FormLabel>Image</FormLabel>
