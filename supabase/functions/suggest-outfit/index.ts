@@ -10,56 +10,56 @@ const corsHeaders = {
 console.log("Loading suggest-outfit function...")
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    const { temperature, weatherDescription, conditions, userId, clothes } = await req.json()
+    const { temperature, weatherDescription, conditions, userId } = await req.json()
     console.log("Received request with:", { temperature, weatherDescription, conditions, userId })
     
-    // Check if clothes is undefined or null
-    if (!clothes) {
-      console.log("No clothes provided, fetching from database")
-      const supabaseUrl = Deno.env.get('SUPABASE_URL')
-      const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-      
-      if (!supabaseUrl || !supabaseKey) {
-        throw new Error("Missing Supabase configuration")
-      }
-
-      const supabase = createClient(supabaseUrl, supabaseKey)
-      const { data: userClothes, error: clothesError } = await supabase
-        .from('clothes')
-        .select('*')
-        .eq('user_id', userId)
-
-      if (clothesError) {
-        console.error("Error fetching clothes:", clothesError)
-        throw new Error("Failed to fetch user's clothes")
-      }
-
-      console.log("Found clothes in wardrobe:", userClothes?.length || 0)
-      
-      if (!userClothes || userClothes.length === 0) {
-        return new Response(
-          JSON.stringify({ 
-            suggestion: "Désolé, je ne trouve pas de vêtements dans votre garde-robe pour faire une suggestion." 
-          }),
-          { 
-            headers: { 
-              ...corsHeaders,
-              "Content-Type": "application/json" 
-            } 
-          },
-        )
-      }
-
-      // Use fetched clothes instead
-      clothes = userClothes
+    if (!userId) {
+      throw new Error("User ID is required")
     }
 
-    console.log("Processing wardrobe with", clothes.length, "items")
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error("Missing Supabase configuration")
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey)
+    
+    // Fetch user's clothes
+    console.log("Fetching clothes for user:", userId)
+    const { data: clothes, error: clothesError } = await supabase
+      .from('clothes')
+      .select('*')
+      .eq('user_id', userId)
+
+    if (clothesError) {
+      console.error("Error fetching clothes:", clothesError)
+      throw new Error("Failed to fetch user's clothes")
+    }
+
+    if (!clothes || clothes.length === 0) {
+      return new Response(
+        JSON.stringify({ 
+          suggestion: "Désolé, je ne trouve pas de vêtements dans votre garde-robe pour faire une suggestion." 
+        }),
+        { 
+          headers: { 
+            ...corsHeaders,
+            "Content-Type": "application/json" 
+          } 
+        }
+      )
+    }
+
+    console.log("Found", clothes.length, "items in wardrobe")
 
     // Organize clothes by category
     const tops = clothes.filter(item => 
@@ -99,7 +99,7 @@ serve(async (req) => {
             ...corsHeaders,
             "Content-Type": "application/json" 
           } 
-        },
+        }
       )
     }
 
@@ -107,8 +107,8 @@ serve(async (req) => {
     const wardrobeDescription = `
     Hauts disponibles: ${tops.map(t => `${t.name} (${t.color})`).join(', ')}
     Bas disponibles: ${bottoms.map(b => `${b.name} (${b.color})`).join(', ')}
-    Vestes/Manteaux disponibles: ${outerwear.map(o => `${o.name} (${o.color})`).join(', ')}
-    Chaussures disponibles: ${shoes.map(s => `${s.name} (${s.color})`).join(', ')}
+    ${outerwear.length > 0 ? `Vestes/Manteaux disponibles: ${outerwear.map(o => `${o.name} (${o.color})`).join(', ')}` : ''}
+    ${shoes.length > 0 ? `Chaussures disponibles: ${shoes.map(s => `${s.name} (${s.color})`).join(', ')}` : ''}
     `
 
     console.log("Wardrobe description:", wardrobeDescription)
@@ -116,12 +116,12 @@ serve(async (req) => {
     const genAI = new GoogleGenerativeAI(Deno.env.get('GEMINI_API_KEY'))
     const model = genAI.getGenerativeModel({ model: "gemini-pro" })
 
-    let prompt = `En tant que conseiller vestimentaire, suggère une tenue appropriée pour aujourd'hui en utilisant uniquement les vêtements disponibles dans la garde-robe. 
+    const prompt = `En tant que conseiller vestimentaire, suggère une tenue appropriée pour aujourd'hui en utilisant uniquement les vêtements disponibles dans la garde-robe. 
 
     Conditions météo actuelles:
     - Température: ${temperature}°C
     - Description: ${weatherDescription}
-    - Conditions spéciales: ${conditions.join(', ')}
+    - Conditions spéciales: ${conditions?.join(', ') || 'Aucune'}
 
     Garde-robe disponible:
     ${wardrobeDescription}
@@ -130,8 +130,8 @@ serve(async (req) => {
     1. Utilise uniquement les vêtements listés ci-dessus
     2. Tient compte de la température et des conditions météo
     3. Crée une combinaison harmonieuse de couleurs
-    4. Si la température est inférieure à 15°C, inclure un vêtement chaud
-    5. Si la température est inférieure à 5°C, inclure un manteau
+    4. Si la température est inférieure à 15°C, inclure un vêtement chaud si disponible
+    5. Si la température est inférieure à 5°C, inclure un manteau si disponible
     
     Format souhaité: Une phrase concise en français qui liste les vêtements spécifiques recommandés.`
 
@@ -150,19 +150,21 @@ serve(async (req) => {
           ...corsHeaders,
           "Content-Type": "application/json" 
         } 
-      },
+      }
     )
   } catch (error) {
     console.error("Error in suggest-outfit function:", error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message || "Une erreur est survenue lors de la génération de la suggestion" 
+      }),
       { 
         status: 500,
         headers: { 
           ...corsHeaders,
           "Content-Type": "application/json" 
         } 
-      },
+      }
     )
   }
 })
