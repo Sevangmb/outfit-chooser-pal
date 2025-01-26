@@ -32,16 +32,19 @@ export const useImageAnalysis = (form: UseFormReturn<FormValues>) => {
       if (data.brand) {
         console.log("Setting detected brand:", data.brand);
         form.setValue("brand", data.brand, { shouldValidate: true });
+        toast.success(`Marque détectée : ${data.brand}`);
       }
 
       if (data.size) {
         console.log("Setting detected size:", data.size);
         form.setValue("size", data.size, { shouldValidate: true });
+        toast.success(`Taille détectée : ${data.size}`);
       }
 
       if (data.material) {
         console.log("Setting detected material:", data.material);
         form.setValue("material", data.material, { shouldValidate: true });
+        toast.success(`Matière détectée : ${data.material}`);
       }
 
     } catch (error) {
