@@ -28,6 +28,11 @@ export const useGoogleDriveUpload = () => {
       console.log("File uploaded successfully:", data);
       toast.success('Fichier téléchargé avec succès sur Google Drive');
 
+      // Get current user
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      if (!user) throw new Error('User not authenticated');
+
       // Store the file URL in Supabase
       const { error: dbError } = await supabase
         .from('user_files')
@@ -36,7 +41,8 @@ export const useGoogleDriveUpload = () => {
           file_path: data.webViewLink,
           content_type: file.type,
           size: file.size,
-          description: 'Uploaded to Google Drive'
+          description: 'Uploaded to Google Drive',
+          user_id: user.id
         });
 
       if (dbError) {
