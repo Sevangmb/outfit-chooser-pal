@@ -5,6 +5,8 @@ import { Database, HardDrive, Save, Trash } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { UserFiles } from "@/components/files/UserFiles";
+import { Separator } from "@/components/ui/separator";
 
 export const StorageSettings = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -80,6 +82,15 @@ export const StorageSettings = () => {
           </div>
         </div>
       </div>
+
+      <Separator className="my-6" />
+
+      <div className="space-y-4">
+        <h3 className="text-lg font-medium">Mes fichiers</h3>
+        <UserFiles />
+      </div>
+
+      <Separator className="my-6" />
 
       <div className="space-y-4">
         <h3 className="text-lg font-medium">Gestion du stockage</h3>
