@@ -20,6 +20,9 @@ export const AppRoutes = () => (
     <Route element={<PublicRoute />}>
       <Route path="/landing" element={<LandingPage />} />
       <Route path="/auth" element={<Auth />} />
+      <Route path="/terms" element={<div>CGU</div>} />
+      <Route path="/privacy" element={<div>Politique de confidentialité</div>} />
+      <Route path="/about" element={<div>À propos de FRING!</div>} />
     </Route>
 
     <Route element={<ProtectedRoute />}>
@@ -34,6 +37,9 @@ export const AppRoutes = () => (
       <Route path="/admin" element={<Admin />} />
       <Route path="/closet" element={<Closet />} />
       <Route path="/favorites" element={<Favorites />} />
+      <Route path="/faq" element={<div>FAQ</div>} />
+      <Route path="/guides" element={<div>Guides et tutoriels</div>} />
+      <Route path="/contact" element={<div>Contact</div>} />
     </Route>
   </Routes>
 );

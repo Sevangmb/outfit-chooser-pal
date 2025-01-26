@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { Store, Upload, User } from "lucide-react";
+import { HelpCircle, Info, LogOut, Store, Upload, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   Dialog,
@@ -13,6 +13,9 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useNotifications } from "@/hooks/useNotifications";
@@ -126,14 +129,47 @@ export const ProfileMenu = ({ isActive }: ProfileMenuProps) => {
             <Upload className="w-4 h-4 mr-2" />
             Mes fichiers
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate("/messages")}>
-            Messages
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate("/notifications")}>
-            Notifications {notificationsCount > 0 && `(${notificationsCount})`}
-          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>
+              <HelpCircle className="w-4 h-4 mr-2" />
+              Support
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <DropdownMenuItem onClick={() => navigate("/faq")}>
+                FAQ
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/guides")}>
+                Guides et tutoriels
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/contact")}>
+                Contact
+              </DropdownMenuItem>
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
+
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>
+              <Info className="w-4 h-4 mr-2" />
+              Mentions légales
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <DropdownMenuItem onClick={() => navigate("/terms")}>
+                CGU
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/privacy")}>
+                Politique de confidentialité
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/about")}>
+                À propos de FRING!
+              </DropdownMenuItem>
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
+
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleLogout} className="text-destructive">
+            <LogOut className="w-4 h-4 mr-2" />
             Déconnexion
           </DropdownMenuItem>
         </DropdownMenuContent>
