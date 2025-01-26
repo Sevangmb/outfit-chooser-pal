@@ -67,7 +67,6 @@ export const GroupMembersDialog = ({ groupId, isOpen, onClose }: GroupMembersDia
       console.log("Fetched members:", membersData);
       
       if (membersData) {
-        // Ensure we handle the case where profiles might be null
         const transformedMembers = membersData.map(member => ({
           id: member.id,
           user_id: member.user_id,
@@ -75,7 +74,7 @@ export const GroupMembersDialog = ({ groupId, isOpen, onClose }: GroupMembersDia
           joined_at: member.joined_at,
           is_approved: member.is_approved,
           profiles: member.profiles ? { email: member.profiles.email } : null
-        })) as Member[];
+        }));
 
         setMembers(transformedMembers);
       }
