@@ -90,11 +90,11 @@ const Discover = () => {
               Tendances
             </TabsTrigger>
             <TabsTrigger value="recommendations" className="gap-2">
-              <Sparkles className="h-4 w-4" />
-              Pour vous
+              <Users className="h-4 w-4" />
+              Style Match
             </TabsTrigger>
             <TabsTrigger value="recent" className="gap-2">
-              <Users className="h-4 w-4" />
+              <Sparkles className="h-4 w-4" />
               Nouveautés
             </TabsTrigger>
             <TabsTrigger value="shops" className="gap-2">
