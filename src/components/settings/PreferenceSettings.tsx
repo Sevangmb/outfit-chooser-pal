@@ -17,7 +17,7 @@ export const PreferenceSettings = () => {
       if (!user) return null;
 
       const { data, error } = await supabase
-        .from("user_preferences")
+        .from("user_general_preferences")
         .select("*")
         .eq("user_id", user.id)
         .maybeSingle();
@@ -33,14 +33,15 @@ export const PreferenceSettings = () => {
       if (!user) throw new Error("Non authentifié");
 
       const updates = {
+        user_id: user.id,
         language: formData.get("language")?.toString(),
         currency: formData.get("currency")?.toString(),
         measurement_unit: formData.get("measurement_unit")?.toString(),
       };
 
       const { error } = await supabase
-        .from("user_preferences")
-        .upsert({ user_id: user.id, ...updates });
+        .from("user_general_preferences")
+        .upsert(updates);
 
       if (error) throw error;
     },

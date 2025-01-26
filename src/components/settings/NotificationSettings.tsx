@@ -17,7 +17,7 @@ export const NotificationSettings = () => {
       if (!user) return null;
 
       const { data, error } = await supabase
-        .from("user_preferences")
+        .from("user_notification_settings")
         .select("*")
         .eq("user_id", user.id)
         .maybeSingle();
@@ -33,6 +33,7 @@ export const NotificationSettings = () => {
       if (!user) throw new Error("Non authentifié");
 
       const updates = {
+        user_id: user.id,
         new_followers: formData.get("new_followers") === "on",
         new_likes: formData.get("new_likes") === "on",
         new_comments: formData.get("new_comments") === "on",
@@ -41,8 +42,8 @@ export const NotificationSettings = () => {
       };
 
       const { error } = await supabase
-        .from("user_preferences")
-        .upsert({ user_id: user.id, ...updates });
+        .from("user_notification_settings")
+        .upsert(updates);
 
       if (error) throw error;
     },
