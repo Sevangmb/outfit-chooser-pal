@@ -12,38 +12,54 @@ export const useGroupMembers = (groupId: number) => {
       setLoading(true);
       console.log("Fetching group members for group:", groupId);
       
-      const { data: membersData, error } = await supabase
+      // First get the member records
+      const { data: membersData, error: membersError } = await supabase
         .from("message_group_members")
         .select(`
           id,
           user_id,
           role,
           joined_at,
-          is_approved,
-          profiles!message_group_members_user_id_fkey (
-            email
-          )
+          is_approved
         `)
         .eq("group_id", groupId);
 
-      if (error) {
-        console.error("Error fetching members:", error);
+      if (membersError) {
+        console.error("Error fetching members:", membersError);
         toast.error("Erreur lors du chargement des membres");
         return;
       }
 
-      console.log("Fetched members data:", membersData);
-      
+      // Then fetch the corresponding profiles
       if (membersData) {
+        const userIds = membersData.map(member => member.user_id);
+        const { data: profilesData, error: profilesError } = await supabase
+          .from("profiles")
+          .select("id, email")
+          .in("id", userIds);
+
+        if (profilesError) {
+          console.error("Error fetching profiles:", profilesError);
+          toast.error("Erreur lors du chargement des profils");
+          return;
+        }
+
+        // Create a map of user_id to email for easy lookup
+        const emailMap = new Map(
+          profilesData?.map(profile => [profile.id, profile.email]) || []
+        );
+
+        // Transform the data combining member info with profile email
         const transformedMembers: Member[] = membersData.map(member => ({
           id: member.id,
           user_id: member.user_id,
           role: member.role,
           joined_at: member.joined_at,
           is_approved: member.is_approved,
-          email: member.profiles?.email || null
+          email: emailMap.get(member.user_id) || null
         }));
 
+        console.log("Transformed members data:", transformedMembers);
         setMembers(transformedMembers);
       }
     } catch (error) {
