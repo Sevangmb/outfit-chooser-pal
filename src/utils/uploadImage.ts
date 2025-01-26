@@ -27,17 +27,40 @@ export const uploadImageToSupabase = async (file: File): Promise<string | null> 
       throw new Error('Fichier trop volumineux. Maximum 5MB.');
     }
 
+    // Create a new File object with the correct MIME type
+    const blob = new Blob([await file.arrayBuffer()], { type: file.type });
+    const newFile = new File([blob], file.name, { type: file.type });
+
     // Generate a unique filename with proper extension
     const timestamp = new Date().toISOString().replace(/[^0-9]/g, "");
-    const fileExt = file.type.split('/')[1] || 'jpg';
+    let fileExt = '';
+    
+    // Determine the correct extension based on MIME type
+    switch (file.type) {
+      case 'image/jpeg':
+        fileExt = 'jpg';
+        break;
+      case 'image/png':
+        fileExt = 'png';
+        break;
+      case 'image/webp':
+        fileExt = 'webp';
+        break;
+      case 'image/gif':
+        fileExt = 'gif';
+        break;
+      default:
+        fileExt = 'jpg';
+    }
+
     const fileName = `${timestamp}_${crypto.randomUUID()}.${fileExt}`;
 
     console.log("Uploading image with filename:", fileName);
 
-    // Upload to Supabase storage
+    // Upload to Supabase storage with explicit content type
     const { data, error: uploadError } = await supabase.storage
       .from('clothes')
-      .upload(fileName, file, {
+      .upload(fileName, newFile, {
         cacheControl: '3600',
         contentType: file.type,
         upsert: false
