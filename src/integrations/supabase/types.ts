@@ -966,6 +966,75 @@ export type Database = {
           },
         ]
       }
+      suitcase_clothes: {
+        Row: {
+          clothes_id: number | null
+          created_at: string
+          id: number
+          suitcase_id: number | null
+        }
+        Insert: {
+          clothes_id?: number | null
+          created_at?: string
+          id?: number
+          suitcase_id?: number | null
+        }
+        Update: {
+          clothes_id?: number | null
+          created_at?: string
+          id?: number
+          suitcase_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "suitcase_clothes_clothes_id_fkey"
+            columns: ["clothes_id"]
+            isOneToOne: false
+            referencedRelation: "clothes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "suitcase_clothes_suitcase_id_fkey"
+            columns: ["suitcase_id"]
+            isOneToOne: false
+            referencedRelation: "suitcases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      suitcases: {
+        Row: {
+          created_at: string
+          description: string | null
+          destination: string | null
+          end_date: string
+          id: number
+          name: string
+          start_date: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          destination?: string | null
+          end_date: string
+          id?: number
+          name: string
+          start_date: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          destination?: string | null
+          end_date?: string
+          id?: number
+          name?: string
+          start_date?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_files: {
         Row: {
           content_type: string | null
