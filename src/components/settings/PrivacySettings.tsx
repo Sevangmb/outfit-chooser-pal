@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Eye, Save, UserX } from "lucide-react";
+import { UserX } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -31,7 +31,6 @@ export const PrivacySettings = () => {
     mutationFn: async (formData: FormData) => {
       const updates = {
         is_profile_public: formData.get("is_profile_public") === "on",
-        share_outfits_with: formData.get("share_outfits")?.toString(),
       };
 
       const { error } = await supabase
@@ -77,39 +76,6 @@ export const PrivacySettings = () => {
             defaultChecked={profile?.is_profile_public}
           />
         </div>
-
-        <div className="space-y-4">
-          <Label>Partage des tenues</Label>
-          <div className="grid gap-2">
-            <Label className="flex items-center space-x-2">
-              <input
-                type="radio"
-                name="share_outfits"
-                value="public"
-                defaultChecked={profile?.share_outfits_with === "public"}
-              />
-              <span>Public</span>
-            </Label>
-            <Label className="flex items-center space-x-2">
-              <input
-                type="radio"
-                name="share_outfits"
-                value="friends"
-                defaultChecked={profile?.share_outfits_with === "friends"}
-              />
-              <span>Amis uniquement</span>
-            </Label>
-            <Label className="flex items-center space-x-2">
-              <input
-                type="radio"
-                name="share_outfits"
-                value="private"
-                defaultChecked={profile?.share_outfits_with === "private"}
-              />
-              <span>Privé</span>
-            </Label>
-          </div>
-        </div>
       </div>
 
       <div className="space-y-4">
@@ -126,14 +92,7 @@ export const PrivacySettings = () => {
       </div>
 
       <Button type="submit" disabled={isLoading} className="w-full">
-        {isLoading ? (
-          "Enregistrement..."
-        ) : (
-          <>
-            <Save className="w-4 h-4 mr-2" />
-            Enregistrer les paramètres
-          </>
-        )}
+        {isLoading ? "Enregistrement..." : "Enregistrer les paramètres"}
       </Button>
     </form>
   );

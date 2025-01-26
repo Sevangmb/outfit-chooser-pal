@@ -20,7 +20,7 @@ export const useGroupMembers = (groupId: number) => {
           role,
           joined_at,
           is_approved,
-          user:profiles!message_group_members_user_id_fkey (
+          profiles!message_group_members_user_id_fkey (
             email
           )
         `)
@@ -41,7 +41,7 @@ export const useGroupMembers = (groupId: number) => {
           role: member.role,
           joined_at: member.joined_at,
           is_approved: member.is_approved,
-          email: member.user?.email || null
+          email: member.profiles?.email || null
         }));
 
         setMembers(transformedMembers);
