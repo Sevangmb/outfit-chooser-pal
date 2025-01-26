@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Users, Plus, Settings } from "lucide-react";
+import { GroupMembersDialog } from "./GroupMembersDialog";
 
 interface Group {
   id: number;
@@ -41,6 +42,7 @@ interface NewGroup {
 
 export const GroupsSection = () => {
   const [isCreating, setIsCreating] = useState(false);
+  const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
   const [newGroup, setNewGroup] = useState<NewGroup>({
     name: "",
     description: "",
@@ -192,7 +194,11 @@ export const GroupsSection = () => {
                 <h3 className="font-semibold">{group.name}</h3>
                 <p className="text-sm text-gray-600">{group.description}</p>
               </div>
-              <Button variant="ghost" size="icon">
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => setSelectedGroupId(group.id)}
+              >
                 <Settings className="h-4 w-4" />
               </Button>
             </div>
@@ -203,6 +209,14 @@ export const GroupsSection = () => {
           </div>
         ))}
       </div>
+
+      {selectedGroupId && (
+        <GroupMembersDialog
+          groupId={selectedGroupId}
+          isOpen={!!selectedGroupId}
+          onClose={() => setSelectedGroupId(null)}
+        />
+      )}
     </div>
   );
 };
