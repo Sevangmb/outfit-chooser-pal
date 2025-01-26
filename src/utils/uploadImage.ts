@@ -11,6 +11,12 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 export const uploadImageToSupabase = async (file: File): Promise<string | null> => {
   try {
+    console.log("Starting image upload process:", {
+      fileName: file.name,
+      fileType: file.type,
+      fileSize: file.size
+    });
+
     // Validate file type
     if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
       throw new Error('Type de fichier non supporté. Utilisez JPG, PNG, WEBP ou GIF.');
@@ -21,12 +27,12 @@ export const uploadImageToSupabase = async (file: File): Promise<string | null> 
       throw new Error('Fichier trop volumineux. Maximum 5MB.');
     }
 
-    // Generate a unique filename
+    // Generate a unique filename with proper extension
     const timestamp = new Date().toISOString().replace(/[^0-9]/g, "");
-    const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+    const fileExt = file.type.split('/')[1] || 'jpg';
     const fileName = `${timestamp}_${crypto.randomUUID()}.${fileExt}`;
 
-    console.log("Uploading image to Supabase:", fileName);
+    console.log("Uploading image with filename:", fileName);
 
     // Upload to Supabase storage
     const { data, error: uploadError } = await supabase.storage
