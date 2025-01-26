@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { NavTab } from "./navigation/NavTab";
-import { Home, Search, Heart, MessageSquare, User } from "lucide-react";
+import { Home, Search, Heart, Users, User } from "lucide-react";
 
 export const BottomNav = () => {
   const navigate = useNavigate();
@@ -28,8 +28,8 @@ export const BottomNav = () => {
       color: "red"
     },
     {
-      path: "/messages",
-      icon: MessageSquare,
+      path: "/community",
+      icon: Users,
       label: "Communauté",
       ariaLabel: "Accéder à la communauté",
     },
