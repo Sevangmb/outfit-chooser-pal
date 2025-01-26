@@ -2,25 +2,25 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const uploadImageToSupabase = async (file: File): Promise<string | null> => {
   try {
-    // First create a blob from the file
+    // First read the file as ArrayBuffer
     const arrayBuffer = await file.arrayBuffer();
-    const blob = new Blob([arrayBuffer], { type: file.type });
     
-    // Then create a new File with the correct MIME type
-    const newFile = new File([blob], file.name, { type: file.type });
+    // Create a blob with explicit image MIME type
+    const blob = new Blob([arrayBuffer], { type: file.type });
     
     // Generate unique filename
     const timestamp = new Date().toISOString().replace(/[^0-9]/g, "").slice(0, 14);
     const fileExt = file.name.split('.').pop();
     const fileName = `${timestamp}_${crypto.randomUUID()}.${fileExt}`;
 
-    console.log("Starting upload for file:", fileName, "with type:", newFile.type);
+    console.log("Starting upload for file:", fileName, "type:", file.type, "size:", file.size);
 
+    // Upload the blob directly
     const { data, error } = await supabase.storage
       .from('clothes')
-      .upload(fileName, newFile, {
+      .upload(fileName, blob, {
         cacheControl: '3600',
-        contentType: newFile.type,
+        contentType: file.type,
         upsert: false
       });
 
