@@ -1203,6 +1203,36 @@ export type Database = {
         }
         Relationships: []
       }
+      user_general_preferences: {
+        Row: {
+          created_at: string | null
+          currency: string | null
+          id: string
+          language: string | null
+          measurement_unit: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          language?: string | null
+          measurement_unit?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          language?: string | null
+          measurement_unit?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_messages: {
         Row: {
           content: string
@@ -1248,12 +1278,51 @@ export type Database = {
           },
         ]
       }
+      user_notification_settings: {
+        Row: {
+          created_at: string | null
+          id: string
+          messages: boolean | null
+          new_comments: boolean | null
+          new_followers: boolean | null
+          new_likes: boolean | null
+          system_updates: boolean | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          messages?: boolean | null
+          new_comments?: boolean | null
+          new_followers?: boolean | null
+          new_likes?: boolean | null
+          system_updates?: boolean | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          messages?: boolean | null
+          new_comments?: boolean | null
+          new_followers?: boolean | null
+          new_likes?: boolean | null
+          system_updates?: boolean | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_preferences: {
         Row: {
           category: string
           color: string
           created_at: string
           id: number
+          preference_key: string
+          preference_type: string
+          preference_value: string
           user_id: string
         }
         Insert: {
@@ -1261,6 +1330,9 @@ export type Database = {
           color: string
           created_at?: string
           id?: number
+          preference_key: string
+          preference_type?: string
+          preference_value: string
           user_id?: string
         }
         Update: {
@@ -1268,6 +1340,9 @@ export type Database = {
           color?: string
           created_at?: string
           id?: number
+          preference_key?: string
+          preference_type?: string
+          preference_value?: string
           user_id?: string
         }
         Relationships: []
