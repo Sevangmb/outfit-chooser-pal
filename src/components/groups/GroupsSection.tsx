@@ -27,15 +27,24 @@ interface Group {
   description: string | null;
   privacy: 'public' | 'private' | 'secret';
   cover_image: string | null;
-  member_count?: number;
+  created_by: string;
+  created_at: string;
+  rules: string | null;
+  member_count: { count: number }[];
+}
+
+interface NewGroup {
+  name: string;
+  description: string;
+  privacy: 'public' | 'private' | 'secret';
 }
 
 export const GroupsSection = () => {
   const [isCreating, setIsCreating] = useState(false);
-  const [newGroup, setNewGroup] = useState({
+  const [newGroup, setNewGroup] = useState<NewGroup>({
     name: "",
     description: "",
-    privacy: "public" as const,
+    privacy: "public",
   });
 
   const { data: groups, isLoading } = useQuery({
@@ -62,9 +71,20 @@ export const GroupsSection = () => {
   const createGroup = async () => {
     try {
       console.log("Creating group:", newGroup);
+      const user = await supabase.auth.getUser();
+      const userId = user.data.user?.id;
+
+      if (!userId) {
+        throw new Error("User not authenticated");
+      }
+
       const { data: group, error } = await supabase
         .from("message_groups")
-        .insert([newGroup])
+        .insert([{
+          ...newGroup,
+          created_by: userId,
+          created_at: new Date().toISOString(),
+        }])
         .select()
         .single();
 
@@ -76,7 +96,7 @@ export const GroupsSection = () => {
         .insert([
           {
             group_id: group.id,
-            user_id: (await supabase.auth.getUser()).data.user?.id,
+            user_id: userId,
             role: "admin",
             is_approved: true,
           },
