@@ -31,7 +31,7 @@ interface Member {
   role: string;
   joined_at: string;
   is_approved: boolean;
-  user: {
+  profiles: {
     email: string;
   };
 }
@@ -56,22 +56,14 @@ export const GroupMembersDialog = ({ groupId, isOpen, onClose }: GroupMembersDia
           role,
           joined_at,
           is_approved,
-          user:profiles(email)
+          profiles:user_id(email)
         `)
         .eq("group_id", groupId);
 
       if (membersError) throw membersError;
 
-      // Transform the data to match the Member interface
-      const transformedMembers = membersData?.map(member => ({
-        ...member,
-        user: {
-          email: member.user?.email || 'Unknown'
-        }
-      })) || [];
-
-      console.log("Fetched members:", transformedMembers);
-      setMembers(transformedMembers);
+      console.log("Fetched members:", membersData);
+      setMembers(membersData || []);
     } catch (error) {
       console.error("Error fetching members:", error);
       toast.error("Erreur lors du chargement des membres");
@@ -140,7 +132,7 @@ export const GroupMembersDialog = ({ groupId, isOpen, onClose }: GroupMembersDia
               <TableRow key={member.id}>
                 <TableCell className="flex items-center gap-2">
                   <User className="h-4 w-4" />
-                  {member.user?.email}
+                  {member.profiles?.email}
                 </TableCell>
                 <TableCell>
                   <Select
