@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Upload } from "lucide-react";
-import { useGoogleDriveUpload } from "@/hooks/useGoogleDriveUpload";
+import { useOneDriveUpload } from "@/hooks/useOneDriveUpload";
 import { toast } from "sonner";
 
 interface FileUploaderProps {
@@ -15,7 +15,7 @@ export const FileUploader = ({
   onUploadError,
   accept = "*"
 }: FileUploaderProps) => {
-  const { isUploading, uploadFile } = useGoogleDriveUpload();
+  const { isUploading, uploadFile } = useOneDriveUpload();
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

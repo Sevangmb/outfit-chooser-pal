@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { UserFiles } from "@/components/files/UserFiles";
 import { Separator } from "@/components/ui/separator";
-import { testDriveConnection } from "@/utils/testDriveConnection";
+import { testOneDriveConnection } from "@/utils/testOneDriveConnection";
 
 export const StorageSettings = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -32,11 +32,11 @@ export const StorageSettings = () => {
   useEffect(() => {
     const checkDriveConnection = async () => {
       try {
-        const result = await testDriveConnection();
+        const result = await testOneDriveConnection();
         setDriveStatus(result.success ? 'connected' : 'error');
-        setDriveError(result.success ? null : result.message || "Erreur de connexion à Google Drive");
+        setDriveError(result.success ? null : result.message || "Erreur de connexion à OneDrive");
       } catch (error) {
-        console.error("Error checking Drive connection:", error);
+        console.error("Error checking OneDrive connection:", error);
         setDriveStatus('error');
         setDriveError(error instanceof Error ? error.message : "Erreur inattendue lors de la vérification");
       }
@@ -64,7 +64,7 @@ export const StorageSettings = () => {
           <div className="flex items-center gap-2">
             <h3 className="text-lg font-medium">Espace de stockage</h3>
             <div className="flex items-center gap-1 text-sm">
-              <span className="text-muted-foreground">Google Drive:</span>
+              <span className="text-muted-foreground">OneDrive:</span>
               {driveStatus === 'checking' ? (
                 <span className="text-muted-foreground">Vérification...</span>
               ) : driveStatus === 'connected' ? (
