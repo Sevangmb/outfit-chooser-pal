@@ -5,7 +5,7 @@ import { OutfitCreator } from "@/components/OutfitCreator";
 import { FavoriteOutfits } from "@/components/FavoriteOutfits";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Plus, Shirt, Suitcase } from "lucide-react";
+import { Plus, Shirt, Briefcase } from "lucide-react";
 
 const Add = () => {
   const navigate = useNavigate();
@@ -34,7 +34,7 @@ const Add = () => {
                 Créer une tenue
               </Button>
             </div>
-            <ClothingTab />
+            <ClothingTab showFriendsClothes={false} />
           </TabsContent>
 
           <TabsContent value="outfits">
@@ -54,11 +54,10 @@ const Add = () => {
           <TabsContent value="suitcases">
             <div className="flex justify-end mb-4">
               <Button onClick={() => navigate("/suitcase/create")} className="gap-2">
-                <Suitcase className="h-4 w-4" />
+                <Briefcase className="h-4 w-4" />
                 Créer une valise
               </Button>
             </div>
-            {/* We'll implement the suitcase list component later */}
             <div className="text-center text-muted-foreground py-8">
               Vous n'avez pas encore créé de valise
             </div>

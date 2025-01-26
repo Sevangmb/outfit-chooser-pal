@@ -15,6 +15,8 @@ import Admin from "@/pages/Admin";
 import Closet from "@/pages/Closet";
 import Favorites from "@/pages/Favorites";
 import Suitcase from "@/pages/Suitcase";
+import { AddClothingForm } from "@/components/AddClothingForm";
+import { OutfitCreator } from "@/components/OutfitCreator";
 
 export const AppRoutes = () => (
   <Routes>
