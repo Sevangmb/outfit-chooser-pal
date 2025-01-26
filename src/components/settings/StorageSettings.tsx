@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Database, HardDrive, Save, Trash, CheckCircle, XCircle } from "lucide-react";
+import { Database, HardDrive, Save, Trash, CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -12,6 +12,7 @@ import { testDriveConnection } from "@/utils/testDriveConnection";
 export const StorageSettings = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [driveStatus, setDriveStatus] = useState<'checking' | 'connected' | 'error'>('checking');
+  const [driveError, setDriveError] = useState<string | null>(null);
 
   const { data: storageInfo } = useQuery({
     queryKey: ["storage_info"],
@@ -33,9 +34,11 @@ export const StorageSettings = () => {
       try {
         const result = await testDriveConnection();
         setDriveStatus(result.success ? 'connected' : 'error');
+        setDriveError(result.success ? null : result.message || "Erreur de connexion à Google Drive");
       } catch (error) {
-        console.error('Error checking Drive connection:', error);
+        console.error("Error checking Drive connection:", error);
         setDriveStatus('error');
+        setDriveError(error instanceof Error ? error.message : "Erreur inattendue lors de la vérification");
       }
     };
 
@@ -70,9 +73,17 @@ export const StorageSettings = () => {
                   <span>Connecté</span>
                 </div>
               ) : (
-                <div className="flex items-center gap-1 text-destructive">
-                  <XCircle className="w-4 h-4" />
-                  <span>Non connecté</span>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1 text-destructive">
+                    <XCircle className="w-4 h-4" />
+                    <span>Non connecté</span>
+                  </div>
+                  {driveError && (
+                    <div className="flex items-center gap-1 text-muted-foreground">
+                      <AlertCircle className="w-4 h-4" />
+                      <span className="text-sm">({driveError})</span>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

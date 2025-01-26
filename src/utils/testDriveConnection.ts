@@ -7,13 +7,22 @@ export const testDriveConnection = async () => {
     
     if (error) {
       console.error("Error testing connection:", error);
-      throw error;
+      return {
+        success: false,
+        message: error.message || "Erreur de connexion à Google Drive"
+      };
     }
     
     console.log("Connection test result:", data);
-    return data;
+    return {
+      success: true,
+      message: "Connexion établie avec succès"
+    };
   } catch (error) {
     console.error("Failed to test connection:", error);
-    throw error;
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Erreur inattendue lors de la vérification"
+    };
   }
 };
