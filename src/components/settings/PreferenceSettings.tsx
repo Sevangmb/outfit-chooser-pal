@@ -7,6 +7,12 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+interface UserPreferences {
+  language: string;
+  currency: string;
+  measurement_unit: string;
+}
+
 export const PreferenceSettings = () => {
   const [isLoading, setIsLoading] = useState(false);
 
@@ -23,7 +29,7 @@ export const PreferenceSettings = () => {
         .maybeSingle();
 
       if (error) throw error;
-      return data || {}; // Return empty object if no preferences exist
+      return data as UserPreferences | null;
     },
   });
 

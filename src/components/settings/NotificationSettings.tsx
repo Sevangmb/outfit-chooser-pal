@@ -7,6 +7,14 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+interface NotificationSettings {
+  new_followers: boolean;
+  new_likes: boolean;
+  new_comments: boolean;
+  messages: boolean;
+  system_updates: boolean;
+}
+
 export const NotificationSettings = () => {
   const [isLoading, setIsLoading] = useState(false);
 
@@ -23,7 +31,7 @@ export const NotificationSettings = () => {
         .maybeSingle();
 
       if (error) throw error;
-      return data || {}; // Return empty object if no settings exist
+      return data as NotificationSettings | null;
     },
   });
 
@@ -77,7 +85,7 @@ export const NotificationSettings = () => {
               Recevoir une notification quand quelqu'un vous suit
             </p>
           </div>
-          <Switch name="new_followers" defaultChecked={settings?.new_followers} />
+          <Switch name="new_followers" defaultChecked={settings?.new_followers ?? false} />
         </div>
 
         <div className="flex items-center justify-between">
@@ -87,7 +95,7 @@ export const NotificationSettings = () => {
               Recevoir une notification pour les j'aime sur vos tenues
             </p>
           </div>
-          <Switch name="new_likes" defaultChecked={settings?.new_likes} />
+          <Switch name="new_likes" defaultChecked={settings?.new_likes ?? false} />
         </div>
 
         <div className="flex items-center justify-between">
@@ -97,7 +105,7 @@ export const NotificationSettings = () => {
               Recevoir une notification pour les nouveaux commentaires
             </p>
           </div>
-          <Switch name="new_comments" defaultChecked={settings?.new_comments} />
+          <Switch name="new_comments" defaultChecked={settings?.new_comments ?? false} />
         </div>
 
         <div className="flex items-center justify-between">
@@ -107,7 +115,7 @@ export const NotificationSettings = () => {
               Recevoir une notification pour les nouveaux messages
             </p>
           </div>
-          <Switch name="messages" defaultChecked={settings?.messages} />
+          <Switch name="messages" defaultChecked={settings?.messages ?? false} />
         </div>
 
         <div className="flex items-center justify-between">
@@ -117,7 +125,7 @@ export const NotificationSettings = () => {
               Recevoir les notifications sur les mises à jour de l'application
             </p>
           </div>
-          <Switch name="system_updates" defaultChecked={settings?.system_updates} />
+          <Switch name="system_updates" defaultChecked={settings?.system_updates ?? false} />
         </div>
       </div>
 

@@ -19,7 +19,6 @@ interface Clothing {
 }
 
 interface ClothingTabProps {
-  clothes: Clothing[];
   showFriendsClothes?: boolean;
 }
 
@@ -167,9 +166,23 @@ export const ClothingTab = ({ showFriendsClothes = false }: ClothingTabProps) =>
             </div>
           </div>
           <div className={`space-y-8 ${isMobile ? 'px-2' : ''}`}>
-            <ClothingSection title="Hauts" items={tops} isMobile={isMobile} />
-            <ClothingSection title="Bas" items={bottoms} isMobile={isMobile} />
-            <ClothingSection title="Chaussures" items={shoes} isMobile={isMobile} />
+            <ClothingSection title="Hauts" items={filteredClothes.filter(item => 
+              item.category.toLowerCase().includes("haut") || 
+              item.category.toLowerCase().includes("t-shirt") ||
+              item.category.toLowerCase().includes("chemise") ||
+              item.category.toLowerCase().includes("pull")
+            )} isMobile={isMobile} />
+            <ClothingSection title="Bas" items={filteredClothes.filter(item => 
+              item.category.toLowerCase().includes("bas") || 
+              item.category.toLowerCase().includes("pantalon") ||
+              item.category.toLowerCase().includes("jean") ||
+              item.category.toLowerCase().includes("short")
+            )} isMobile={isMobile} />
+            <ClothingSection title="Chaussures" items={filteredClothes.filter(item => 
+              item.category.toLowerCase().includes("chaussure") || 
+              item.category.toLowerCase().includes("basket") ||
+              item.category.toLowerCase().includes("botte")
+            )} isMobile={isMobile} />
           </div>
           
           {!showFriendsClothes && (
