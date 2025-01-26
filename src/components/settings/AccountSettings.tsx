@@ -60,20 +60,27 @@ export const AccountSettings = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return null;
 
-      const [clothes, outfits, followers, following, likes] = await Promise.all([
+      // Get the user's outfit IDs first
+      const { data: outfits } = await supabase
+        .from("outfits")
+        .select("id")
+        .eq("user_id", user.id);
+      
+      const outfitIds = outfits?.map(outfit => outfit.id) || [];
+
+      const [clothes, outfitsCount, followers, following, likes] = await Promise.all([
         supabase.from("clothes").select("id", { count: "exact" }).eq("user_id", user.id),
         supabase.from("outfits").select("id", { count: "exact" }).eq("user_id", user.id),
         supabase.from("followers").select("id", { count: "exact" }).eq("following_id", user.id),
         supabase.from("followers").select("id", { count: "exact" }).eq("follower_id", user.id),
-        supabase.from("outfit_votes").select("id", { count: "exact" })
-          .in("outfit_id", 
-            supabase.from("outfits").select("id").eq("user_id", user.id)
-          )
+        outfitIds.length > 0 
+          ? supabase.from("outfit_votes").select("id", { count: "exact" }).in("outfit_id", outfitIds)
+          : Promise.resolve({ count: 0 })
       ]);
 
       return {
         clothes_count: clothes.count || 0,
-        outfits_count: outfits.count || 0,
+        outfits_count: outfitsCount.count || 0,
         followers_count: followers.count || 0,
         following_count: following.count || 0,
         likes_received: likes.count || 0
@@ -106,8 +113,8 @@ export const AccountSettings = () => {
       }
 
       const updates = {
-        username: formData.get("username"),
-        bio: formData.get("bio"),
+        username: formData.get("username")?.toString(),
+        bio: formData.get("bio")?.toString(),
         avatar_url: avatarUrl,
       };
 

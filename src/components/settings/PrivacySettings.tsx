@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Eye, Save, UserX } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -27,15 +27,11 @@ export const PrivacySettings = () => {
     },
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      const formData = new FormData(e.target as HTMLFormElement);
+  const updatePrivacyMutation = useMutation({
+    mutationFn: async (formData: FormData) => {
       const updates = {
         is_profile_public: formData.get("is_profile_public") === "on",
-        share_outfits_with: formData.get("share_outfits"),
+        share_outfits_with: formData.get("share_outfits")?.toString(),
       };
 
       const { error } = await supabase
@@ -44,11 +40,23 @@ export const PrivacySettings = () => {
         .eq("id", profile?.id);
 
       if (error) throw error;
-
+    },
+    onSuccess: () => {
       toast.success("Paramètres de confidentialité mis à jour");
-    } catch (error) {
+    },
+    onError: (error) => {
       console.error("Error updating privacy settings:", error);
       toast.error("Erreur lors de la mise à jour des paramètres");
+    }
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      const formData = new FormData(e.target as HTMLFormElement);
+      await updatePrivacyMutation.mutateAsync(formData);
     } finally {
       setIsLoading(false);
     }
@@ -107,7 +115,6 @@ export const PrivacySettings = () => {
       <div className="space-y-4">
         <Label>Utilisateurs bloqués</Label>
         <div className="space-y-2">
-          {/* This would be populated with blocked users */}
           <p className="text-sm text-muted-foreground">
             Vous n'avez bloqué aucun utilisateur
           </p>
