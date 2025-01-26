@@ -37,6 +37,10 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
       purchase_price: existingClothing?.purchase_price || null,
       selling_price: existingClothing?.selling_price || null,
       location: existingClothing?.location || null,
+      purchase_date: existingClothing?.purchase_date ? new Date(existingClothing.purchase_date) : null,
+      is_archived: existingClothing?.is_archived || false,
+      needs_alterations: existingClothing?.needs_alterations || false,
+      alteration_notes: existingClothing?.alteration_notes || null,
     },
   });
 

@@ -223,63 +223,81 @@ export type Database = {
       }
       clothes: {
         Row: {
+          alteration_notes: string | null
           brand: string | null
           category: string
           color: string
+          cost_per_wear: number | null
           created_at: string
           id: number
           image: string | null
+          is_archived: boolean | null
           is_for_sale: boolean | null
           location: string | null
           material: string | null
           name: string
+          needs_alterations: boolean | null
           notes: string | null
+          purchase_date: string | null
           purchase_price: number | null
           rating: number | null
           secondary_color: string | null
           selling_price: number | null
           size: string | null
           subcategory: string | null
+          times_worn: number | null
           user_id: string | null
         }
         Insert: {
+          alteration_notes?: string | null
           brand?: string | null
           category: string
           color: string
+          cost_per_wear?: number | null
           created_at?: string
           id?: never
           image?: string | null
+          is_archived?: boolean | null
           is_for_sale?: boolean | null
           location?: string | null
           material?: string | null
           name: string
+          needs_alterations?: boolean | null
           notes?: string | null
+          purchase_date?: string | null
           purchase_price?: number | null
           rating?: number | null
           secondary_color?: string | null
           selling_price?: number | null
           size?: string | null
           subcategory?: string | null
+          times_worn?: number | null
           user_id?: string | null
         }
         Update: {
+          alteration_notes?: string | null
           brand?: string | null
           category?: string
           color?: string
+          cost_per_wear?: number | null
           created_at?: string
           id?: never
           image?: string | null
+          is_archived?: boolean | null
           is_for_sale?: boolean | null
           location?: string | null
           material?: string | null
           name?: string
+          needs_alterations?: boolean | null
           notes?: string | null
+          purchase_date?: string | null
           purchase_price?: number | null
           rating?: number | null
           secondary_color?: string | null
           selling_price?: number | null
           size?: string | null
           subcategory?: string | null
+          times_worn?: number | null
           user_id?: string | null
         }
         Relationships: []
@@ -339,6 +357,38 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "clothes_votes_clothes_id_fkey"
+            columns: ["clothes_id"]
+            isOneToOne: false
+            referencedRelation: "clothes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clothes_wear_history: {
+        Row: {
+          clothes_id: number | null
+          created_at: string | null
+          id: number
+          notes: string | null
+          wear_date: string
+        }
+        Insert: {
+          clothes_id?: number | null
+          created_at?: string | null
+          id?: number
+          notes?: string | null
+          wear_date?: string
+        }
+        Update: {
+          clothes_id?: number | null
+          created_at?: string | null
+          id?: number
+          notes?: string | null
+          wear_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clothes_wear_history_clothes_id_fkey"
             columns: ["clothes_id"]
             isOneToOne: false
             referencedRelation: "clothes"

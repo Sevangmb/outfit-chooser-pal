@@ -17,6 +17,10 @@ export const clothingFormSchema = z.object({
   selling_price: z.number().optional().nullable(),
   location: z.string().optional().nullable(),
   tags: z.array(z.string()).optional().default([]),
+  purchase_date: z.date().optional().nullable(),
+  is_archived: z.boolean().optional().default(false),
+  needs_alterations: z.boolean().optional().default(false),
+  alteration_notes: z.string().optional().nullable(),
 });
 
 export type FormValues = z.infer<typeof clothingFormSchema>;
