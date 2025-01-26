@@ -14,6 +14,7 @@ import Contest from "@/pages/Contest";
 import Admin from "@/pages/Admin";
 import Closet from "@/pages/Closet";
 import Favorites from "@/pages/Favorites";
+import Suitcase from "@/pages/Suitcase";
 
 export const AppRoutes = () => (
   <Routes>
@@ -29,6 +30,10 @@ export const AppRoutes = () => (
       <Route path="/" element={<Index />} />
       <Route path="/discover" element={<Discover />} />
       <Route path="/perso" element={<Add />} />
+      <Route path="/add" element={<AddClothingForm />} />
+      <Route path="/outfit/create" element={<OutfitCreator clothes={[]} />} />
+      <Route path="/outfit/publish" element={<div>Publier un look</div>} />
+      <Route path="/suitcase/create" element={<Suitcase />} />
       <Route path="/shops" element={<Shops />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/settings" element={<Settings />} />
