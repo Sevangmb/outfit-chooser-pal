@@ -24,7 +24,7 @@ export const SuitcaseDetails = () => {
             clothes (*)
           )
         `)
-        .eq("id", Number(id)) // Convert string id to number
+        .eq("id", Number(id))
         .single();
 
       if (error) {
@@ -60,7 +60,9 @@ export const SuitcaseDetails = () => {
 
   useEffect(() => {
     if (suitcase?.suitcase_clothes) {
-      setSuitcaseClothes(suitcase.suitcase_clothes.map((sc: any) => sc.clothes));
+      const clothes = suitcase.suitcase_clothes.map((sc: any) => sc.clothes);
+      console.log("Setting suitcase clothes:", clothes);
+      setSuitcaseClothes(clothes);
     }
   }, [suitcase]);
 
@@ -76,6 +78,8 @@ export const SuitcaseDetails = () => {
     const clothingId = Number(active.id);
     const targetId = over.id.toString();
 
+    console.log("Drag end:", { clothingId, targetId });
+
     if (targetId === "suitcase" && !suitcaseClothes.find(c => c.id === clothingId)) {
       try {
         const { error } = await supabase
@@ -90,6 +94,7 @@ export const SuitcaseDetails = () => {
         // Update local state
         const clothingItem = wardrobe?.find(c => c.id === clothingId);
         if (clothingItem) {
+          console.log("Adding clothing to suitcase:", clothingItem);
           setSuitcaseClothes(prev => [...prev, clothingItem]);
         }
         
@@ -109,6 +114,7 @@ export const SuitcaseDetails = () => {
         if (error) throw error;
 
         // Update local state
+        console.log("Removing clothing from suitcase:", clothingId);
         setSuitcaseClothes(prev => prev.filter(c => c.id !== clothingId));
         
         toast.success("Vêtement retiré de la valise");
@@ -136,7 +142,6 @@ export const SuitcaseDetails = () => {
   return (
     <div className="container mx-auto px-4 py-8 mt-16">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Suitcase Section */}
         <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
           <div 
             id="suitcase"
@@ -156,7 +161,6 @@ export const SuitcaseDetails = () => {
             </ScrollArea>
           </div>
 
-          {/* Wardrobe Section */}
           <div 
             id="wardrobe"
             className="border-2 border-dashed border-gray-300 rounded-lg p-4"
