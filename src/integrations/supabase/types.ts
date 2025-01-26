@@ -284,6 +284,39 @@ export type Database = {
         }
         Relationships: []
       }
+      clothes_tags: {
+        Row: {
+          clothes_id: number
+          created_at: string
+          tag_id: number
+        }
+        Insert: {
+          clothes_id: number
+          created_at?: string
+          tag_id: number
+        }
+        Update: {
+          clothes_id?: number
+          created_at?: string
+          tag_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clothes_tags_clothes_id_fkey"
+            columns: ["clothes_id"]
+            isOneToOne: false
+            referencedRelation: "clothes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clothes_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "clothing_tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clothes_votes: {
         Row: {
           clothes_id: number | null
@@ -375,6 +408,27 @@ export type Database = {
           created_at?: string
           id?: number
           name?: string
+        }
+        Relationships: []
+      }
+      clothing_tags: {
+        Row: {
+          created_at: string
+          id: number
+          name: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: never
+          name: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: never
+          name?: string
+          user_id?: string | null
         }
         Relationships: []
       }
