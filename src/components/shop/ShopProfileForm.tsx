@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 import {
   Form,
   FormControl,
@@ -42,6 +43,7 @@ interface ShopProfileFormProps {
 
 export const ShopProfileForm = ({ existingShop }: ShopProfileFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -144,7 +146,7 @@ export const ShopProfileForm = ({ existingShop }: ShopProfileFormProps) => {
         }
 
         toast.success("Profil boutique créé avec succès");
-        form.reset();
+        navigate("/shop"); // Redirection vers la page des boutiques après création
       }
     } catch (error) {
       console.error("Error managing shop profile:", error);
@@ -258,7 +260,7 @@ export const ShopProfileForm = ({ existingShop }: ShopProfileFormProps) => {
         />
 
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Création..." : "Créer ma boutique"}
+          {isSubmitting ? "Création..." : existingShop ? "Mettre à jour" : "Créer ma boutique"}
         </Button>
       </form>
     </Form>
