@@ -48,7 +48,13 @@ export const SuitcaseForm = ({ onSuccess }: SuitcaseFormProps) => {
 
     setIsLoading(true);
     try {
-      // Insert suitcase
+      console.log("Creating suitcase...");
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session) {
+        throw new Error("No session found");
+      }
+
+      // Insert suitcase with user_id
       const { data: suitcase, error: suitcaseError } = await supabase
         .from("suitcases")
         .insert({
@@ -57,11 +63,14 @@ export const SuitcaseForm = ({ onSuccess }: SuitcaseFormProps) => {
           destination,
           start_date: startDate.toISOString(),
           end_date: endDate.toISOString(),
+          user_id: session.session.user.id, // Add the user_id here
         })
         .select()
         .single();
 
       if (suitcaseError) throw suitcaseError;
+
+      console.log("Suitcase created:", suitcase);
 
       // Insert selected clothes
       if (selectedClothes.length > 0) {
