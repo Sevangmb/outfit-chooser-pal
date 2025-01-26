@@ -4,6 +4,8 @@ import { ShopSection } from "./shop/ShopSection";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { SearchAndFilters } from "./SearchAndFilters";
+import { useState, useMemo } from "react";
 
 interface Clothing {
   id: number;
@@ -21,6 +23,9 @@ interface ClothingTabProps {
 
 export const ClothingTab = ({ showFriendsClothes = false }: ClothingTabProps) => {
   const isMobile = useIsMobile();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [colorFilter, setColorFilter] = useState("");
 
   const { data: clothes = [], isLoading } = useQuery({
     queryKey: ["userClothes"],
@@ -46,25 +51,50 @@ export const ClothingTab = ({ showFriendsClothes = false }: ClothingTabProps) =>
     }
   });
 
-  const tops = clothes.filter(item => 
+  const filteredClothes = useMemo(() => {
+    return clothes.filter((item) => {
+      const matchesSearch = searchQuery
+        ? item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.category.toLowerCase().includes(searchQuery.toLowerCase())
+        : true;
+
+      const matchesCategory = categoryFilter
+        ? item.category.toLowerCase().includes(categoryFilter.toLowerCase())
+        : true;
+
+      const matchesColor = colorFilter
+        ? item.color.toLowerCase() === colorFilter.toLowerCase()
+        : true;
+
+      return matchesSearch && matchesCategory && matchesColor;
+    });
+  }, [clothes, searchQuery, categoryFilter, colorFilter]);
+
+  const tops = filteredClothes.filter(item => 
     item.category.toLowerCase().includes("haut") || 
     item.category.toLowerCase().includes("t-shirt") ||
     item.category.toLowerCase().includes("chemise") ||
     item.category.toLowerCase().includes("pull")
   );
 
-  const bottoms = clothes.filter(item => 
+  const bottoms = filteredClothes.filter(item => 
     item.category.toLowerCase().includes("bas") || 
     item.category.toLowerCase().includes("pantalon") ||
     item.category.toLowerCase().includes("jean") ||
     item.category.toLowerCase().includes("short")
   );
 
-  const shoes = clothes.filter(item => 
+  const shoes = filteredClothes.filter(item => 
     item.category.toLowerCase().includes("chaussure") || 
     item.category.toLowerCase().includes("basket") ||
     item.category.toLowerCase().includes("botte")
   );
+
+  const handleReset = () => {
+    setSearchQuery("");
+    setCategoryFilter("");
+    setColorFilter("");
+  };
 
   if (isLoading) {
     return (
@@ -87,6 +117,12 @@ export const ClothingTab = ({ showFriendsClothes = false }: ClothingTabProps) =>
         </div>
       ) : (
         <div className="space-y-8">
+          <SearchAndFilters
+            onSearch={setSearchQuery}
+            onFilterCategory={setCategoryFilter}
+            onFilterColor={setColorFilter}
+            onReset={handleReset}
+          />
           <div className={`space-y-8 ${isMobile ? 'px-2' : ''}`}>
             <ClothingSection title="Hauts" items={tops} isMobile={isMobile} />
             <ClothingSection title="Bas" items={bottoms} isMobile={isMobile} />
