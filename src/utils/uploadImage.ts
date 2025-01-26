@@ -34,12 +34,13 @@ export const uploadImageToSupabase = async (file: File): Promise<string | null> 
 
     console.log("Uploading image with filename:", fileName);
 
-    // Upload directly using the File object
+    // Upload directly using the File object with explicit content type
     const { data, error: uploadError } = await supabase.storage
       .from('clothes')
       .upload(fileName, file, {
         cacheControl: '3600',
-        contentType: file.type // Explicitly set the content type
+        contentType: file.type, // Explicitly set the content type
+        upsert: false
       });
 
     if (uploadError) {

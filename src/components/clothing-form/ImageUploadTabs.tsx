@@ -35,38 +35,50 @@ export const ImageUploadTabs = ({
 }: ImageUploadTabsProps) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState<string>("");
+  const [fileInputValue, setFileInputValue] = useState<string>("");
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!validTypes.includes(file.type)) {
+      toast.error("Le fichier doit être une image (JPEG, PNG, WEBP ou GIF)");
+      e.target.value = ''; // Reset input
+      return;
+    }
+
+    // Validate file size (5MB)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast.error("Le fichier est trop volumineux (max 5MB)");
+      e.target.value = ''; // Reset input
+      return;
+    }
+
+    console.log("Fichier sélectionné:", file.name, file.type, file.size);
+    setSelectedFile(file);
+    setFileInputValue(file.name);
+  };
+
+  const handleFileUpload = async () => {
+    if (!selectedFile) {
+      toast.error("Veuillez d'abord sélectionner un fichier");
+      return;
+    }
+
     try {
-      // Validate file type
-      const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-      if (!validTypes.includes(file.type)) {
-        toast.error("Le fichier doit être une image (JPEG, PNG, WEBP ou GIF)");
-        e.target.value = ''; // Reset input
-        return;
-      }
-
-      // Validate file size (5MB)
-      const maxSize = 5 * 1024 * 1024;
-      if (file.size > maxSize) {
-        toast.error("Le fichier est trop volumineux (max 5MB)");
-        e.target.value = ''; // Reset input
-        return;
-      }
-
-      console.log("Fichier sélectionné:", file.name, file.type, file.size);
-      setSelectedFile(file);
-      
-      const imageUrl = await onFileUpload(file);
+      console.log("Démarrage de l'upload du fichier:", selectedFile.name);
+      const imageUrl = await onFileUpload(selectedFile);
       console.log("URL de l'image reçue:", imageUrl);
       
       if (imageUrl) {
         console.log("Enregistrement de l'URL dans le formulaire:", imageUrl);
         form.setValue("image", imageUrl, { shouldValidate: true });
         toast.success("Image téléchargée avec succès");
+        setSelectedFile(null);
+        setFileInputValue("");
       } else {
         throw new Error("URL de l'image non reçue");
       }
@@ -75,7 +87,6 @@ export const ImageUploadTabs = ({
       toast.error("Erreur lors du téléchargement de l'image");
       setSelectedFile(null);
       form.setValue("image", null);
-      e.target.value = ''; // Reset input
     }
   };
 
@@ -109,17 +120,37 @@ export const ImageUploadTabs = ({
       <FormLabel>Image</FormLabel>
       <div className="space-y-4">
         <div className="flex gap-2">
-          <FormControl>
+          <div className="flex-1 flex gap-2">
             <Input
-              type="file"
-              accept="image/jpeg,image/png,image/webp,image/gif"
-              onChange={handleFileChange}
-              disabled={isUploading}
+              type="text"
+              value={fileInputValue}
+              placeholder="Sélectionnez un fichier..."
+              readOnly
               className="flex-1"
-              id="clothing-image"
-              name="clothing-image"
             />
-          </FormControl>
+            <div className="relative">
+              <Input
+                type="file"
+                id="clothing-image"
+                name="clothing-image"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                onChange={handleFileSelect}
+                disabled={isUploading}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
+              <Button type="button" variant="outline">
+                Parcourir
+              </Button>
+            </div>
+            <Button
+              type="button"
+              onClick={handleFileUpload}
+              disabled={isUploading || !selectedFile}
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              Envoyer
+            </Button>
+          </div>
           <Button
             type="button"
             onClick={onCameraCapture}
