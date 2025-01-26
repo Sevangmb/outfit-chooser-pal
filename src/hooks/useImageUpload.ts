@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
+import { uploadImageToSupabase } from '@/utils/uploadImage';
 
 export const useImageUpload = () => {
   const [isUploading, setIsUploading] = useState(false);
@@ -13,36 +13,26 @@ export const useImageUpload = () => {
       setIsUploading(true);
       setUploadError(null);
       setUploadProgress(0);
-      console.log("Démarrage de l'upload du fichier:", file.name);
+      console.log("Starting file upload:", file.name);
 
-      // Créer un FormData pour l'upload
-      const formData = new FormData();
-      formData.append('file', file);
+      // Create a local preview
+      const localPreviewUrl = URL.createObjectURL(file);
+      setPreviewUrl(localPreviewUrl);
+      setUploadProgress(30);
 
-      // Upload vers Google Drive via la fonction Edge
-      console.log("Envoi vers Google Drive...");
-      const { data, error } = await supabase.functions.invoke('upload-to-drive', {
-        body: formData,
-      });
-
-      if (error) {
-        console.error("Erreur lors de l'upload:", error);
-        throw error;
+      // Upload to Supabase
+      const publicUrl = await uploadImageToSupabase(file);
+      
+      if (!publicUrl) {
+        throw new Error("Erreur lors de l'upload de l'image");
       }
 
-      console.log("Fichier uploadé avec succès:", data);
-      
-      // Créer une URL de prévisualisation locale
-      const localUrl = URL.createObjectURL(file);
-      setPreviewUrl(localUrl);
-      
-      // Retourner l'URL Google Drive
-      toast.success('Image téléchargée avec succès');
       setUploadProgress(100);
+      toast.success('Image téléchargée avec succès');
       
-      return data.webViewLink;
+      return publicUrl;
     } catch (error) {
-      console.error("Erreur d'upload:", error);
+      console.error("Upload error:", error);
       const errorMessage = error instanceof Error ? error.message : "Erreur lors du téléchargement";
       setUploadError(errorMessage);
       toast.error(errorMessage);
