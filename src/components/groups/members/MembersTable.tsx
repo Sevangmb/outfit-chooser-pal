@@ -34,7 +34,7 @@ export const MembersTable = ({
           <MemberRow
             key={member.id}
             id={member.id}
-            email={member.user?.email || ''}
+            email={member.email}
             role={member.role}
             joinedAt={member.joined_at}
             onRoleUpdate={onRoleUpdate}

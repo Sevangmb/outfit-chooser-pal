@@ -11,7 +11,7 @@ import { Shield, User, UserX } from "lucide-react";
 
 interface MemberRowProps {
   id: number;
-  email: string;
+  email: string | null;
   role: string;
   joinedAt: string;
   onRoleUpdate: (memberId: number, newRole: string) => void;

@@ -41,9 +41,7 @@ export const useGroupMembers = (groupId: number) => {
           role: member.role,
           joined_at: member.joined_at,
           is_approved: member.is_approved,
-          user: member.profiles ? { 
-            email: member.profiles.email 
-          } : null
+          email: member.profiles?.email || null
         }));
 
         setMembers(transformedMembers);

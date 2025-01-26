@@ -4,7 +4,5 @@ export interface Member {
   role: string;
   joined_at: string;
   is_approved: boolean;
-  user: {
-    email: string;
-  } | null;
+  email: string | null;
 }
