@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { NavTab } from "./navigation/NavTab";
-import { Home, Search, Heart, Store, MessageSquare } from "lucide-react";
+import { Home, Search, Heart, MessageSquare } from "lucide-react";
 
 export const BottomNav = () => {
   const navigate = useNavigate();
@@ -28,12 +28,6 @@ export const BottomNav = () => {
       color: "red"
     },
     {
-      path: "/shops",
-      icon: Store,
-      label: "Boutiques",
-      ariaLabel: "Accéder aux boutiques",
-    },
-    {
       path: "/messages",
       icon: MessageSquare,
       label: "Communauté",
@@ -43,7 +37,7 @@ export const BottomNav = () => {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 h-16 bg-background border-t">
-      <div className="grid h-full grid-cols-5 mx-auto">
+      <div className="grid h-full grid-cols-4 mx-auto">
         {navigationTabs.map((tab) => (
           <NavTab
             key={tab.path}
