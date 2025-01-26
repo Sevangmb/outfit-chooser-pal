@@ -11,30 +11,30 @@ serve(async (req) => {
   }
 
   try {
-    const clientId = Deno.env.get('MICROSOFT_CLIENT_ID')
-    const clientSecret = Deno.env.get('MICROSOFT_CLIENT_SECRET')
-    const tenantId = 'common'
+    const clientId = Deno.env.get('MICROSOFT_CLIENT_ID')?.trim();
+    const clientSecret = Deno.env.get('MICROSOFT_CLIENT_SECRET')?.trim();
+    const tenantId = 'organizations'; // Changed from 'common' to 'organizations'
 
     if (!clientId || !clientSecret) {
-      console.error("Missing Microsoft credentials")
-      throw new Error('Microsoft credentials not configured')
+      console.error("Missing Microsoft credentials");
+      throw new Error('Microsoft credentials not configured');
     }
 
-    console.log("Starting OneDrive connection test...")
-    console.log("Using client ID:", clientId.substring(0, 8) + "...")
+    console.log("Starting OneDrive connection test...");
+    console.log("Using client ID:", clientId);
     
     // Get access token using client credentials flow
-    const tokenUrl = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`
-    const scope = 'https://graph.microsoft.com/.default'
+    const tokenUrl = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`;
+    const scope = 'https://graph.microsoft.com/.default';
     
-    console.log("Requesting token from:", tokenUrl)
+    console.log("Requesting token from:", tokenUrl);
     
     const body = new URLSearchParams({
+      grant_type: 'client_credentials',
       client_id: clientId,
       client_secret: clientSecret,
-      grant_type: 'client_credentials',
       scope: scope
-    })
+    });
 
     const tokenResponse = await fetch(tokenUrl, {
       method: 'POST',
@@ -63,7 +63,7 @@ serve(async (req) => {
     console.log("Access token obtained successfully");
 
     // Test Microsoft Graph API connection
-    const graphUrl = 'https://graph.microsoft.com/v1.0/me/drive';
+    const graphUrl = 'https://graph.microsoft.com/v1.0/sites/root';
     console.log("Testing Graph API connection to:", graphUrl);
 
     const graphResponse = await fetch(graphUrl, {
@@ -84,16 +84,16 @@ serve(async (req) => {
     }
 
     const graphData = await graphResponse.json();
-    console.log("Successfully connected to OneDrive:", {
-      driveId: graphData.id,
-      driveName: graphData.name
+    console.log("Successfully connected to SharePoint/OneDrive:", {
+      siteId: graphData.id,
+      siteName: graphData.displayName
     });
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: 'Successfully connected to OneDrive',
-        drive: graphData
+        message: 'Successfully connected to Microsoft Graph API',
+        site: graphData
       }),
       { 
         headers: {
