@@ -21,10 +21,13 @@ interface ShopProfileCardProps {
 
 export const ShopProfileCard = ({ shop }: ShopProfileCardProps) => {
   return (
-    <Card>
+    <Card className="hover:shadow-lg transition-shadow">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-xl font-semibold">{shop.name}</CardTitle>
+          <div className="flex items-center gap-2">
+            <Building2 className="h-5 w-5 text-primary" />
+            <CardTitle className="text-xl font-semibold">{shop.name}</CardTitle>
+          </div>
           <div className="flex gap-2">
             {shop.is_verified && (
               <Badge variant="default">Vérifié</Badge>
