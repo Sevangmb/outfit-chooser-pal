@@ -56,14 +56,25 @@ export const GroupMembersDialog = ({ groupId, isOpen, onClose }: GroupMembersDia
           role,
           joined_at,
           is_approved,
-          profiles:user_id(email)
+          profiles:user_id (
+            email
+          )
         `)
         .eq("group_id", groupId);
 
       if (membersError) throw membersError;
 
       console.log("Fetched members:", membersData);
-      setMembers(membersData || []);
+      
+      // Transform the data to ensure it matches the Member interface
+      const transformedMembers = (membersData || []).map(member => ({
+        ...member,
+        profiles: {
+          email: member.profiles?.email || 'Unknown'
+        }
+      }));
+
+      setMembers(transformedMembers);
     } catch (error) {
       console.error("Error fetching members:", error);
       toast.error("Erreur lors du chargement des membres");
