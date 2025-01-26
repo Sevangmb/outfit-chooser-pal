@@ -8,6 +8,7 @@ import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import { toast } from "sonner";
 import { socket } from "@/integrations/socket/client";
+import { updateSocketAuth } from "@/integrations/socket/client";
 
 interface Message {
   id: number;
@@ -86,7 +87,6 @@ export const ChatRoom = ({ type, recipientId, recipientName }: ChatRoomProps) =>
         .or(`and(sender_id.eq.${currentUserId},recipient_id.eq.${recipientId}),and(sender_id.eq.${recipientId},recipient_id.eq.${currentUserId})`)
         .order("created_at", { ascending: true });
     } else {
-      const groupId = typeof recipientId === 'string' ? parseInt(recipientId, 10) : recipientId;
       query = supabase
         .from("group_messages")
         .select(`
@@ -98,7 +98,7 @@ export const ChatRoom = ({ type, recipientId, recipientName }: ChatRoomProps) =>
             avatar_url
           )
         `)
-        .eq("group_id", groupId)
+        .eq("group_id", recipientId)
         .order("created_at", { ascending: true });
     }
 
@@ -132,7 +132,7 @@ export const ChatRoom = ({ type, recipientId, recipientName }: ChatRoomProps) =>
       if (type === "direct") {
         const { error } = await supabase.from("user_messages").insert({
           sender_id: currentUserId,
-          recipient_id: recipientId,
+          recipient_id: recipientId.toString(), // Conversion en string pour correspondre au type attendu
           content: newMessage.trim(),
         });
 
