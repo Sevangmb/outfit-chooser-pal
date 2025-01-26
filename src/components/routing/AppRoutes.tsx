@@ -6,7 +6,7 @@ import Index from "@/pages/Index";
 import Profile from "@/pages/Profile";
 import Add from "@/pages/Add";
 import Discover from "@/pages/Discover";
-import Shops from "@/pages/Shops";
+import Shops from "@/pages/Shops.tsx";
 import LandingPage from "@/pages/LandingPage";
 import Settings from "@/pages/Settings";
 import Messages from "@/pages/Messages";
@@ -18,12 +18,24 @@ import Favorites from "@/pages/Favorites";
 export const AppRoutes = () => {
   return (
     <Routes>
-      <Route element={<PublicRoute><></>}</PublicRoute>}>
+      <Route
+        element={
+          <PublicRoute>
+            <></>
+          </PublicRoute>
+        }
+      >
         <Route path="/landing" element={<LandingPage />} />
         <Route path="/auth" element={<Auth />} />
       </Route>
 
-      <Route element={<ProtectedRoute><></>}</ProtectedRoute>}>
+      <Route
+        element={
+          <ProtectedRoute>
+            <></>
+          </ProtectedRoute>
+        }
+      >
         <Route path="/" element={<Index />} />
         <Route path="/discover" element={<Discover />} />
         <Route path="/add" element={<Add />} />
