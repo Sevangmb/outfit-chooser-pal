@@ -59,7 +59,9 @@ export const GroupMembersDialog = ({ groupId, isOpen, onClose }: GroupMembersDia
           role,
           joined_at,
           is_approved,
-          user:profiles!inner(email)
+          user:user_id (
+            email:profiles!inner(email)
+          )
         `)
         .eq("group_id", groupId);
 
@@ -78,7 +80,7 @@ export const GroupMembersDialog = ({ groupId, isOpen, onClose }: GroupMembersDia
           role: member.role,
           joined_at: member.joined_at,
           is_approved: member.is_approved,
-          user: member.user
+          user: member.user ? { email: member.user.email } : null
         }));
 
         setMembers(transformedMembers);
