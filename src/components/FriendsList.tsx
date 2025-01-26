@@ -6,12 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UserPlus, UserMinus, Search } from "lucide-react";
+import { toast } from "sonner";
 
-interface Friend {
+interface Profile {
   id: string;
   email: string;
-  full_name: string;
-  avatar_url: string;
+  full_name: string | null;
+  avatar_url: string | null;
 }
 
 interface FriendsListProps {
@@ -20,7 +21,7 @@ interface FriendsListProps {
 
 export const FriendsList = ({ userId }: FriendsListProps) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<Friend[]>([]);
+  const [searchResults, setSearchResults] = useState<Profile[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
   const { data: friends = [], refetch: refetchFriends } = useQuery({
@@ -42,15 +43,16 @@ export const FriendsList = ({ userId }: FriendsListProps) => {
 
       if (error) {
         console.error("Error fetching friends:", error);
+        toast.error("Erreur lors du chargement des amis");
         return [];
       }
       
       console.log("Friends data:", data);
-      return (data?.map((f) => f.friend) || []) as Friend[];
+      return (data?.map((f) => f.friend) || []) as Profile[];
     },
   });
 
-  const { data: pendingFriends = [] } = useQuery({
+  const { data: pendingFriends = [], refetch: refetchPending } = useQuery({
     queryKey: ["pending-friends", userId],
     queryFn: async () => {
       console.log("Fetching pending friends for user:", userId);
@@ -69,11 +71,12 @@ export const FriendsList = ({ userId }: FriendsListProps) => {
 
       if (error) {
         console.error("Error fetching pending friends:", error);
+        toast.error("Erreur lors du chargement des demandes d'amis");
         return [];
       }
       
       console.log("Pending friends data:", data);
-      return (data?.map((f) => f.user) || []) as Friend[];
+      return (data?.map((f) => f.user) || []) as Profile[];
     },
   });
 
@@ -94,9 +97,10 @@ export const FriendsList = ({ userId }: FriendsListProps) => {
 
       if (error) throw error;
       console.log("Search results:", data);
-      setSearchResults(data as Friend[]);
+      setSearchResults(data as Profile[]);
     } catch (error) {
       console.error("Error searching users:", error);
+      toast.error("Erreur lors de la recherche d'utilisateurs");
       setSearchResults([]);
     } finally {
       setIsSearching(false);
@@ -114,10 +118,12 @@ export const FriendsList = ({ userId }: FriendsListProps) => {
       ]);
 
       if (error) throw error;
+      toast.success("Demande d'ami envoyée");
       setSearchResults([]);
       setSearchQuery("");
     } catch (error) {
       console.error("Error sending friend request:", error);
+      toast.error("Erreur lors de l'envoi de la demande d'ami");
     }
   };
 
@@ -130,9 +136,12 @@ export const FriendsList = ({ userId }: FriendsListProps) => {
         .eq("friend_id", userId);
 
       if (error) throw error;
+      toast.success("Demande d'ami acceptée");
       refetchFriends();
+      refetchPending();
     } catch (error) {
       console.error("Error accepting friend request:", error);
+      toast.error("Erreur lors de l'acceptation de la demande d'ami");
     }
   };
 
@@ -164,11 +173,11 @@ export const FriendsList = ({ userId }: FriendsListProps) => {
             <div key={user.id} className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Avatar>
-                  <AvatarImage src={user.avatar_url} />
-                  <AvatarFallback>{user.full_name?.[0]}</AvatarFallback>
+                  <AvatarImage src={user.avatar_url || undefined} />
+                  <AvatarFallback>{user.full_name?.[0] || user.email[0].toUpperCase()}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-medium">{user.full_name}</p>
+                  <p className="font-medium">{user.full_name || user.email}</p>
                   <p className="text-sm text-muted-foreground">{user.email}</p>
                 </div>
               </div>
@@ -206,11 +215,11 @@ export const FriendsList = ({ userId }: FriendsListProps) => {
               >
                 <div className="flex items-center gap-2">
                   <Avatar>
-                    <AvatarImage src={friend.avatar_url} />
-                    <AvatarFallback>{friend.full_name?.[0]}</AvatarFallback>
+                    <AvatarImage src={friend.avatar_url || undefined} />
+                    <AvatarFallback>{friend.full_name?.[0] || friend.email[0].toUpperCase()}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium">{friend.full_name}</p>
+                    <p className="font-medium">{friend.full_name || friend.email}</p>
                     <p className="text-sm text-muted-foreground">{friend.email}</p>
                   </div>
                 </div>
@@ -235,11 +244,11 @@ export const FriendsList = ({ userId }: FriendsListProps) => {
               >
                 <div className="flex items-center gap-2">
                   <Avatar>
-                    <AvatarImage src={friend.avatar_url} />
-                    <AvatarFallback>{friend.full_name?.[0]}</AvatarFallback>
+                    <AvatarImage src={friend.avatar_url || undefined} />
+                    <AvatarFallback>{friend.full_name?.[0] || friend.email[0].toUpperCase()}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium">{friend.full_name}</p>
+                    <p className="font-medium">{friend.full_name || friend.email}</p>
                     <p className="text-sm text-muted-foreground">{friend.email}</p>
                   </div>
                 </div>

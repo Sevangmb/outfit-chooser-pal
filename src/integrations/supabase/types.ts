@@ -1072,8 +1072,6 @@ export type Database = {
           id: string
           is_profile_public: boolean | null
           last_login: string | null
-          share_outfits_with: string | null
-          shipping_address: string | null
           status: string | null
           username: string | null
         }
@@ -1087,8 +1085,6 @@ export type Database = {
           id: string
           is_profile_public?: boolean | null
           last_login?: string | null
-          share_outfits_with?: string | null
-          shipping_address?: string | null
           status?: string | null
           username?: string | null
         }
@@ -1102,8 +1098,6 @@ export type Database = {
           id?: string
           is_profile_public?: boolean | null
           last_login?: string | null
-          share_outfits_with?: string | null
-          shipping_address?: string | null
           status?: string | null
           username?: string | null
         }
