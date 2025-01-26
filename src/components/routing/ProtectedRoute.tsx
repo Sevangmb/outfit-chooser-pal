@@ -77,9 +77,9 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   }
 
   return (
-    <>
+    <div className="pb-16">
       {children}
       <BottomNav />
-    </>
+    </div>
   );
 };
