@@ -47,7 +47,7 @@ export const AccountSettings = () => {
         .from("profiles")
         .select("*")
         .eq("id", user.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;
@@ -84,7 +84,7 @@ export const AccountSettings = () => {
         followers_count: followers.count || 0,
         following_count: following.count || 0,
         likes_received: likes.count || 0
-      };
+      } as ProfileStats;
     }
   });
 
