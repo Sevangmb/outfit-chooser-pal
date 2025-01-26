@@ -8,7 +8,7 @@ import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import { toast } from "sonner";
 import { socket } from "@/integrations/socket/client";
-import { updateSocketAuth } from "@/integrations/socket/client";
+import { GroupChatRoom } from "./GroupChatRoom";
 
 interface Message {
   id: number;
@@ -27,6 +27,15 @@ interface ChatRoomProps {
 }
 
 export const ChatRoom = ({ type, recipientId, recipientName }: ChatRoomProps) => {
+  if (type === "group") {
+    return (
+      <GroupChatRoom 
+        groupId={typeof recipientId === 'string' ? parseInt(recipientId, 10) : recipientId} 
+        groupName={recipientName} 
+      />
+    );
+  }
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -37,16 +46,14 @@ export const ChatRoom = ({ type, recipientId, recipientName }: ChatRoomProps) =>
       const token = sessionData?.session?.access_token;
       
       if (token) {
-        updateSocketAuth(token);
+        socket.auth = { token };
         socket.connect();
         
-        const room = type === "direct" 
-          ? `direct_${recipientId}` 
-          : `group_${recipientId}`;
-        
+        const room = `direct_${recipientId}`;
         socket.emit("join_room", room);
         
         socket.on("new_message", (message: Message) => {
+          console.log("New direct message received:", message);
           setMessages(prev => [...prev, message]);
         });
       }
@@ -59,16 +66,16 @@ export const ChatRoom = ({ type, recipientId, recipientName }: ChatRoomProps) =>
       socket.off("new_message");
       socket.emit("leave_room");
     };
-  }, [type, recipientId]);
+  }, [recipientId]);
 
   const fetchMessages = async () => {
-    const { data: sessionData } = await supabase.auth.getSession();
-    const currentUserId = sessionData?.session?.user?.id;
-    if (!currentUserId) return;
+    setIsLoading(true);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const currentUserId = sessionData?.session?.user?.id;
+      if (!currentUserId) return;
 
-    let query;
-    if (type === "direct") {
-      query = supabase
+      const { data, error } = await supabase
         .from("user_messages")
         .select(`
           id,
@@ -81,77 +88,55 @@ export const ChatRoom = ({ type, recipientId, recipientName }: ChatRoomProps) =>
         `)
         .or(`and(sender_id.eq.${currentUserId},recipient_id.eq.${recipientId}),and(sender_id.eq.${recipientId},recipient_id.eq.${currentUserId})`)
         .order("created_at", { ascending: true });
-    } else {
-      // Pour les messages de groupe, convertir l'ID en nombre si c'est une chaîne
-      const groupId = typeof recipientId === 'string' ? parseInt(recipientId, 10) : recipientId;
-      query = supabase
-        .from("group_messages")
-        .select(`
-          id,
-          content,
-          created_at,
-          sender:profiles!group_messages_sender_id_fkey(
-            email,
-            avatar_url
-          )
-        `)
-        .eq("group_id", groupId)
-        .order("created_at", { ascending: true });
-    }
 
-    const { data, error } = await query;
-    if (error) {
+      if (error) throw error;
+      console.log("Fetched direct messages:", data);
+      setMessages(data || []);
+    } catch (error) {
       console.error("Error fetching messages:", error);
-      return;
+      toast.error("Erreur lors du chargement des messages");
+    } finally {
+      setIsLoading(false);
     }
-
-    setMessages(data || []);
   };
 
   const sendMessage = async () => {
     if (!newMessage.trim()) return;
 
-    setIsLoading(true);
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const currentUserId = sessionData?.session?.user?.id;
       if (!currentUserId) throw new Error("Not authenticated");
 
       socket.emit("send_message", {
-        type,
+        type: "direct",
         recipientId,
         content: newMessage.trim(),
         senderId: currentUserId
       });
 
-      if (type === "direct") {
-        const { error } = await supabase.from("user_messages").insert({
-          sender_id: currentUserId,
-          recipient_id: recipientId.toString(),
-          content: newMessage.trim(),
-        });
+      const { error } = await supabase.from("user_messages").insert({
+        sender_id: currentUserId,
+        recipient_id: recipientId.toString(),
+        content: newMessage.trim(),
+      });
 
-        if (error) throw error;
-      } else {
-        const groupId = typeof recipientId === 'string' ? parseInt(recipientId, 10) : recipientId;
-        const { error } = await supabase.from("group_messages").insert({
-          sender_id: currentUserId,
-          group_id: groupId,
-          content: newMessage.trim(),
-        });
-
-        if (error) throw error;
-      }
-
+      if (error) throw error;
       setNewMessage("");
       toast.success("Message envoyé");
     } catch (error) {
       console.error("Error sending message:", error);
       toast.error("Erreur lors de l'envoi du message");
-    } finally {
-      setIsLoading(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-full">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full">
@@ -198,8 +183,8 @@ export const ChatRoom = ({ type, recipientId, recipientName }: ChatRoomProps) =>
             }
           }}
         />
-        <Button onClick={sendMessage} disabled={isLoading}>
-          {isLoading ? "Envoi..." : "Envoyer"}
+        <Button onClick={sendMessage}>
+          Envoyer
         </Button>
       </div>
     </div>

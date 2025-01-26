@@ -1725,6 +1725,13 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_group_member: {
+        Args: {
+          group_id: number
+          user_id: string
+        }
+        Returns: boolean
+      }
       log_admin_action: {
         Args: {
           action: Database["public"]["Enums"]["admin_action_type"]
