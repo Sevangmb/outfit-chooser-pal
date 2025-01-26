@@ -7,7 +7,6 @@ interface NavTabProps {
   path: string;
   ariaLabel: string;
   isActive: boolean;
-  isAdd?: boolean;
   onClick: () => void;
 }
 
@@ -17,7 +16,6 @@ export const NavTab = ({
   path,
   ariaLabel,
   isActive,
-  isAdd,
   onClick,
 }: NavTabProps) => {
   return (
@@ -25,7 +23,7 @@ export const NavTab = ({
       onClick={onClick}
       className={cn(
         "flex flex-col items-center justify-center w-full h-full transition-colors",
-        isAdd && "relative -top-3"
+        path === "/add" && "relative -top-3"
       )}
       aria-label={ariaLabel}
       role="tab"
@@ -35,7 +33,7 @@ export const NavTab = ({
         className={cn(
           "h-6 w-6 mb-1 transition-colors",
           isActive ? "text-primary" : "text-muted-foreground",
-          isAdd && "h-12 w-12 text-primary bg-background rounded-full p-2 shadow-lg"
+          path === "/add" && "h-12 w-12 text-primary bg-background rounded-full p-2 shadow-lg"
         )}
       />
       {label && (

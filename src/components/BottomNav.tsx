@@ -48,6 +48,7 @@ export const BottomNav = () => {
             key={tab.path}
             icon={tab.icon}
             label={tab.label}
+            path={tab.path}
             isActive={currentPath === tab.path}
             onClick={() => navigate(tab.path)}
             ariaLabel={tab.ariaLabel}
