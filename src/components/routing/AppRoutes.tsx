@@ -15,6 +15,7 @@ import Admin from "@/pages/Admin";
 import Closet from "@/pages/Closet";
 import Favorites from "@/pages/Favorites";
 import Suitcase from "@/pages/Suitcase";
+import Community from "@/pages/Community";
 import { AddClothingForm } from "@/components/AddClothingForm";
 import { OutfitCreator } from "@/components/OutfitCreator";
 
@@ -40,6 +41,7 @@ export const AppRoutes = () => (
       <Route path="/profile" element={<Profile />} />
       <Route path="/settings" element={<Settings />} />
       <Route path="/messages" element={<Messages />} />
+      <Route path="/community" element={<Community />} />
       <Route path="/contest" element={<Contest />} />
       <Route path="/admin" element={<Admin />} />
       <Route path="/closet" element={<Closet />} />
