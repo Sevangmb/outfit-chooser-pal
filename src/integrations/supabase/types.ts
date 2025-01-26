@@ -834,28 +834,46 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
+          bio: string | null
           created_at: string
           email: string
           has_completed_onboarding: boolean | null
           id: string
+          is_profile_public: boolean | null
           last_login: string | null
+          share_outfits_with: string | null
+          shipping_address: string | null
           status: string | null
+          username: string | null
         }
         Insert: {
+          avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           email: string
           has_completed_onboarding?: boolean | null
           id: string
+          is_profile_public?: boolean | null
           last_login?: string | null
+          share_outfits_with?: string | null
+          shipping_address?: string | null
           status?: string | null
+          username?: string | null
         }
         Update: {
+          avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           email?: string
           has_completed_onboarding?: boolean | null
           id?: string
+          is_profile_public?: boolean | null
           last_login?: string | null
+          share_outfits_with?: string | null
+          shipping_address?: string | null
           status?: string | null
+          username?: string | null
         }
         Relationships: []
       }
