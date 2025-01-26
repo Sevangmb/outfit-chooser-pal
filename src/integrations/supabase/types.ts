@@ -589,6 +589,38 @@ export type Database = {
           },
         ]
       }
+      group_join_requests: {
+        Row: {
+          created_at: string | null
+          group_id: number | null
+          id: number
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          group_id?: number | null
+          id?: never
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          group_id?: number | null
+          id?: never
+          status?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_join_requests_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "message_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       group_messages: {
         Row: {
           content: string
@@ -635,19 +667,25 @@ export type Database = {
         Row: {
           group_id: number | null
           id: number
+          is_approved: boolean | null
           joined_at: string
+          role: string | null
           user_id: string | null
         }
         Insert: {
           group_id?: number | null
           id?: number
+          is_approved?: boolean | null
           joined_at?: string
+          role?: string | null
           user_id?: string | null
         }
         Update: {
           group_id?: number | null
           id?: number
+          is_approved?: boolean | null
           joined_at?: string
+          role?: string | null
           user_id?: string | null
         }
         Relationships: [
@@ -662,22 +700,34 @@ export type Database = {
       }
       message_groups: {
         Row: {
+          cover_image: string | null
           created_at: string
           created_by: string
+          description: string | null
           id: number
           name: string
+          privacy: string | null
+          rules: string | null
         }
         Insert: {
+          cover_image?: string | null
           created_at?: string
           created_by: string
+          description?: string | null
           id?: number
           name: string
+          privacy?: string | null
+          rules?: string | null
         }
         Update: {
+          cover_image?: string | null
           created_at?: string
           created_by?: string
+          description?: string | null
           id?: number
           name?: string
+          privacy?: string | null
+          rules?: string | null
         }
         Relationships: []
       }

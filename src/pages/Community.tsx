@@ -1,5 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MessagingSection } from "@/components/messaging/MessagingSection";
+import { GroupsSection } from "@/components/groups/GroupsSection";
 import { MessageSquare, Users, Bell, UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useNotifications } from "@/hooks/useNotifications";
@@ -45,9 +46,7 @@ const Community = () => {
           </TabsContent>
 
           <TabsContent value="groups">
-            <div className="flex items-center justify-center h-64 text-muted-foreground">
-              Fonctionnalité à venir : Groupes de discussion thématiques
-            </div>
+            <GroupsSection />
           </TabsContent>
 
           <TabsContent value="notifications">
