@@ -31,7 +31,7 @@ interface Group {
   created_by: string;
   created_at: string;
   rules: string | null;
-  member_count: { count: number }[];
+  member_count: number;
 }
 
 interface NewGroup {
@@ -49,7 +49,7 @@ export const GroupsSection = () => {
     privacy: "public",
   });
 
-  const { data: groups, isLoading } = useQuery({
+  const { data: groups, isLoading, refetch } = useQuery({
     queryKey: ["groups"],
     queryFn: async () => {
       console.log("Fetching groups...");
@@ -65,8 +65,13 @@ export const GroupsSection = () => {
         throw error;
       }
 
-      console.log("Groups fetched:", data);
-      return data as Group[];
+      const transformedGroups = data.map(group => ({
+        ...group,
+        member_count: group.member_count[0]?.count || 0
+      }));
+
+      console.log("Groups fetched:", transformedGroups);
+      return transformedGroups as Group[];
     },
   });
 
@@ -85,14 +90,12 @@ export const GroupsSection = () => {
         .insert([{
           ...newGroup,
           created_by: userId,
-          created_at: new Date().toISOString(),
         }])
         .select()
         .single();
 
       if (error) throw error;
 
-      // Add creator as admin
       const { error: memberError } = await supabase
         .from("message_group_members")
         .insert([
@@ -109,6 +112,7 @@ export const GroupsSection = () => {
       toast.success("Groupe créé avec succès");
       setIsCreating(false);
       setNewGroup({ name: "", description: "", privacy: "public" });
+      refetch();
     } catch (error) {
       console.error("Error creating group:", error);
       toast.error("Erreur lors de la création du groupe");
@@ -204,7 +208,7 @@ export const GroupsSection = () => {
             </div>
             <div className="flex items-center gap-2 text-sm text-gray-500">
               <Users className="h-4 w-4" />
-              <span>{group.member_count?.[0]?.count || 0} membres</span>
+              <span>{group.member_count} membres</span>
             </div>
           </div>
         ))}

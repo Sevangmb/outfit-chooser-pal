@@ -31,9 +31,7 @@ interface Member {
   role: string;
   joined_at: string;
   is_approved: boolean;
-  profile: {
-    email: string;
-  } | null;
+  user_email: string;
 }
 
 interface GroupMembersDialogProps {
@@ -44,11 +42,14 @@ interface GroupMembersDialogProps {
 
 export const GroupMembersDialog = ({ groupId, isOpen, onClose }: GroupMembersDialogProps) => {
   const [members, setMembers] = useState<Member[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const fetchMembers = async () => {
     try {
+      setLoading(true);
       console.log("Fetching group members for group:", groupId);
-      const { data: membersData, error: membersError } = await supabase
+      
+      const { data: membersData, error } = await supabase
         .from("message_group_members")
         .select(`
           id,
@@ -56,31 +57,37 @@ export const GroupMembersDialog = ({ groupId, isOpen, onClose }: GroupMembersDia
           role,
           joined_at,
           is_approved,
-          profile:profiles!user_id (
+          profiles!inner (
             email
           )
         `)
         .eq("group_id", groupId);
 
-      if (membersError) throw membersError;
+      if (error) {
+        console.error("Error fetching members:", error);
+        toast.error("Erreur lors du chargement des membres");
+        return;
+      }
 
-      console.log("Fetched members:", membersData);
+      console.log("Fetched members data:", membersData);
       
       if (membersData) {
-        const transformedMembers = membersData.map(member => ({
+        const transformedMembers: Member[] = membersData.map(member => ({
           id: member.id,
           user_id: member.user_id,
           role: member.role,
           joined_at: member.joined_at,
           is_approved: member.is_approved,
-          profile: member.profile
+          user_email: member.profiles.email
         }));
 
         setMembers(transformedMembers);
       }
     } catch (error) {
-      console.error("Error fetching members:", error);
+      console.error("Error in fetchMembers:", error);
       toast.error("Erreur lors du chargement des membres");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -126,6 +133,18 @@ export const GroupMembersDialog = ({ groupId, isOpen, onClose }: GroupMembersDia
     }
   };
 
+  if (loading) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent>
+          <div className="flex justify-center p-4">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-3xl">
@@ -146,7 +165,7 @@ export const GroupMembersDialog = ({ groupId, isOpen, onClose }: GroupMembersDia
               <TableRow key={member.id}>
                 <TableCell className="flex items-center gap-2">
                   <User className="h-4 w-4" />
-                  {member.profile?.email || 'Unknown'}
+                  {member.user_email}
                 </TableCell>
                 <TableCell>
                   <Select
