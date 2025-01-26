@@ -1,15 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Database, HardDrive, Save, Trash } from "lucide-react";
+import { Database, HardDrive, Save, Trash, CheckCircle, XCircle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { UserFiles } from "@/components/files/UserFiles";
 import { Separator } from "@/components/ui/separator";
+import { testDriveConnection } from "@/utils/testDriveConnection";
 
 export const StorageSettings = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [driveStatus, setDriveStatus] = useState<'checking' | 'connected' | 'error'>('checking');
 
   const { data: storageInfo } = useQuery({
     queryKey: ["storage_info"],
@@ -25,6 +27,20 @@ export const StorageSettings = () => {
       };
     },
   });
+
+  useEffect(() => {
+    const checkDriveConnection = async () => {
+      try {
+        const result = await testDriveConnection();
+        setDriveStatus(result.success ? 'connected' : 'error');
+      } catch (error) {
+        console.error('Error checking Drive connection:', error);
+        setDriveStatus('error');
+      }
+    };
+
+    checkDriveConnection();
+  }, []);
 
   const formatBytes = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
@@ -42,7 +58,25 @@ export const StorageSettings = () => {
     <div className="space-y-6">
       <div className="space-y-4">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-lg font-medium">Espace de stockage</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="text-lg font-medium">Espace de stockage</h3>
+            <div className="flex items-center gap-1 text-sm">
+              <span className="text-muted-foreground">Google Drive:</span>
+              {driveStatus === 'checking' ? (
+                <span className="text-muted-foreground">Vérification...</span>
+              ) : driveStatus === 'connected' ? (
+                <div className="flex items-center gap-1 text-green-500">
+                  <CheckCircle className="w-4 h-4" />
+                  <span>Connecté</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1 text-destructive">
+                  <XCircle className="w-4 h-4" />
+                  <span>Non connecté</span>
+                </div>
+              )}
+            </div>
+          </div>
           <span className="text-sm text-muted-foreground">
             {storageInfo ? formatBytes(storageInfo.used_space) : '0'} utilisés sur {storageInfo ? formatBytes(storageInfo.total_space) : '0'}
           </span>
