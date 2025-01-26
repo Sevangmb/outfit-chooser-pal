@@ -514,6 +514,36 @@ export type Database = {
         }
         Relationships: []
       }
+      dropbox_connections: {
+        Row: {
+          access_token: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          refresh_token: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          refresh_token?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          refresh_token?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       followers: {
         Row: {
           created_at: string
@@ -924,36 +954,6 @@ export type Database = {
           post_count?: number | null
           privacy?: string | null
           rules?: string | null
-        }
-        Relationships: []
-      }
-      onedrive_connections: {
-        Row: {
-          access_token: string | null
-          created_at: string
-          expires_at: string | null
-          id: string
-          refresh_token: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          access_token?: string | null
-          created_at?: string
-          expires_at?: string | null
-          id?: string
-          refresh_token?: string | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          access_token?: string | null
-          created_at?: string
-          expires_at?: string | null
-          id?: string
-          refresh_token?: string | null
-          updated_at?: string
-          user_id?: string
         }
         Relationships: []
       }

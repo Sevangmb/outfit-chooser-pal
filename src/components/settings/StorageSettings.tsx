@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { UserFiles } from "@/components/files/UserFiles";
 import { Separator } from "@/components/ui/separator";
-import { testOneDriveConnection } from "@/utils/testOneDriveConnection";
+import { testDropboxConnection } from "@/utils/testDropboxConnection";
 
 export const StorageSettings = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -20,7 +20,6 @@ export const StorageSettings = () => {
       try {
         const { data: { user }, error: userError } = await supabase.auth.getUser();
         if (userError) {
-          // Handle token refresh
           const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
           if (refreshError) {
             console.error("Error refreshing session:", refreshError);
@@ -51,7 +50,7 @@ export const StorageSettings = () => {
   });
 
   useEffect(() => {
-    const checkDriveConnection = async () => {
+    const checkDropboxConnection = async () => {
       try {
         setDriveStatus('checking');
         setDriveError(null);
@@ -64,26 +63,26 @@ export const StorageSettings = () => {
           }
         }
 
-        console.log("Checking OneDrive connection...");
-        const result = await testOneDriveConnection();
+        console.log("Checking Dropbox connection...");
+        const result = await testDropboxConnection();
         
         if (result.success) {
-          console.log("OneDrive connection successful");
+          console.log("Dropbox connection successful");
           setDriveStatus('connected');
           setDriveError(null);
         } else {
-          console.error("OneDrive connection failed:", result.error);
+          console.error("Dropbox connection failed:", result.error);
           setDriveStatus('error');
-          setDriveError(result.error || "Erreur de connexion à OneDrive");
+          setDriveError(result.error || "Erreur de connexion à Dropbox");
         }
       } catch (error) {
-        console.error("Error checking OneDrive connection:", error);
+        console.error("Error checking Dropbox connection:", error);
         setDriveStatus('error');
         setDriveError(error instanceof Error ? error.message : "Erreur inattendue lors de la vérification");
       }
     };
 
-    checkDriveConnection();
+    checkDropboxConnection();
   }, []);
 
   const formatBytes = (bytes: number) => {
@@ -105,7 +104,7 @@ export const StorageSettings = () => {
           <div className="flex items-center gap-2">
             <h3 className="text-lg font-medium">Espace de stockage</h3>
             <div className="flex items-center gap-1 text-sm">
-              <span className="text-muted-foreground">OneDrive:</span>
+              <span className="text-muted-foreground">Dropbox:</span>
               {driveStatus === 'checking' ? (
                 <span className="text-muted-foreground">Vérification...</span>
               ) : driveStatus === 'connected' ? (
