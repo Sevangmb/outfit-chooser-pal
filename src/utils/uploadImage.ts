@@ -27,15 +27,13 @@ export const uploadImageToSupabase = async (file: File): Promise<string | null> 
       throw new Error('Fichier trop volumineux. Maximum 5MB.');
     }
 
-    // Read file as ArrayBuffer
+    // Convert File to Blob while preserving the MIME type
     const arrayBuffer = await file.arrayBuffer();
-    
-    // Create a new Blob with the correct MIME type
     const blob = new Blob([arrayBuffer], { type: file.type });
 
     // Generate a unique filename with proper extension
     const timestamp = new Date().toISOString().replace(/[^0-9]/g, "");
-    const extension = file.type.split('/')[1] || 'jpg';
+    const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
     const fileName = `${timestamp}_${crypto.randomUUID()}.${extension}`;
 
     console.log("Uploading image with filename:", fileName);
