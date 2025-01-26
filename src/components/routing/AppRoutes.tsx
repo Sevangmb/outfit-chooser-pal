@@ -21,33 +21,33 @@ export const AppRoutes = () => {
       <Route
         element={
           <PublicRoute>
-            <></>
+            <Routes>
+              <Route path="/landing" element={<LandingPage />} />
+              <Route path="/auth" element={<Auth />} />
+            </Routes>
           </PublicRoute>
         }
-      >
-        <Route path="/landing" element={<LandingPage />} />
-        <Route path="/auth" element={<Auth />} />
-      </Route>
+      />
 
       <Route
         element={
           <ProtectedRoute>
-            <></>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/discover" element={<Discover />} />
+              <Route path="/add" element={<Add />} />
+              <Route path="/shops" element={<Shops />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/messages" element={<Messages />} />
+              <Route path="/contest" element={<Contest />} />
+              <Route path="/admin" element={<Admin />} />
+              <Route path="/closet" element={<Closet />} />
+              <Route path="/favorites" element={<Favorites />} />
+            </Routes>
           </ProtectedRoute>
         }
-      >
-        <Route path="/" element={<Index />} />
-        <Route path="/discover" element={<Discover />} />
-        <Route path="/add" element={<Add />} />
-        <Route path="/shops" element={<Shops />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/messages" element={<Messages />} />
-        <Route path="/contest" element={<Contest />} />
-        <Route path="/admin" element={<Admin />} />
-        <Route path="/closet" element={<Closet />} />
-        <Route path="/favorites" element={<Favorites />} />
-      </Route>
+      />
     </Routes>
   );
 };
