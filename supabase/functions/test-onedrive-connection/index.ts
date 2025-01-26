@@ -52,7 +52,7 @@ serve(async (req) => {
 
     // Test Graph API connection
     console.log("Testing Graph API connection...");
-    const graphResponse = await fetch('https://graph.microsoft.com/v1.0/sites/root', {
+    const graphResponse = await fetch('https://graph.microsoft.com/v1.0/me/drive', {
       headers: {
         'Authorization': `Bearer ${tokenData.access_token}`,
         'Content-Type': 'application/json'
@@ -73,7 +73,8 @@ serve(async (req) => {
         success: true,
         message: "Successfully connected to OneDrive",
         details: {
-          site: graphData.displayName,
+          driveId: graphData.id,
+          driveName: graphData.name,
           webUrl: graphData.webUrl
         }
       }),
