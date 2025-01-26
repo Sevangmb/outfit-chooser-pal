@@ -23,7 +23,7 @@ export const FriendsList = ({ userId }: FriendsListProps) => {
   const [searchResults, setSearchResults] = useState<Friend[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
-  const { data: friends, refetch: refetchFriends } = useQuery({
+  const { data: friends = [], refetch: refetchFriends } = useQuery({
     queryKey: ["friends", userId],
     queryFn: async () => {
       console.log("Fetching friends for user:", userId);
@@ -42,15 +42,15 @@ export const FriendsList = ({ userId }: FriendsListProps) => {
 
       if (error) {
         console.error("Error fetching friends:", error);
-        throw error;
+        return [];
       }
       
       console.log("Friends data:", data);
-      return data.map((f) => f.friend) as Friend[];
+      return (data?.map((f) => f.friend) || []) as Friend[];
     },
   });
 
-  const { data: pendingFriends } = useQuery({
+  const { data: pendingFriends = [] } = useQuery({
     queryKey: ["pending-friends", userId],
     queryFn: async () => {
       console.log("Fetching pending friends for user:", userId);
@@ -69,11 +69,11 @@ export const FriendsList = ({ userId }: FriendsListProps) => {
 
       if (error) {
         console.error("Error fetching pending friends:", error);
-        throw error;
+        return [];
       }
       
       console.log("Pending friends data:", data);
-      return data.map((f) => f.user) as Friend[];
+      return (data?.map((f) => f.user) || []) as Friend[];
     },
   });
 
@@ -97,6 +97,7 @@ export const FriendsList = ({ userId }: FriendsListProps) => {
       setSearchResults(data as Friend[]);
     } catch (error) {
       console.error("Error searching users:", error);
+      setSearchResults([]);
     } finally {
       setIsSearching(false);
     }
