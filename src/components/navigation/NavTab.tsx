@@ -8,6 +8,7 @@ interface NavTabProps {
   ariaLabel: string;
   isActive: boolean;
   onClick: () => void;
+  color?: string;
 }
 
 export const NavTab = ({
@@ -17,6 +18,7 @@ export const NavTab = ({
   ariaLabel,
   isActive,
   onClick,
+  color,
 }: NavTabProps) => {
   return (
     <button
@@ -33,7 +35,8 @@ export const NavTab = ({
         className={cn(
           "h-6 w-6 mb-1 transition-colors",
           isActive ? "text-primary" : "text-muted-foreground",
-          path === "/add" && "h-12 w-12 text-primary bg-background rounded-full p-2 shadow-lg"
+          path === "/add" && "h-12 w-12 text-red-500 bg-background rounded-full p-2 shadow-lg",
+          color && `text-${color}-500`
         )}
       />
       {label && (

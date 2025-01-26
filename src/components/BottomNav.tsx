@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { NavTab } from "./navigation/NavTab";
-import { Home, Search, Shirt, Store, User } from "lucide-react";
+import { Home, Search, Heart, Store, User } from "lucide-react";
 
 export const BottomNav = () => {
   const navigate = useNavigate();
@@ -22,9 +22,10 @@ export const BottomNav = () => {
     },
     {
       path: "/add",
-      icon: Shirt,
+      icon: Heart,
       label: "Perso",
       ariaLabel: "Accéder à mon espace personnel",
+      color: "red"
     },
     {
       path: "/shops",
@@ -52,6 +53,7 @@ export const BottomNav = () => {
             isActive={currentPath === tab.path}
             onClick={() => navigate(tab.path)}
             ariaLabel={tab.ariaLabel}
+            color={tab.color}
           />
         ))}
       </div>
