@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Shield, Users, List, Ban, Settings, Store, HelpCircle } from "lucide-react";
+import { Shield, Users, List, Ban, Settings, Store, HelpCircle, Trophy } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserManagement } from "@/components/admin/UserManagement";
@@ -9,6 +9,7 @@ import { BannedWords } from "@/components/admin/BannedWords";
 import { ContentModeration } from "@/components/admin/ContentModeration";
 import { ShopModeration } from "@/components/admin/ShopModeration";
 import { GeneralSettings } from "@/components/admin/GeneralSettings";
+import { ChallengeManagement } from "@/components/admin/ChallengeManagement";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
@@ -108,6 +109,10 @@ const Admin = () => {
             <Settings className="h-4 w-4 mr-2" />
             Paramètres
           </TabsTrigger>
+          <TabsTrigger value="challenges">
+            <Trophy className="h-4 w-4 mr-2" />
+            Challenges
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="users">
@@ -167,6 +172,17 @@ const Admin = () => {
 
         <TabsContent value="settings">
           <GeneralSettings />
+        </TabsContent>
+
+        <TabsContent value="challenges">
+          <Card>
+            <CardHeader>
+              <CardTitle>Gestion des challenges</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ChallengeManagement />
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
