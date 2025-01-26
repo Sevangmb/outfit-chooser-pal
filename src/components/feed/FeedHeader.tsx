@@ -18,24 +18,12 @@ export const FeedHeader = () => {
       setIsLoading(true);
       console.log("Starting outfit suggestion request...");
 
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
         toast.error("Vous devez être connecté pour obtenir une suggestion");
         return;
       }
-      console.log("User authenticated:", user.id);
-
-      // Récupérer les vêtements de l'utilisateur
-      const { data: userClothes, error: clothesError } = await supabase
-        .from('clothes')
-        .select('*')
-        .eq('user_id', user.id);
-
-      if (clothesError) {
-        console.error("Error fetching user clothes:", clothesError);
-        throw clothesError;
-      }
-      console.log("User clothes fetched:", userClothes);
+      console.log("User authenticated:", session.user.id);
 
       const weatherDataStr = localStorage.getItem('weatherData');
       if (!weatherDataStr) {
@@ -50,9 +38,10 @@ export const FeedHeader = () => {
         body: {
           temperature: weatherData.temperature,
           weatherDescription: weatherData.description,
-          conditions: weatherData.conditions,
-          userId: user.id,
-          clothes: userClothes
+          conditions: weatherData.conditions
+        },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
         }
       });
 
