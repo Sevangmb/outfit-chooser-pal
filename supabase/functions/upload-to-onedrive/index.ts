@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,82 +11,89 @@ serve(async (req) => {
   }
 
   try {
-    const formData = await req.formData()
-    const file = formData.get('file')
-
-    if (!file) {
-      return new Response(
-        JSON.stringify({ error: 'No file uploaded' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-      )
-    }
-
     const clientId = Deno.env.get('MICROSOFT_CLIENT_ID')
     const clientSecret = Deno.env.get('MICROSOFT_CLIENT_SECRET')
+    const tenantId = 'common'
 
     if (!clientId || !clientSecret) {
-      return new Response(
-        JSON.stringify({ error: 'Microsoft credentials not configured' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-      )
+      throw new Error('Microsoft credentials not configured')
     }
 
     // Get access token
-    const tokenResponse = await fetch('https://login.microsoftonline.com/common/oauth2/v2.0/token', {
+    const tokenUrl = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`
+    const tokenBody = new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecret,
+      grant_type: 'client_credentials',
+      scope: 'https://graph.microsoft.com/.default'
+    })
+
+    const tokenResponse = await fetch(tokenUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: new URLSearchParams({
-        client_id: clientId,
-        client_secret: clientSecret,
-        grant_type: 'client_credentials',
-        scope: 'https://graph.microsoft.com/.default',
-      }),
-    })
+      body: tokenBody.toString()
+    });
 
-    const tokenData = await tokenResponse.json()
-
+    const tokenData = await tokenResponse.json();
     if (!tokenData.access_token) {
-      throw new Error('Failed to get access token')
+      throw new Error('Failed to get access token');
+    }
+
+    // Get the file from the request
+    const formData = await req.formData();
+    const file = formData.get('file');
+    
+    if (!file || !(file instanceof File)) {
+      throw new Error('No file provided');
     }
 
     // Upload to OneDrive
-    const uploadResponse = await fetch('https://graph.microsoft.com/v1.0/me/drive/root:/uploads/' + file.name + ':/content', {
+    const uploadUrl = 'https://graph.microsoft.com/v1.0/me/drive/root:/LovableUploads/' + file.name + ':/content'
+    const uploadResponse = await fetch(uploadUrl, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${tokenData.access_token}`,
-        'Content-Type': file.type,
+        'Content-Type': file.type
       },
-      body: file,
-    })
-
-    const uploadData = await uploadResponse.json()
+      body: await file.arrayBuffer()
+    });
 
     if (!uploadResponse.ok) {
-      throw new Error(`Failed to upload to OneDrive: ${uploadData.error?.message || 'Unknown error'}`)
+      throw new Error('Failed to upload file to OneDrive');
     }
+
+    const uploadData = await uploadResponse.json();
 
     return new Response(
       JSON.stringify({
         success: true,
         webUrl: uploadData.webUrl,
-        fileId: uploadData.id,
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
-
-  } catch (error) {
-    console.error('Error:', error)
-    return new Response(
-      JSON.stringify({
-        error: 'Failed to upload file',
-        details: error.message
+        name: file.name
       }),
       { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        } 
+      }
+    );
+
+  } catch (error) {
+    console.error('Error uploading to OneDrive:', error);
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: error.message
+      }),
+      { 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        },
         status: 500
       }
-    )
+    );
   }
-})
+});
