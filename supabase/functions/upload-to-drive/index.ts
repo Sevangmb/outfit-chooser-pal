@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { google } from 'npm:googleapis';
+import { createClient } from './supabase.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,6 +13,28 @@ serve(async (req) => {
   }
 
   try {
+    // Get user information from the authorization header
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error('No authorization header');
+    }
+
+    // Get user information from Supabase
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        global: {
+          headers: { Authorization: authHeader },
+        },
+      }
+    );
+
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+    if (userError || !user) {
+      throw new Error('Failed to get user information');
+    }
+
     const oauth2Client = new google.auth.OAuth2(
       Deno.env.get('GOOGLE_CLIENT_ID'),
       Deno.env.get('GOOGLE_CLIENT_SECRET'),
@@ -29,10 +52,33 @@ serve(async (req) => {
 
     console.log("Processing file upload:", file.name);
 
+    // Check if user folder exists, create if not
+    let folderId;
+    const folderName = `user_${user.id}`;
+    const folderResponse = await drive.files.list({
+      q: `mimeType='application/vnd.google-apps.folder' and name='${folderName}'`,
+      fields: 'files(id)',
+    });
+
+    if (folderResponse.data.files && folderResponse.data.files.length > 0) {
+      folderId = folderResponse.data.files[0].id;
+    } else {
+      const folderMetadata = {
+        name: folderName,
+        mimeType: 'application/vnd.google-apps.folder',
+      };
+      const folder = await drive.files.create({
+        requestBody: folderMetadata,
+        fields: 'id',
+      });
+      folderId = folder.data.id;
+    }
+
     const buffer = await file.arrayBuffer();
     const fileMetadata = {
       name: file.name,
       mimeType: file.type,
+      parents: [folderId], // Add file to user's folder
     };
 
     const media = {
@@ -40,7 +86,7 @@ serve(async (req) => {
       body: new Uint8Array(buffer),
     };
 
-    console.log("Uploading to Google Drive...");
+    console.log("Uploading to Google Drive in folder:", folderName);
     const response = await drive.files.create({
       requestBody: fileMetadata,
       media: media,
