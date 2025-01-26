@@ -4,7 +4,7 @@ import { OutfitCreator } from "@/components/OutfitCreator";
 import { FavoriteOutfits } from "@/components/FavoriteOutfits";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Heart, Image, Plus, Shirt, Suitcase } from "lucide-react";
+import { Heart, Image, Plus, Shirt, Luggage } from "lucide-react";
 import { SuitcaseDialog } from "@/components/suitcase/SuitcaseDialog";
 import { AddClothingDialog } from "@/components/AddClothingDialog";
 
@@ -44,7 +44,7 @@ const Add = () => {
               Mes Looks
             </TabsTrigger>
             <TabsTrigger value="suitcases">
-              <Suitcase className="h-4 w-4 mr-2" />
+              <Luggage className="h-4 w-4 mr-2" />
               Mes Valises
             </TabsTrigger>
             <TabsTrigger value="favorites">

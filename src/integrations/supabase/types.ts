@@ -838,6 +838,7 @@ export type Database = {
           bio: string | null
           created_at: string
           email: string
+          full_name: string | null
           has_completed_onboarding: boolean | null
           id: string
           is_profile_public: boolean | null
@@ -852,6 +853,7 @@ export type Database = {
           bio?: string | null
           created_at?: string
           email: string
+          full_name?: string | null
           has_completed_onboarding?: boolean | null
           id: string
           is_profile_public?: boolean | null
@@ -866,6 +868,7 @@ export type Database = {
           bio?: string | null
           created_at?: string
           email?: string
+          full_name?: string | null
           has_completed_onboarding?: boolean | null
           id?: string
           is_profile_public?: boolean | null

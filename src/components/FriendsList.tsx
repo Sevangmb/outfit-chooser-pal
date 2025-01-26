@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ClothingTab } from "@/components/ClothingTab";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UserPlus, UserMinus, Search } from "lucide-react";
 
@@ -27,7 +26,8 @@ export const FriendsList = ({ userId }: FriendsListProps) => {
   const { data: friends, refetch: refetchFriends } = useQuery({
     queryKey: ["friends", userId],
     queryFn: async () => {
-      const { data: friendships, error } = await supabase
+      console.log("Fetching friends for user:", userId);
+      const { data, error } = await supabase
         .from("friendships")
         .select(`
           friend_id,
@@ -41,15 +41,21 @@ export const FriendsList = ({ userId }: FriendsListProps) => {
         .eq("user_id", userId)
         .eq("status", "accepted");
 
-      if (error) throw error;
-      return friendships.map((f) => f.friend) as Friend[];
+      if (error) {
+        console.error("Error fetching friends:", error);
+        throw error;
+      }
+      
+      console.log("Friends data:", data);
+      return data.map((f) => f.friend) as Friend[];
     },
   });
 
   const { data: pendingFriends } = useQuery({
     queryKey: ["pending-friends", userId],
     queryFn: async () => {
-      const { data: friendships, error } = await supabase
+      console.log("Fetching pending friends for user:", userId);
+      const { data, error } = await supabase
         .from("friendships")
         .select(`
           user_id,
@@ -63,8 +69,13 @@ export const FriendsList = ({ userId }: FriendsListProps) => {
         .eq("friend_id", userId)
         .eq("status", "pending");
 
-      if (error) throw error;
-      return friendships.map((f) => f.user) as Friend[];
+      if (error) {
+        console.error("Error fetching pending friends:", error);
+        throw error;
+      }
+      
+      console.log("Pending friends data:", data);
+      return data.map((f) => f.user) as Friend[];
     },
   });
 
@@ -76,6 +87,7 @@ export const FriendsList = ({ userId }: FriendsListProps) => {
 
     setIsSearching(true);
     try {
+      console.log("Searching users with query:", query);
       const { data, error } = await supabase
         .from("profiles")
         .select("id, email, full_name, avatar_url")
@@ -83,6 +95,7 @@ export const FriendsList = ({ userId }: FriendsListProps) => {
         .limit(5);
 
       if (error) throw error;
+      console.log("Search results:", data);
       setSearchResults(data as Friend[]);
     } catch (error) {
       console.error("Error searching users:", error);
