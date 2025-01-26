@@ -650,6 +650,35 @@ export type Database = {
           },
         ]
       }
+      group_message_reads: {
+        Row: {
+          group_id: number | null
+          id: number
+          last_read_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          group_id?: number | null
+          id?: number
+          last_read_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          group_id?: number | null
+          id?: number
+          last_read_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_message_reads_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "message_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       group_messages: {
         Row: {
           content: string
@@ -657,6 +686,7 @@ export type Database = {
           group_id: number | null
           id: number
           is_deleted: boolean | null
+          last_read_at: string | null
           sender_id: string | null
         }
         Insert: {
@@ -665,6 +695,7 @@ export type Database = {
           group_id?: number | null
           id?: number
           is_deleted?: boolean | null
+          last_read_at?: string | null
           sender_id?: string | null
         }
         Update: {
@@ -673,6 +704,7 @@ export type Database = {
           group_id?: number | null
           id?: number
           is_deleted?: boolean | null
+          last_read_at?: string | null
           sender_id?: string | null
         }
         Relationships: [
@@ -1489,6 +1521,7 @@ export type Database = {
           created_at: string
           id: number
           is_deleted: boolean | null
+          last_read_at: string | null
           read_at: string | null
           recipient_id: string
           sender_id: string
@@ -1498,6 +1531,7 @@ export type Database = {
           created_at?: string
           id?: number
           is_deleted?: boolean | null
+          last_read_at?: string | null
           read_at?: string | null
           recipient_id: string
           sender_id: string
@@ -1507,6 +1541,7 @@ export type Database = {
           created_at?: string
           id?: number
           is_deleted?: boolean | null
+          last_read_at?: string | null
           read_at?: string | null
           recipient_id?: string
           sender_id?: string
