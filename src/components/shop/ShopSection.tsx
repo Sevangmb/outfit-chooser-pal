@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { CreateShopDialog } from "./CreateShopDialog";
 
 export const ShopSection = () => {
-  const [viewMode, setViewMode] = useState<"map" | "list">("map");
+  const [viewMode, setViewMode] = useState<"map" | "list">("list"); // Changed default to list for better UX
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   const { data: shops, isLoading } = useQuery({
@@ -35,7 +35,8 @@ export const ShopSection = () => {
         throw error;
       }
 
-      return data;
+      console.log("Fetched shops:", data);
+      return data || [];
     },
   });
 
@@ -83,19 +84,21 @@ export const ShopSection = () => {
         </div>
       </div>
 
-      {viewMode === "map" && shops && shops.length > 0 && (
-        <ShopLocationTab shop={shops[0]} />
-      )}
+      <TabsContent value="map" className="mt-0">
+        {shops && shops.length > 0 && (
+          <ShopLocationTab shop={shops[0]} />
+        )}
+      </TabsContent>
 
-      {viewMode === "list" && (
+      <TabsContent value="list" className="mt-0">
         <div className="grid gap-4 md:grid-cols-2">
           {shops?.map((shop) => (
             <ShopProfileCard key={shop.id} shop={shop} />
           ))}
         </div>
-      )}
+      </TabsContent>
 
-      {shops?.length === 0 && (
+      {(!shops || shops.length === 0) && (
         <div className="text-center py-8 text-muted-foreground">
           Aucune boutique disponible pour le moment
         </div>
@@ -106,7 +109,7 @@ export const ShopSection = () => {
           <DialogHeader>
             <DialogTitle>Créer ma boutique</DialogTitle>
           </DialogHeader>
-          <CreateShopDialog />
+          <CreateShopDialog onSuccess={() => setShowCreateDialog(false)} />
         </DialogContent>
       </Dialog>
     </div>
