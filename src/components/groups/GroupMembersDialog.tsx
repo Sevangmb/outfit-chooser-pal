@@ -31,7 +31,9 @@ interface Member {
   role: string;
   joined_at: string;
   is_approved: boolean;
-  user_email: string;
+  user: {
+    email: string;
+  } | null;
 }
 
 interface GroupMembersDialogProps {
@@ -57,9 +59,7 @@ export const GroupMembersDialog = ({ groupId, isOpen, onClose }: GroupMembersDia
           role,
           joined_at,
           is_approved,
-          user:user_id (
-            email
-          )
+          user:profiles!inner(email)
         `)
         .eq("group_id", groupId);
 
@@ -78,7 +78,7 @@ export const GroupMembersDialog = ({ groupId, isOpen, onClose }: GroupMembersDia
           role: member.role,
           joined_at: member.joined_at,
           is_approved: member.is_approved,
-          user_email: member.user?.email || 'Email inconnu'
+          user: member.user
         }));
 
         setMembers(transformedMembers);
@@ -165,7 +165,7 @@ export const GroupMembersDialog = ({ groupId, isOpen, onClose }: GroupMembersDia
               <TableRow key={member.id}>
                 <TableCell className="flex items-center gap-2">
                   <User className="h-4 w-4" />
-                  {member.user_email}
+                  {member.user?.email || 'Email inconnu'}
                 </TableCell>
                 <TableCell>
                   <Select
