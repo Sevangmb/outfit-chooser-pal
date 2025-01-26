@@ -18,12 +18,12 @@ import Favorites from "@/pages/Favorites";
 export const AppRoutes = () => {
   return (
     <Routes>
-      <Route element={<PublicRoute />}>
+      <Route element={<PublicRoute><></>}</PublicRoute>}>
         <Route path="/landing" element={<LandingPage />} />
         <Route path="/auth" element={<Auth />} />
       </Route>
 
-      <Route element={<ProtectedRoute />}>
+      <Route element={<ProtectedRoute><></>}</ProtectedRoute>}>
         <Route path="/" element={<Index />} />
         <Route path="/discover" element={<Discover />} />
         <Route path="/add" element={<Add />} />
