@@ -125,6 +125,8 @@ export const ImageUploadTabs = ({
               onChange={handleFileChange}
               disabled={isUploading}
               className="flex-1"
+              id="clothing-image"
+              name="clothing-image"
             />
           </FormControl>
           <Button
