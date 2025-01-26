@@ -20,10 +20,8 @@ export const useGroupMembers = (groupId: number) => {
           role,
           joined_at,
           is_approved,
-          user_id (
-            profiles (
-              email
-            )
+          profiles:user_id (
+            email
           )
         `)
         .eq("group_id", groupId);
@@ -43,8 +41,8 @@ export const useGroupMembers = (groupId: number) => {
           role: member.role,
           joined_at: member.joined_at,
           is_approved: member.is_approved,
-          user: member.user_id?.profiles?.[0] ? { 
-            email: member.user_id.profiles[0].email 
+          user: member.profiles ? { 
+            email: member.profiles.email 
           } : null
         }));
 
