@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import { toast } from "sonner";
+import { socket } from "@/integrations/socket/client";
 
 interface Message {
   id: number;
@@ -30,95 +31,85 @@ export const ChatRoom = ({ type, recipientId, recipientName }: ChatRoomProps) =>
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const fetchMessages = async () => {
+    const initializeChat = async () => {
       const { data: sessionData } = await supabase.auth.getSession();
-      const currentUserId = sessionData?.session?.user?.id;
-      if (!currentUserId) return;
-
-      let query;
-      if (type === "direct") {
-        query = supabase
-          .from("user_messages")
-          .select(`
-            id,
-            content,
-            created_at,
-            sender:profiles!user_messages_sender_id_fkey(
-              email,
-              avatar_url
-            )
-          `)
-          .or(`and(sender_id.eq.${currentUserId},recipient_id.eq.${recipientId}),and(sender_id.eq.${recipientId},recipient_id.eq.${currentUserId})`)
-          .order("created_at", { ascending: true });
-      } else {
-        const groupId = typeof recipientId === 'string' ? parseInt(recipientId, 10) : recipientId;
-        query = supabase
-          .from("group_messages")
-          .select(`
-            id,
-            content,
-            created_at,
-            sender:profiles!group_messages_sender_id_fkey(
-              email,
-              avatar_url
-            )
-          `)
-          .eq("group_id", groupId)
-          .order("created_at", { ascending: true });
+      const token = sessionData?.session?.access_token;
+      
+      if (token) {
+        // Mettre à jour le token d'authentification
+        updateSocketAuth(token);
+        
+        // Se connecter au socket
+        socket.connect();
+        
+        // Rejoindre la salle de chat
+        const room = type === "direct" 
+          ? `direct_${recipientId}` 
+          : `group_${recipientId}`;
+        
+        socket.emit("join_room", room);
+        
+        // Écouter les nouveaux messages
+        socket.on("new_message", (message: Message) => {
+          setMessages(prev => [...prev, message]);
+        });
       }
-
-      const { data, error } = await query;
-      if (error) {
-        console.error("Error fetching messages:", error);
-        return;
-      }
-
-      setMessages(data || []);
     };
 
+    initializeChat();
     fetchMessages();
 
-    // Set up real-time subscription
-    const channel = supabase
-      .channel("messages_channel")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: type === "direct" ? "user_messages" : "group_messages",
-        },
-        (payload) => {
-          console.log("New message received:", payload);
-          // Fetch the complete message with sender information
-          const fetchNewMessage = async () => {
-            const { data, error } = await supabase
-              .from(type === "direct" ? "user_messages" : "group_messages")
-              .select(`
-                id,
-                content,
-                created_at,
-                sender:profiles!${type === "direct" ? "user_messages" : "group_messages"}_sender_id_fkey(
-                  email,
-                  avatar_url
-                )
-              `)
-              .eq("id", payload.new.id)
-              .single();
-
-            if (!error && data) {
-              setMessages((prev) => [...prev, data]);
-            }
-          };
-          fetchNewMessage();
-        }
-      )
-      .subscribe();
-
     return () => {
-      supabase.removeChannel(channel);
+      socket.off("new_message");
+      socket.emit("leave_room");
     };
   }, [type, recipientId]);
+
+  const fetchMessages = async () => {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const currentUserId = sessionData?.session?.user?.id;
+    if (!currentUserId) return;
+
+    let query;
+    if (type === "direct") {
+      query = supabase
+        .from("user_messages")
+        .select(`
+          id,
+          content,
+          created_at,
+          sender:profiles!user_messages_sender_id_fkey(
+            email,
+            avatar_url
+          )
+        `)
+        .or(`and(sender_id.eq.${currentUserId},recipient_id.eq.${recipientId}),and(sender_id.eq.${recipientId},recipient_id.eq.${currentUserId})`)
+        .order("created_at", { ascending: true });
+    } else {
+      const groupId = typeof recipientId === 'string' ? parseInt(recipientId, 10) : recipientId;
+      query = supabase
+        .from("group_messages")
+        .select(`
+          id,
+          content,
+          created_at,
+          sender:profiles!group_messages_sender_id_fkey(
+            email,
+            avatar_url
+          )
+        `)
+        .eq("group_id", groupId)
+        .order("created_at", { ascending: true });
+    }
+
+    const { data, error } = await query;
+    if (error) {
+      console.error("Error fetching messages:", error);
+      return;
+    }
+
+    setMessages(data || []);
+  };
 
   const sendMessage = async () => {
     if (!newMessage.trim()) return;
@@ -129,6 +120,15 @@ export const ChatRoom = ({ type, recipientId, recipientName }: ChatRoomProps) =>
       const currentUserId = sessionData?.session?.user?.id;
       if (!currentUserId) throw new Error("Not authenticated");
 
+      // Émettre le message via Socket.IO
+      socket.emit("send_message", {
+        type,
+        recipientId,
+        content: newMessage.trim(),
+        senderId: currentUserId
+      });
+
+      // Sauvegarder également dans Supabase pour la persistance
       if (type === "direct") {
         const { error } = await supabase.from("user_messages").insert({
           sender_id: currentUserId,
