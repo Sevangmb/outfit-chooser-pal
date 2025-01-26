@@ -2,8 +2,11 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const uploadImageToSupabase = async (file: File): Promise<string | null> => {
   try {
-    // Create a File object with the correct MIME type
-    const blob = await file.arrayBuffer();
+    // First create a blob from the file
+    const arrayBuffer = await file.arrayBuffer();
+    const blob = new Blob([arrayBuffer], { type: file.type });
+    
+    // Then create a new File with the correct MIME type
     const newFile = new File([blob], file.name, { type: file.type });
     
     // Generate unique filename
@@ -11,13 +14,13 @@ export const uploadImageToSupabase = async (file: File): Promise<string | null> 
     const fileExt = file.name.split('.').pop();
     const fileName = `${timestamp}_${crypto.randomUUID()}.${fileExt}`;
 
-    console.log("Starting upload for file:", fileName);
+    console.log("Starting upload for file:", fileName, "with type:", newFile.type);
 
     const { data, error } = await supabase.storage
       .from('clothes')
       .upload(fileName, newFile, {
         cacheControl: '3600',
-        contentType: file.type,
+        contentType: newFile.type,
         upsert: false
       });
 
