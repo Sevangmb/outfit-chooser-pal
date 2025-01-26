@@ -15,11 +15,11 @@ const Community = () => {
       <div className="container py-8 px-4 mx-auto mt-16">
         <h1 className="text-2xl font-bold mb-6">Communauté</h1>
         
-        <Tabs defaultValue="messages" className="w-full">
+        <Tabs defaultValue="chat" className="w-full">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="messages" className="flex items-center gap-2">
+            <TabsTrigger value="chat" className="flex items-center gap-2">
               <MessageSquare className="w-4 h-4" />
-              <span className="hidden md:inline">Messagerie</span>
+              <span className="hidden md:inline">Chat</span>
             </TabsTrigger>
             <TabsTrigger value="groups" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
@@ -42,7 +42,7 @@ const Community = () => {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="messages">
+          <TabsContent value="chat">
             <MessagingSection />
           </TabsContent>
 
