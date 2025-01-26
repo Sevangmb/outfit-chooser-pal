@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { CreateShopDialog } from "./CreateShopDialog";
 
 export const ShopSection = () => {
-  const [viewMode, setViewMode] = useState<"map" | "list">("list"); // Changed default to list for better UX
+  const [viewMode, setViewMode] = useState<"map" | "list">("list");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   const { data: shops, isLoading } = useQuery({
@@ -69,7 +69,7 @@ export const ShopSection = () => {
             <Plus className="h-4 w-4" />
             Créer ma boutique
           </Button>
-          <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "map" | "list")} className="w-auto">
+          <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "map" | "list")}>
             <TabsList>
               <TabsTrigger value="map" className="gap-2">
                 <MapPin className="h-4 w-4" />
@@ -84,19 +84,21 @@ export const ShopSection = () => {
         </div>
       </div>
 
-      <TabsContent value="map" className="mt-0">
-        {shops && shops.length > 0 && (
-          <ShopLocationTab shop={shops[0]} />
-        )}
-      </TabsContent>
+      <Tabs value={viewMode}>
+        <TabsContent value="map">
+          {shops && shops.length > 0 && (
+            <ShopLocationTab shop={shops[0]} />
+          )}
+        </TabsContent>
 
-      <TabsContent value="list" className="mt-0">
-        <div className="grid gap-4 md:grid-cols-2">
-          {shops?.map((shop) => (
-            <ShopProfileCard key={shop.id} shop={shop} />
-          ))}
-        </div>
-      </TabsContent>
+        <TabsContent value="list">
+          <div className="grid gap-4 md:grid-cols-2">
+            {shops?.map((shop) => (
+              <ShopProfileCard key={shop.id} shop={shop} />
+            ))}
+          </div>
+        </TabsContent>
+      </Tabs>
 
       {(!shops || shops.length === 0) && (
         <div className="text-center py-8 text-muted-foreground">

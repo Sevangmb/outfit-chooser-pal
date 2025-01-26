@@ -6,11 +6,12 @@ import { Store } from "lucide-react";
 
 interface CreateShopDialogProps {
   existingShop?: Tables<"shop_profiles"> | null;
+  onSuccess?: () => void;
 }
 
-export const CreateShopDialog = ({ existingShop }: CreateShopDialogProps) => {
+export const CreateShopDialog = ({ existingShop, onSuccess }: CreateShopDialogProps) => {
   if (existingShop) {
-    return <ShopProfileForm existingShop={existingShop} />;
+    return <ShopProfileForm existingShop={existingShop} onSuccess={onSuccess} />;
   }
 
   return (
@@ -27,7 +28,7 @@ export const CreateShopDialog = ({ existingShop }: CreateShopDialogProps) => {
         </AlertDescription>
       </Alert>
 
-      <ShopProfileForm />
+      <ShopProfileForm onSuccess={onSuccess} />
     </div>
   );
 };
