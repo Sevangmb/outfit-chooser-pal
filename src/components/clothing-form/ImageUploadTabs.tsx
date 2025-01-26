@@ -8,12 +8,14 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 
 interface ImageUploadTabsProps {
   form: UseFormReturn<FormValues>;
   isUploading: boolean;
   previewUrl: string | null;
   uploadError: string | null;
+  uploadProgress: number;
   onFileUpload: (file: File) => Promise<string | null>;
   onCameraCapture: () => Promise<void>;
   onUrlUpload: (url: string) => Promise<void>;
@@ -25,6 +27,7 @@ export const ImageUploadTabs = ({
   isUploading,
   previewUrl,
   uploadError,
+  uploadProgress,
   onFileUpload,
   onCameraCapture,
   onUrlUpload,
@@ -43,21 +46,21 @@ export const ImageUploadTabs = ({
         return;
       }
 
-      console.log("File selected:", file.name, file.type);
+      console.log("Fichier sélectionné:", file.name, file.type);
       setSelectedFile(file);
       
       const imageUrl = await onFileUpload(file);
-      console.log("Image URL received:", imageUrl);
+      console.log("URL de l'image reçue:", imageUrl);
       
       if (imageUrl) {
-        console.log("Setting image URL in form:", imageUrl);
+        console.log("Enregistrement de l'URL dans le formulaire:", imageUrl);
         form.setValue("image", imageUrl, { shouldValidate: true });
         toast.success("Image téléchargée avec succès");
       } else {
         throw new Error("URL de l'image non reçue");
       }
     } catch (error) {
-      console.error("Upload error:", error);
+      console.error("Erreur d'upload:", error);
       toast.error("Erreur lors du téléchargement de l'image");
       setSelectedFile(null);
       form.setValue("image", null);
@@ -82,7 +85,7 @@ export const ImageUploadTabs = ({
       await onUrlUpload(imageUrl);
       toast.success("Image importée avec succès");
     } catch (error) {
-      console.error("URL import error:", error);
+      console.error("Erreur d'import URL:", error);
       toast.error("Erreur lors de l'import de l'image");
     }
   };
@@ -110,6 +113,15 @@ export const ImageUploadTabs = ({
             <Camera className="h-4 w-4" />
           </Button>
         </div>
+
+        {isUploading && (
+          <div className="space-y-2">
+            <Progress value={uploadProgress} className="w-full" />
+            <p className="text-sm text-muted-foreground text-center">
+              Upload en cours... {uploadProgress}%
+            </p>
+          </div>
+        )}
 
         <div className="space-y-2">
           <div className="flex gap-2">
@@ -145,7 +157,7 @@ export const ImageUploadTabs = ({
               alt="Aperçu"
               className="w-full h-full object-contain"
               onError={(e) => {
-                console.error("Error loading image:", previewUrl);
+                console.error("Erreur de chargement de l'image:", previewUrl);
                 e.currentTarget.style.display = 'none';
                 toast.error("Erreur lors du chargement de l'image");
               }}

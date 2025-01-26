@@ -62,6 +62,7 @@ serve(async (req) => {
 
     if (folderResponse.data.files && folderResponse.data.files.length > 0) {
       folderId = folderResponse.data.files[0].id;
+      console.log("Using existing folder:", folderId);
     } else {
       const folderMetadata = {
         name: folderName,
@@ -72,28 +73,43 @@ serve(async (req) => {
         fields: 'id',
       });
       folderId = folder.data.id;
+      console.log("Created new folder:", folderId);
     }
 
     const buffer = await file.arrayBuffer();
     const fileMetadata = {
       name: file.name,
-      mimeType: file.type,
-      parents: [folderId], // Add file to user's folder
+      parents: [folderId],
     };
 
-    const media = {
-      mimeType: file.type,
-      body: new Uint8Array(buffer),
-    };
-
-    console.log("Uploading to Google Drive in folder:", folderName);
+    console.log("Uploading file to Google Drive...");
     const response = await drive.files.create({
       requestBody: fileMetadata,
-      media: media,
+      media: {
+        mimeType: file.type,
+        body: new Uint8Array(buffer),
+      },
       fields: 'id,webViewLink',
     });
 
     console.log("Upload successful:", response.data);
+
+    // Store file metadata in Supabase
+    const { error: dbError } = await supabaseClient
+      .from('user_files')
+      .insert({
+        user_id: user.id,
+        filename: file.name,
+        file_path: response.data.webViewLink,
+        content_type: file.type,
+        size: file.size,
+        description: `Uploaded to Google Drive folder: ${folderName}`,
+      });
+
+    if (dbError) {
+      console.error("Error storing file metadata:", dbError);
+      throw dbError;
+    }
 
     return new Response(
       JSON.stringify({
