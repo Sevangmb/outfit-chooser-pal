@@ -23,7 +23,6 @@ export const FriendsList = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("No session");
 
-      // First get all friendships
       const { data: friendships, error: friendshipsError } = await supabase
         .from("friendships")
         .select("*");
@@ -33,7 +32,6 @@ export const FriendsList = () => {
         throw friendshipsError;
       }
 
-      // Then get the email for each friend from profiles table
       const friendsWithEmails = await Promise.all(
         friendships.map(async (friendship) => {
           const friendId = friendship.friend_id;
@@ -149,7 +147,7 @@ export const FriendsList = () => {
         </TabsContent>
 
         <TabsContent value="clothes">
-          <ClothingTab clothes={friendsClothes} showFriendsClothes />
+          <ClothingTab showFriendsClothes={true} />
         </TabsContent>
       </Tabs>
     </div>
