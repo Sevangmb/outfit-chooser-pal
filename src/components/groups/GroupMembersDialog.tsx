@@ -66,13 +66,18 @@ export const GroupMembersDialog = ({ groupId, isOpen, onClose }: GroupMembersDia
 
       console.log("Fetched members:", membersData);
       
-      // Transform the data to ensure it matches the Member interface
-      const transformedMembers = (membersData || []).map(member => ({
-        ...member,
-        profiles: member.profiles || { email: 'Unknown' }
-      }));
+      if (membersData) {
+        const transformedMembers: Member[] = membersData.map(member => ({
+          id: member.id,
+          user_id: member.user_id,
+          role: member.role,
+          joined_at: member.joined_at,
+          is_approved: member.is_approved,
+          profiles: member.profiles || { email: 'Unknown' }
+        }));
 
-      setMembers(transformedMembers);
+        setMembers(transformedMembers);
+      }
     } catch (error) {
       console.error("Error fetching members:", error);
       toast.error("Erreur lors du chargement des membres");
@@ -141,7 +146,7 @@ export const GroupMembersDialog = ({ groupId, isOpen, onClose }: GroupMembersDia
               <TableRow key={member.id}>
                 <TableCell className="flex items-center gap-2">
                   <User className="h-4 w-4" />
-                  {member.profiles?.email}
+                  {member.profiles?.email || 'Unknown'}
                 </TableCell>
                 <TableCell>
                   <Select
