@@ -14,6 +14,7 @@ import Suitcase from "@/pages/Suitcase";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { PublicRoute } from "./PublicRoute";
 import { ShopSection } from "@/components/shop/ShopSection";
+import { SuitcaseDetails } from "@/components/suitcase/SuitcaseDetails";
 
 export const AppRoutes = () => {
   return (
@@ -46,6 +47,7 @@ export const AppRoutes = () => {
               <Route path="/admin" element={<Admin />} />
               <Route path="/shop" element={<ShopSection />} />
               <Route path="/suitcase" element={<Suitcase />} />
+              <Route path="/suitcase/:id" element={<SuitcaseDetails />} />
             </Routes>
           </ProtectedRoute>
         }

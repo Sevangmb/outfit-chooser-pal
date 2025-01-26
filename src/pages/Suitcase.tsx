@@ -8,9 +8,11 @@ import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 const Suitcase = () => {
   const [showForm, setShowForm] = useState(false);
+  const navigate = useNavigate();
 
   const { data: suitcases, isLoading } = useQuery({
     queryKey: ["suitcases"],
@@ -89,7 +91,11 @@ const Suitcase = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {suitcases?.map((suitcase) => (
-              <Card key={suitcase.id} className="w-full">
+              <Card 
+                key={suitcase.id} 
+                className="w-full cursor-pointer hover:shadow-lg transition-shadow"
+                onClick={() => navigate(`/suitcase/${suitcase.id}`)}
+              >
                 <CardHeader>
                   <CardTitle className="flex justify-between items-center">
                     <span>{suitcase.name}</span>
@@ -97,7 +103,10 @@ const Suitcase = () => {
                       variant="ghost"
                       size="sm"
                       className="text-red-500 hover:text-red-700"
-                      onClick={() => handleDelete(suitcase.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(suitcase.id);
+                      }}
                     >
                       Supprimer
                     </Button>

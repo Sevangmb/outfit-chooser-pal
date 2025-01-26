@@ -1002,6 +1002,106 @@ export type Database = {
           },
         ]
       }
+      suitcase_clothes_notes: {
+        Row: {
+          created_at: string
+          id: number
+          note: string
+          suitcase_clothes_id: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: never
+          note: string
+          suitcase_clothes_id?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: never
+          note?: string
+          suitcase_clothes_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "suitcase_clothes_notes_suitcase_clothes_id_fkey"
+            columns: ["suitcase_clothes_id"]
+            isOneToOne: false
+            referencedRelation: "suitcase_clothes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      suitcase_outfit_clothes: {
+        Row: {
+          clothes_id: number | null
+          created_at: string
+          id: number
+          suitcase_outfit_id: number | null
+        }
+        Insert: {
+          clothes_id?: number | null
+          created_at?: string
+          id?: never
+          suitcase_outfit_id?: number | null
+        }
+        Update: {
+          clothes_id?: number | null
+          created_at?: string
+          id?: never
+          suitcase_outfit_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "suitcase_outfit_clothes_clothes_id_fkey"
+            columns: ["clothes_id"]
+            isOneToOne: false
+            referencedRelation: "clothes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "suitcase_outfit_clothes_suitcase_outfit_id_fkey"
+            columns: ["suitcase_outfit_id"]
+            isOneToOne: false
+            referencedRelation: "suitcase_outfits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      suitcase_outfits: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: number
+          name: string
+          suitcase_id: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: never
+          name: string
+          suitcase_id?: number | null
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: never
+          name?: string
+          suitcase_id?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "suitcase_outfits_suitcase_id_fkey"
+            columns: ["suitcase_id"]
+            isOneToOne: false
+            referencedRelation: "suitcases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suitcases: {
         Row: {
           created_at: string
@@ -1009,8 +1109,11 @@ export type Database = {
           destination: string | null
           end_date: string
           id: number
+          is_archived: boolean | null
           name: string
+          parent_id: number | null
           start_date: string
+          type: string | null
           user_id: string | null
         }
         Insert: {
@@ -1019,8 +1122,11 @@ export type Database = {
           destination?: string | null
           end_date: string
           id?: number
+          is_archived?: boolean | null
           name: string
+          parent_id?: number | null
           start_date: string
+          type?: string | null
           user_id?: string | null
         }
         Update: {
@@ -1029,11 +1135,22 @@ export type Database = {
           destination?: string | null
           end_date?: string
           id?: number
+          is_archived?: boolean | null
           name?: string
+          parent_id?: number | null
           start_date?: string
+          type?: string | null
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "suitcases_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "suitcases"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_files: {
         Row: {

@@ -17,6 +17,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useDraggable } from "@dnd-kit/core";
 
 interface ClothingCardProps {
   id: number;
@@ -25,15 +26,25 @@ interface ClothingCardProps {
   color: string;
   image?: string | null;
   rating?: number;
+  isDraggable?: boolean;
 }
 
-export const ClothingCard = ({ id, name, category, color, image, rating = 0 }: ClothingCardProps) => {
+export const ClothingCard = ({ id, name, category, color, image, rating = 0, isDraggable = false }: ClothingCardProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [imageError, setImageError] = useState(false);
   const [hasVoted, setHasVoted] = useState(false);
   const [voteCount, setVoteCount] = useState(rating);
+
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+    id: id,
+    disabled: !isDraggable
+  });
+
+  const style = transform ? {
+    transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+  } : undefined;
 
   const checkUserVote = async () => {
     try {
@@ -160,7 +171,12 @@ export const ClothingCard = ({ id, name, category, color, image, rating = 0 }: C
 
   return (
     <>
-      <Card className="group relative overflow-hidden transition-shadow hover:shadow-md">
+      <Card 
+        className="group relative overflow-hidden transition-shadow hover:shadow-md"
+        ref={isDraggable ? setNodeRef : undefined}
+        style={style}
+        {...(isDraggable ? { ...attributes, ...listeners } : {})}
+      >
         <CardHeader className="p-0">
           <AspectRatio ratio={1}>
             {isLoading ? (
