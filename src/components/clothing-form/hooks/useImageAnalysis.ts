@@ -2,8 +2,54 @@ import { UseFormReturn } from "react-hook-form";
 import { FormValues } from "@/types/clothing";
 import { analyzeImage, extractDominantColor } from "@/utils/imageAnalysis";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useImageAnalysis = (form: UseFormReturn<FormValues>) => {
+  const analyzeLabelText = async (imageUrl: string) => {
+    try {
+      console.log("Starting label analysis for:", imageUrl);
+      
+      // Convert image URL to base64
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const base64 = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(blob);
+      });
+
+      const { data, error } = await supabase.functions.invoke('analyze-label', {
+        body: { imageBase64: base64 }
+      });
+
+      if (error) {
+        console.error("Label analysis error:", error);
+        throw error;
+      }
+
+      console.log("Label analysis results:", data);
+
+      if (data.brand) {
+        console.log("Setting detected brand:", data.brand);
+        form.setValue("brand", data.brand, { shouldValidate: true });
+      }
+
+      if (data.size) {
+        console.log("Setting detected size:", data.size);
+        form.setValue("size", data.size, { shouldValidate: true });
+      }
+
+      if (data.material) {
+        console.log("Setting detected material:", data.material);
+        form.setValue("material", data.material, { shouldValidate: true });
+      }
+
+    } catch (error) {
+      console.error("Error analyzing label:", error);
+      toast.error("Erreur lors de l'analyse de l'étiquette");
+    }
+  };
+
   const analyzeUploadedImage = async (previewUrl: string) => {
     if (!previewUrl) {
       toast.error("Veuillez d'abord télécharger une image");
@@ -41,6 +87,10 @@ export const useImageAnalysis = (form: UseFormReturn<FormValues>) => {
         form.setValue("color", dominantColor, { shouldValidate: true });
         toast.success(`Couleur principale détectée`);
       }
+
+      // Analyze label text
+      await analyzeLabelText(previewUrl);
+
     } catch (error) {
       console.error("Error analyzing image:", error);
       toast.error("Erreur lors de l'analyse de l'image");
