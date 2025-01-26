@@ -1,13 +1,19 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { ProfileContent } from "@/components/profile/ProfileContent";
+import { FavoriteOutfits } from "@/components/FavoriteOutfits";
+import { Button } from "@/components/ui/button";
+import { HelpCircle, LogOut, Settings, User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   const { data: session } = useQuery({
     queryKey: ["session"],
@@ -88,6 +94,18 @@ const Profile = () => {
     enabled: !!profile?.id
   });
 
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      toast.success("Vous avez été déconnecté");
+      navigate("/landing");
+    } catch (error) {
+      console.error("Error signing out:", error);
+      toast.error("Erreur lors de la déconnexion");
+    }
+  };
+
   useEffect(() => {
     setLoading(false);
   }, []);
@@ -111,16 +129,57 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-secondary/30">
       <div className="container py-8 px-4 mx-auto mt-16">
-        <Card className="max-w-2xl mx-auto">
-          <CardHeader>
+        <Card>
+          <CardContent className="p-6">
             <ProfileHeader 
               email={profile.email}
               createdAt={profile.created_at}
               isAdmin={isAdmin || false}
             />
-          </CardHeader>
-          <CardContent>
-            <ProfileContent userId={profile.id} />
+
+            <Tabs defaultValue="profile" className="mt-6">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="profile">
+                  <User className="w-4 h-4 mr-2" />
+                  Mon Profil
+                </TabsTrigger>
+                <TabsTrigger value="favorites">
+                  Mes Favoris
+                </TabsTrigger>
+                <TabsTrigger value="settings" onClick={() => navigate("/settings")}>
+                  <Settings className="w-4 h-4 mr-2" />
+                  Paramètres
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="profile">
+                <ProfileContent userId={profile.id} />
+              </TabsContent>
+
+              <TabsContent value="favorites">
+                <FavoriteOutfits />
+              </TabsContent>
+            </Tabs>
+
+            <div className="mt-6 space-y-2">
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => window.open("/help", "_blank")}
+              >
+                <HelpCircle className="w-4 h-4 mr-2" />
+                Aide & Support
+              </Button>
+              
+              <Button
+                variant="destructive"
+                className="w-full"
+                onClick={handleLogout}
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Déconnexion
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
