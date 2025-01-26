@@ -1,7 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, Search, PlusCircle, ShoppingBag, Store, Luggage } from "lucide-react";
+import { Home, Search, PlusCircle, Store, User } from "lucide-react";
 import { NavTab } from "./navigation/NavTab";
-import { ProfileMenu } from "./navigation/ProfileMenu";
 
 export const BottomNav = () => {
   const location = useLocation();
@@ -25,25 +24,19 @@ export const BottomNav = () => {
       icon: PlusCircle,
       label: "",
       path: "/add",
-      ariaLabel: "Ajouter un vêtement",
+      ariaLabel: "Ajouter un vêtement ou une tenue",
     },
     {
       icon: Store,
-      label: "Boutique",
+      label: "Boutiques",
       path: "/shop",
-      ariaLabel: "Voir ma boutique",
+      ariaLabel: "Explorer les boutiques",
     },
     {
-      icon: ShoppingBag,
-      label: "Placard",
-      path: "/closet",
-      ariaLabel: "Voir mon placard",
-    },
-    {
-      icon: Luggage,
-      label: "Valise",
-      path: "/suitcase",
-      ariaLabel: "Préparer ma valise",
+      icon: User,
+      label: "Profil",
+      path: "/profile",
+      ariaLabel: "Voir mon profil",
     },
   ];
 
@@ -59,7 +52,6 @@ export const BottomNav = () => {
             onClick={() => navigate(tab.path)}
           />
         ))}
-        <ProfileMenu isActive={currentPath === "/profile"} />
       </div>
     </nav>
   );
