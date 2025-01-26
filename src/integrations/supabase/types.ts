@@ -302,6 +302,38 @@ export type Database = {
         }
         Relationships: []
       }
+      clothes_images: {
+        Row: {
+          clothes_id: number | null
+          created_at: string
+          id: number
+          image_url: string
+          is_primary: boolean | null
+        }
+        Insert: {
+          clothes_id?: number | null
+          created_at?: string
+          id?: number
+          image_url: string
+          is_primary?: boolean | null
+        }
+        Update: {
+          clothes_id?: number | null
+          created_at?: string
+          id?: number
+          image_url?: string
+          is_primary?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clothes_images_clothes_id_fkey"
+            columns: ["clothes_id"]
+            isOneToOne: false
+            referencedRelation: "clothes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clothes_tags: {
         Row: {
           clothes_id: number
