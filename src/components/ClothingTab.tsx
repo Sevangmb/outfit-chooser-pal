@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { SearchAndFilters } from "./SearchAndFilters";
 import { useState, useMemo } from "react";
+import { SuitcaseDialog } from "./suitcase/SuitcaseDialog";
 
 interface Clothing {
   id: number;
@@ -151,14 +152,20 @@ export const ClothingTab = ({ showFriendsClothes = false }: ClothingTabProps) =>
         </div>
       ) : (
         <div className="space-y-8">
-          <SearchAndFilters
-            onSearch={setSearchQuery}
-            onFilterCategory={setCategoryFilter}
-            onFilterColor={setColorFilter}
-            onFilterSource={setSourceFilter}
-            onFilterForSale={setForSaleFilter}
-            onReset={handleReset}
-          />
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <SearchAndFilters
+              onSearch={setSearchQuery}
+              onFilterCategory={setCategoryFilter}
+              onFilterColor={setColorFilter}
+              onFilterSource={setSourceFilter}
+              onFilterForSale={setForSaleFilter}
+              onReset={handleReset}
+            />
+            <div className="flex gap-2">
+              <AddClothingDialog />
+              <SuitcaseDialog />
+            </div>
+          </div>
           <div className={`space-y-8 ${isMobile ? 'px-2' : ''}`}>
             <ClothingSection title="Hauts" items={tops} isMobile={isMobile} />
             <ClothingSection title="Bas" items={bottoms} isMobile={isMobile} />
