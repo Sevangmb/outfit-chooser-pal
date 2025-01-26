@@ -39,9 +39,10 @@ type FormData = z.infer<typeof formSchema>;
 
 interface ShopProfileFormProps {
   existingShop?: Tables<"shop_profiles"> | null;
+  onSuccess?: () => void;
 }
 
-export const ShopProfileForm = ({ existingShop }: ShopProfileFormProps) => {
+export const ShopProfileForm = ({ existingShop, onSuccess }: ShopProfileFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
@@ -106,6 +107,7 @@ export const ShopProfileForm = ({ existingShop }: ShopProfileFormProps) => {
         }
 
         toast.success("Profil boutique mis à jour avec succès");
+        onSuccess?.();
       } else {
         // Create new shop
         const { data: profile, error: profileError } = await supabase
@@ -146,7 +148,8 @@ export const ShopProfileForm = ({ existingShop }: ShopProfileFormProps) => {
         }
 
         toast.success("Profil boutique créé avec succès");
-        navigate("/shop"); // Redirection vers la page des boutiques après création
+        onSuccess?.();
+        navigate("/shop");
       }
     } catch (error) {
       console.error("Error managing shop profile:", error);
