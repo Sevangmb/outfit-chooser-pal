@@ -30,7 +30,6 @@ export const FriendsList = ({ userId }: FriendsListProps) => {
       const { data, error } = await supabase
         .from("friendships")
         .select(`
-          friend_id,
           friend:profiles!friendships_friend_id_fkey(
             id,
             email,
@@ -58,7 +57,6 @@ export const FriendsList = ({ userId }: FriendsListProps) => {
       const { data, error } = await supabase
         .from("friendships")
         .select(`
-          user_id,
           user:profiles!friendships_user_id_fkey(
             id,
             email,
