@@ -51,6 +51,7 @@ export const ChatRoom = ({ type, recipientId, recipientName }: ChatRoomProps) =>
           .or(`and(sender_id.eq.${currentUserId},recipient_id.eq.${recipientId}),and(sender_id.eq.${recipientId},recipient_id.eq.${currentUserId})`)
           .order("created_at", { ascending: true });
       } else {
+        const groupId = typeof recipientId === 'string' ? parseInt(recipientId, 10) : recipientId;
         query = supabase
           .from("group_messages")
           .select(`
@@ -62,7 +63,7 @@ export const ChatRoom = ({ type, recipientId, recipientName }: ChatRoomProps) =>
               avatar_url
             )
           `)
-          .eq("group_id", recipientId)
+          .eq("group_id", groupId)
           .order("created_at", { ascending: true });
       }
 
@@ -89,8 +90,27 @@ export const ChatRoom = ({ type, recipientId, recipientName }: ChatRoomProps) =>
         },
         (payload) => {
           console.log("New message received:", payload);
-          const newMessage = payload.new as Message;
-          setMessages((prev) => [...prev, newMessage]);
+          // Fetch the complete message with sender information
+          const fetchNewMessage = async () => {
+            const { data, error } = await supabase
+              .from(type === "direct" ? "user_messages" : "group_messages")
+              .select(`
+                id,
+                content,
+                created_at,
+                sender:profiles!${type === "direct" ? "user_messages" : "group_messages"}_sender_id_fkey(
+                  email,
+                  avatar_url
+                )
+              `)
+              .eq("id", payload.new.id)
+              .single();
+
+            if (!error && data) {
+              setMessages((prev) => [...prev, data]);
+            }
+          };
+          fetchNewMessage();
         }
       )
       .subscribe();
@@ -118,9 +138,10 @@ export const ChatRoom = ({ type, recipientId, recipientName }: ChatRoomProps) =>
 
         if (error) throw error;
       } else {
+        const groupId = typeof recipientId === 'string' ? parseInt(recipientId, 10) : recipientId;
         const { error } = await supabase.from("group_messages").insert({
           sender_id: currentUserId,
-          group_id: recipientId,
+          group_id: groupId,
           content: newMessage.trim(),
         });
 
