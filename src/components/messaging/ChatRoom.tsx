@@ -37,20 +37,15 @@ export const ChatRoom = ({ type, recipientId, recipientName }: ChatRoomProps) =>
       const token = sessionData?.session?.access_token;
       
       if (token) {
-        // Mettre à jour le token d'authentification
         updateSocketAuth(token);
-        
-        // Se connecter au socket
         socket.connect();
         
-        // Rejoindre la salle de chat
         const room = type === "direct" 
           ? `direct_${recipientId}` 
           : `group_${recipientId}`;
         
         socket.emit("join_room", room);
         
-        // Écouter les nouveaux messages
         socket.on("new_message", (message: Message) => {
           setMessages(prev => [...prev, message]);
         });
@@ -87,6 +82,8 @@ export const ChatRoom = ({ type, recipientId, recipientName }: ChatRoomProps) =>
         .or(`and(sender_id.eq.${currentUserId},recipient_id.eq.${recipientId}),and(sender_id.eq.${recipientId},recipient_id.eq.${currentUserId})`)
         .order("created_at", { ascending: true });
     } else {
+      // Pour les messages de groupe, convertir l'ID en nombre si c'est une chaîne
+      const groupId = typeof recipientId === 'string' ? parseInt(recipientId, 10) : recipientId;
       query = supabase
         .from("group_messages")
         .select(`
@@ -98,7 +95,7 @@ export const ChatRoom = ({ type, recipientId, recipientName }: ChatRoomProps) =>
             avatar_url
           )
         `)
-        .eq("group_id", recipientId)
+        .eq("group_id", groupId)
         .order("created_at", { ascending: true });
     }
 
@@ -120,7 +117,6 @@ export const ChatRoom = ({ type, recipientId, recipientName }: ChatRoomProps) =>
       const currentUserId = sessionData?.session?.user?.id;
       if (!currentUserId) throw new Error("Not authenticated");
 
-      // Émettre le message via Socket.IO
       socket.emit("send_message", {
         type,
         recipientId,
@@ -128,11 +124,10 @@ export const ChatRoom = ({ type, recipientId, recipientName }: ChatRoomProps) =>
         senderId: currentUserId
       });
 
-      // Sauvegarder également dans Supabase pour la persistance
       if (type === "direct") {
         const { error } = await supabase.from("user_messages").insert({
           sender_id: currentUserId,
-          recipient_id: recipientId.toString(), // Conversion en string pour correspondre au type attendu
+          recipient_id: recipientId.toString(),
           content: newMessage.trim(),
         });
 
