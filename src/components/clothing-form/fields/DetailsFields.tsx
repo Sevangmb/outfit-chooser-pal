@@ -7,7 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { UseFormReturn } from "react-hook-form";
 import { FormValues } from "@/types/clothing";
-import { Tag, FileText, Calendar as CalendarIcon, Tool, Archive } from "lucide-react";
+import { Tag, FileText, Calendar as CalendarIcon, Scissors, Archive } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -125,7 +125,7 @@ export const DetailsFields = ({ form }: DetailsFieldsProps) => {
           <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
             <div className="space-y-0.5">
               <FormLabel className="flex items-center gap-2">
-                <Tool className="h-4 w-4" />
+                <Scissors className="h-4 w-4" />
                 À retoucher
               </FormLabel>
               <div className="text-sm text-muted-foreground">
