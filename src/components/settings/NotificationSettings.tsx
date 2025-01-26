@@ -20,10 +20,10 @@ export const NotificationSettings = () => {
         .from("user_preferences")
         .select("*")
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
-      return data;
+      return data || {}; // Return empty object if no settings exist
     },
   });
 
