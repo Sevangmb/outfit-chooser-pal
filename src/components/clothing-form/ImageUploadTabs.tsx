@@ -9,6 +9,7 @@ import { useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { uploadImageToSupabase } from "@/utils/uploadImage";
 
 interface ImageUploadTabsProps {
   form: UseFormReturn<FormValues>;
@@ -70,11 +71,10 @@ export const ImageUploadTabs = ({
 
     try {
       console.log("Démarrage de l'upload du fichier:", selectedFile.name);
-      const imageUrl = await onFileUpload(selectedFile);
-      console.log("URL de l'image reçue:", imageUrl);
+      const imageUrl = await uploadImageToSupabase(selectedFile);
       
       if (imageUrl) {
-        console.log("Enregistrement de l'URL dans le formulaire:", imageUrl);
+        console.log("URL de l'image reçue:", imageUrl);
         form.setValue("image", imageUrl, { shouldValidate: true });
         toast.success("Image téléchargée avec succès");
         setSelectedFile(null);

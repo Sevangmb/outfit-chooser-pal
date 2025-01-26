@@ -13,15 +13,15 @@ export const uploadImageToSupabase = async (file: File): Promise<string | null> 
       throw new Error("Invalid file type. Only JPEG, PNG, GIF and WEBP are supported.");
     }
 
+    // Create a blob from the file with the correct MIME type
+    const blob = new Blob([await file.arrayBuffer()], { type: file.type });
+
     // Generate a unique filename with timestamp
     const timestamp = new Date().toISOString().replace(/[^0-9]/g, "").slice(0, 14);
     const fileExt = file.name.split('.').pop();
     const fileName = `${timestamp}_${crypto.randomUUID()}.${fileExt}`;
 
     console.log("Uploading image with filename:", fileName);
-
-    // Create a blob from the file with the correct MIME type
-    const blob = new Blob([await file.arrayBuffer()], { type: file.type });
 
     const { data, error } = await supabase.storage
       .from('clothes')
