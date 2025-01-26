@@ -11,22 +11,23 @@ serve(async (req) => {
   }
 
   try {
-    console.log("Testing OneDrive connection...");
-    
     const clientId = Deno.env.get('MICROSOFT_CLIENT_ID')
     const clientSecret = Deno.env.get('MICROSOFT_CLIENT_SECRET')
-    const tenantId = 'common' // Using common endpoint for multi-tenant apps
+    const tenantId = 'common'
 
     if (!clientId || !clientSecret) {
-      console.error("Microsoft credentials not configured");
+      console.error("Missing Microsoft credentials")
       throw new Error('Microsoft credentials not configured')
     }
 
-    console.log("Requesting access token with client credentials flow...");
+    console.log("Starting OneDrive connection test...")
+    console.log("Using client ID:", clientId.substring(0, 8) + "...")
     
     // Get access token using client credentials flow
     const tokenUrl = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`
     const scope = 'https://graph.microsoft.com/.default'
+    
+    console.log("Requesting token from:", tokenUrl)
     
     const body = new URLSearchParams({
       client_id: clientId,
@@ -46,61 +47,76 @@ serve(async (req) => {
     const tokenData = await tokenResponse.json();
     
     if (!tokenResponse.ok) {
-      console.error("Failed to get access token:", tokenData);
-      throw new Error('Failed to get access token: ' + (tokenData.error_description || tokenData.error || 'Unknown error'));
+      console.error("Token request failed:", {
+        status: tokenResponse.status,
+        statusText: tokenResponse.statusText,
+        error: tokenData
+      });
+      throw new Error(`Failed to get access token: ${tokenData.error_description || 'Unknown error'}`);
     }
 
-    console.log("Successfully obtained access token");
+    if (!tokenData.access_token) {
+      console.error("No access token in response:", tokenData);
+      throw new Error('No access token received');
+    }
 
-    // Test Graph API connection
-    console.log("Testing Microsoft Graph API connection...");
-    const graphResponse = await fetch('https://graph.microsoft.com/v1.0/me/drive', {
+    console.log("Access token obtained successfully");
+
+    // Test Microsoft Graph API connection
+    const graphUrl = 'https://graph.microsoft.com/v1.0/me/drive';
+    console.log("Testing Graph API connection to:", graphUrl);
+
+    const graphResponse = await fetch(graphUrl, {
       headers: {
         'Authorization': `Bearer ${tokenData.access_token}`,
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+      },
     });
 
     if (!graphResponse.ok) {
-      const errorText = await graphResponse.text();
-      console.error("Graph API test failed:", errorText);
-      throw new Error('Failed to connect to OneDrive: ' + errorText);
+      const graphError = await graphResponse.json();
+      console.error("Graph API request failed:", {
+        status: graphResponse.status,
+        statusText: graphResponse.statusText,
+        error: graphError
+      });
+      throw new Error(`Graph API connection failed: ${JSON.stringify(graphError)}`);
     }
 
     const graphData = await graphResponse.json();
-    console.log("Successfully connected to Microsoft Graph API");
+    console.log("Successfully connected to OneDrive:", {
+      driveId: graphData.id,
+      driveName: graphData.name
+    });
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: "Successfully connected to OneDrive",
-        details: {
-          driveId: graphData.id,
-          driveName: graphData.name,
-          webUrl: graphData.webUrl
-        }
+        message: 'Successfully connected to OneDrive',
+        drive: graphData
       }),
       { 
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json' 
-        } 
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        }
       }
     );
 
   } catch (error) {
-    console.error('Error testing OneDrive connection:', error);
+    console.error("Connection test failed:", error);
+    
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message || 'An unexpected error occurred'
+        error: error.message
       }),
       { 
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json' 
-        },
-        status: 500
+        status: 500,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        }
       }
     );
   }
