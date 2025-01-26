@@ -56,9 +56,7 @@ export const GroupMembersDialog = ({ groupId, isOpen, onClose }: GroupMembersDia
           role,
           joined_at,
           is_approved,
-          user:user_id (
-            email
-          )
+          user:profiles!user_id(email)
         `)
         .eq("group_id", groupId);
 
