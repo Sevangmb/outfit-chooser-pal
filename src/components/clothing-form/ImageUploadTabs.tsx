@@ -93,15 +93,6 @@ export const ImageUploadTabs = ({
         return;
       }
 
-      // Test if the URL points to a valid image
-      const response = await fetch(imageUrl);
-      const contentType = response.headers.get('content-type');
-      
-      if (!contentType || !contentType.startsWith('image/')) {
-        toast.error("L'URL ne pointe pas vers une image valide");
-        return;
-      }
-
       console.log("Importation de l'image depuis l'URL:", imageUrl);
       form.setValue("image", imageUrl, { shouldValidate: true });
       await onUrlUpload(imageUrl);

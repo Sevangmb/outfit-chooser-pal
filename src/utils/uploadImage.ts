@@ -39,8 +39,7 @@ export const uploadImageToSupabase = async (file: File): Promise<string | null> 
       .from('clothes')
       .upload(fileName, file, {
         cacheControl: '3600',
-        contentType: file.type,
-        upsert: false
+        contentType: file.type // Explicitly set the content type
       });
 
     if (uploadError) {
