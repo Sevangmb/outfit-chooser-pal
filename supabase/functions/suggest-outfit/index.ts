@@ -16,11 +16,13 @@ serve(async (req) => {
   }
 
   try {
-    const { temperature, weatherDescription, conditions, userId } = await req.json()
-    console.log("Received request with:", { temperature, weatherDescription, conditions, userId })
-    
-    if (!userId) {
-      throw new Error("User ID is required")
+    const { temperature, weatherDescription, conditions } = await req.json()
+    console.log("Received request with:", { temperature, weatherDescription, conditions })
+
+    // Get the user ID from the authorization header
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      throw new Error("Authorization header is required")
     }
 
     // Initialize Supabase client
@@ -33,12 +35,22 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseKey)
     
+    // Get user ID from JWT
+    const jwt = authHeader.replace('Bearer ', '')
+    const { data: { user }, error: userError } = await supabase.auth.getUser(jwt)
+    
+    if (userError || !user) {
+      console.error("Error getting user:", userError)
+      throw new Error("Failed to authenticate user")
+    }
+
+    console.log("Authenticated user:", user.id)
+
     // Fetch user's clothes
-    console.log("Fetching clothes for user:", userId)
     const { data: clothes, error: clothesError } = await supabase
       .from('clothes')
       .select('*')
-      .eq('user_id', userId)
+      .eq('user_id', user.id)
 
     if (clothesError) {
       console.error("Error fetching clothes:", clothesError)
