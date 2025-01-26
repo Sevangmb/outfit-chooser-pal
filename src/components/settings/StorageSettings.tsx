@@ -14,27 +14,68 @@ export const StorageSettings = () => {
   const [driveStatus, setDriveStatus] = useState<'checking' | 'connected' | 'error'>('checking');
   const [driveError, setDriveError] = useState<string | null>(null);
 
-  const { data: storageInfo } = useQuery({
+  const { data: storageInfo, refetch: refetchStorageInfo } = useQuery({
     queryKey: ["storage_info"],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return null;
+      try {
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError) {
+          // Handle token refresh
+          const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+          if (refreshError) {
+            console.error("Error refreshing session:", refreshError);
+            toast.error("Votre session a expiré. Veuillez vous reconnecter.");
+            await supabase.auth.signOut();
+            return null;
+          }
+          if (!refreshData.session) {
+            throw new Error("No session after refresh");
+          }
+        }
+        
+        if (!user) return null;
 
-      // Simulé pour l'instant - à implémenter avec les vraies données
-      return {
-        total_space: 1024 * 1024 * 1024, // 1GB en bytes
-        used_space: 1024 * 1024 * 100, // 100MB en bytes
-        files_count: 25
-      };
+        // Simulé pour l'instant - à implémenter avec les vraies données
+        return {
+          total_space: 1024 * 1024 * 1024, // 1GB en bytes
+          used_space: 1024 * 1024 * 100, // 100MB en bytes
+          files_count: 25
+        };
+      } catch (error) {
+        console.error("Error fetching storage info:", error);
+        toast.error("Erreur lors de la récupération des informations de stockage");
+        return null;
+      }
     },
+    retry: 1
   });
 
   useEffect(() => {
     const checkDriveConnection = async () => {
       try {
+        setDriveStatus('checking');
+        setDriveError(null);
+        
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError || !session) {
+          const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+          if (refreshError || !refreshData.session) {
+            throw new Error("Session expired. Please login again.");
+          }
+        }
+
+        console.log("Checking OneDrive connection...");
         const result = await testOneDriveConnection();
-        setDriveStatus(result.success ? 'connected' : 'error');
-        setDriveError(result.success ? null : result.message || "Erreur de connexion à OneDrive");
+        
+        if (result.success) {
+          console.log("OneDrive connection successful");
+          setDriveStatus('connected');
+          setDriveError(null);
+        } else {
+          console.error("OneDrive connection failed:", result.error);
+          setDriveStatus('error');
+          setDriveError(result.error || "Erreur de connexion à OneDrive");
+        }
       } catch (error) {
         console.error("Error checking OneDrive connection:", error);
         setDriveStatus('error');

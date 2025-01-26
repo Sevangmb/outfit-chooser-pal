@@ -18,10 +18,11 @@ serve(async (req) => {
     const tenantId = 'common' // Using common endpoint for multi-tenant apps
 
     if (!clientId || !clientSecret) {
+      console.error("Microsoft credentials not configured");
       throw new Error('Microsoft credentials not configured')
     }
 
-    // Test authentication with Microsoft Graph API
+    // Get access token using client credentials flow
     const tokenUrl = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`
     const scope = 'https://graph.microsoft.com/.default'
     
@@ -44,13 +45,14 @@ serve(async (req) => {
     const tokenData = await tokenResponse.json();
     console.log("Token response received");
 
-    if (!tokenData.access_token) {
+    if (!tokenResponse.ok || !tokenData.access_token) {
       console.error("Failed to get access token:", tokenData);
-      throw new Error('Failed to get access token');
+      throw new Error('Failed to get access token: ' + (tokenData.error_description || tokenData.error || 'Unknown error'));
     }
 
     // Test Graph API connection
-    const graphResponse = await fetch('https://graph.microsoft.com/v1.0/me/drive', {
+    console.log("Testing Graph API connection...");
+    const graphResponse = await fetch('https://graph.microsoft.com/v1.0/sites/root', {
       headers: {
         'Authorization': `Bearer ${tokenData.access_token}`,
         'Content-Type': 'application/json'
@@ -58,14 +60,22 @@ serve(async (req) => {
     });
 
     if (!graphResponse.ok) {
-      console.error("Graph API test failed:", await graphResponse.text());
-      throw new Error('Failed to connect to OneDrive');
+      const errorText = await graphResponse.text();
+      console.error("Graph API test failed:", errorText);
+      throw new Error('Failed to connect to OneDrive: ' + errorText);
     }
+
+    const graphData = await graphResponse.json();
+    console.log("Graph API connection successful:", graphData);
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: "Successfully connected to OneDrive"
+        message: "Successfully connected to OneDrive",
+        details: {
+          site: graphData.displayName,
+          webUrl: graphData.webUrl
+        }
       }),
       { 
         headers: { 
@@ -80,7 +90,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message
+        error: error.message || 'An unexpected error occurred'
       }),
       { 
         headers: { 
