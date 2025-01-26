@@ -8,6 +8,7 @@ interface ImageSectionProps {
   isUploading: boolean;
   previewUrl: string | null;
   uploadError: string | null;
+  uploadProgress: number;
   onFileUpload: (file: File) => Promise<string | null>;
   onCameraCapture: () => Promise<void>;
   onResetPreview: () => void;
@@ -18,6 +19,7 @@ export const ImageSection = ({
   isUploading,
   previewUrl,
   uploadError,
+  uploadProgress,
   onFileUpload,
   onCameraCapture,
   onResetPreview
@@ -33,6 +35,7 @@ export const ImageSection = ({
         isUploading={isUploading}
         previewUrl={previewUrl}
         uploadError={uploadError}
+        uploadProgress={uploadProgress}
         onFileUpload={onFileUpload}
         onCameraCapture={onCameraCapture}
         onUrlUpload={handleUrlUpload}
