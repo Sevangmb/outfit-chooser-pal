@@ -17,7 +17,49 @@ serve(async (req) => {
   try {
     const { temperature, weatherDescription, conditions, userId, clothes } = await req.json()
     console.log("Received request with:", { temperature, weatherDescription, conditions, userId })
-    console.log("User's wardrobe:", clothes.length, "items")
+    
+    // Check if clothes is undefined or null
+    if (!clothes) {
+      console.log("No clothes provided, fetching from database")
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')
+      const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+      
+      if (!supabaseUrl || !supabaseKey) {
+        throw new Error("Missing Supabase configuration")
+      }
+
+      const supabase = createClient(supabaseUrl, supabaseKey)
+      const { data: userClothes, error: clothesError } = await supabase
+        .from('clothes')
+        .select('*')
+        .eq('user_id', userId)
+
+      if (clothesError) {
+        console.error("Error fetching clothes:", clothesError)
+        throw new Error("Failed to fetch user's clothes")
+      }
+
+      console.log("Found clothes in wardrobe:", userClothes?.length || 0)
+      
+      if (!userClothes || userClothes.length === 0) {
+        return new Response(
+          JSON.stringify({ 
+            suggestion: "Désolé, je ne trouve pas de vêtements dans votre garde-robe pour faire une suggestion." 
+          }),
+          { 
+            headers: { 
+              ...corsHeaders,
+              "Content-Type": "application/json" 
+            } 
+          },
+        )
+      }
+
+      // Use fetched clothes instead
+      clothes = userClothes
+    }
+
+    console.log("Processing wardrobe with", clothes.length, "items")
 
     // Organize clothes by category
     const tops = clothes.filter(item => 
@@ -45,6 +87,21 @@ serve(async (req) => {
       item.category.toLowerCase().includes('basket') ||
       item.category.toLowerCase().includes('botte')
     )
+
+    // Check if we have enough clothes to make a suggestion
+    if (tops.length === 0 || bottoms.length === 0) {
+      return new Response(
+        JSON.stringify({ 
+          suggestion: "Je ne trouve pas assez de vêtements différents pour faire une suggestion complète. Il me faut au minimum un haut et un bas." 
+        }),
+        { 
+          headers: { 
+            ...corsHeaders,
+            "Content-Type": "application/json" 
+          } 
+        },
+      )
+    }
 
     // Prepare wardrobe description for AI
     const wardrobeDescription = `
