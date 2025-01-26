@@ -14,6 +14,7 @@ interface Clothing {
   color: string;
   image?: string;
   user_id: string;
+  is_for_sale?: boolean;
 }
 
 interface ClothingTabProps {
@@ -26,9 +27,11 @@ export const ClothingTab = ({ showFriendsClothes = false }: ClothingTabProps) =>
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [colorFilter, setColorFilter] = useState("");
+  const [sourceFilter, setSourceFilter] = useState("");
+  const [forSaleFilter, setForSaleFilter] = useState<boolean | null>(null);
 
   const { data: clothes = [], isLoading } = useQuery({
-    queryKey: ["userClothes"],
+    queryKey: ["userClothes", sourceFilter],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -36,17 +39,42 @@ export const ClothingTab = ({ showFriendsClothes = false }: ClothingTabProps) =>
         return [];
       }
 
-      const { data, error } = await supabase
-        .from("clothes")
-        .select("*")
-        .eq("user_id", user.id);
+      let query = supabase.from("clothes").select("*");
+
+      // Apply source filter
+      if (sourceFilter === "me") {
+        query = query.eq("user_id", user.id);
+      } else if (sourceFilter === "friends") {
+        const { data: friendships } = await supabase
+          .from("friendships")
+          .select("friend_id")
+          .eq("user_id", user.id)
+          .eq("status", "accepted");
+
+        const friendIds = friendships?.map(f => f.friend_id) || [];
+        if (friendIds.length > 0) {
+          query = query.in("user_id", friendIds);
+        }
+      } else if (sourceFilter === "shops") {
+        const { data: shopProfiles } = await supabase
+          .from("shop_profiles")
+          .select("user_id")
+          .eq("status", "active");
+
+        const shopUserIds = shopProfiles?.map(s => s.user_id) || [];
+        if (shopUserIds.length > 0) {
+          query = query.in("user_id", shopUserIds);
+        }
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         console.error("Error fetching clothes:", error);
         return [];
       }
 
-      console.log("Fetched clothes for user:", user.id, data);
+      console.log("Fetched clothes:", data);
       return data || [];
     }
   });
@@ -66,9 +94,13 @@ export const ClothingTab = ({ showFriendsClothes = false }: ClothingTabProps) =>
         ? item.color.toLowerCase() === colorFilter.toLowerCase()
         : true;
 
-      return matchesSearch && matchesCategory && matchesColor;
+      const matchesForSale = forSaleFilter !== null
+        ? item.is_for_sale === forSaleFilter
+        : true;
+
+      return matchesSearch && matchesCategory && matchesColor && matchesForSale;
     });
-  }, [clothes, searchQuery, categoryFilter, colorFilter]);
+  }, [clothes, searchQuery, categoryFilter, colorFilter, forSaleFilter]);
 
   const tops = filteredClothes.filter(item => 
     item.category.toLowerCase().includes("haut") || 
@@ -94,6 +126,8 @@ export const ClothingTab = ({ showFriendsClothes = false }: ClothingTabProps) =>
     setSearchQuery("");
     setCategoryFilter("");
     setColorFilter("");
+    setSourceFilter("");
+    setForSaleFilter(null);
   };
 
   if (isLoading) {
@@ -121,6 +155,8 @@ export const ClothingTab = ({ showFriendsClothes = false }: ClothingTabProps) =>
             onSearch={setSearchQuery}
             onFilterCategory={setCategoryFilter}
             onFilterColor={setColorFilter}
+            onFilterSource={setSourceFilter}
+            onFilterForSale={setForSaleFilter}
             onReset={handleReset}
           />
           <div className={`space-y-8 ${isMobile ? 'px-2' : ''}`}>

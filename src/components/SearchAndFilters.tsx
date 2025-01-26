@@ -14,6 +14,8 @@ interface SearchAndFiltersProps {
   onSearch: (query: string) => void;
   onFilterCategory: (category: string) => void;
   onFilterColor: (color: string) => void;
+  onFilterSource: (source: string) => void;
+  onFilterForSale: (forSale: boolean | null) => void;
   onReset: () => void;
 }
 
@@ -21,11 +23,15 @@ export const SearchAndFilters = ({
   onSearch,
   onFilterCategory,
   onFilterColor,
+  onFilterSource,
+  onFilterForSale,
   onReset,
 }: SearchAndFiltersProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedColor, setSelectedColor] = useState("all");
+  const [selectedSource, setSelectedSource] = useState("all");
+  const [selectedForSale, setSelectedForSale] = useState("all");
 
   const handleSearch = (value: string) => {
     setSearchQuery(value);
@@ -36,6 +42,8 @@ export const SearchAndFilters = ({
     setSearchQuery("");
     setSelectedCategory("all");
     setSelectedColor("all");
+    setSelectedSource("all");
+    setSelectedForSale("all");
     onReset();
   };
 
@@ -47,6 +55,18 @@ export const SearchAndFilters = ({
   const handleColorChange = (value: string) => {
     setSelectedColor(value);
     onFilterColor(value === "all" ? "" : value);
+  };
+
+  const handleSourceChange = (value: string) => {
+    setSelectedSource(value);
+    onFilterSource(value === "all" ? "" : value);
+  };
+
+  const handleForSaleChange = (value: string) => {
+    setSelectedForSale(value);
+    onFilterForSale(
+      value === "all" ? null : value === "true"
+    );
   };
 
   return (
@@ -67,7 +87,7 @@ export const SearchAndFilters = ({
           </Button>
         )}
       </div>
-      <div className="flex gap-4">
+      <div className="flex flex-wrap gap-4">
         <Select value={selectedCategory} onValueChange={handleCategoryChange}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Catégorie" />
@@ -90,6 +110,27 @@ export const SearchAndFilters = ({
             <SelectItem value="bleu">Bleu</SelectItem>
             <SelectItem value="rouge">Rouge</SelectItem>
             <SelectItem value="vert">Vert</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={selectedSource} onValueChange={handleSourceChange}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Source" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Toutes les sources</SelectItem>
+            <SelectItem value="me">Mes vêtements</SelectItem>
+            <SelectItem value="friends">Vêtements des amis</SelectItem>
+            <SelectItem value="shops">Boutiques</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={selectedForSale} onValueChange={handleForSaleChange}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Statut de vente" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tous les vêtements</SelectItem>
+            <SelectItem value="true">À vendre</SelectItem>
+            <SelectItem value="false">Non à vendre</SelectItem>
           </SelectContent>
         </Select>
       </div>
