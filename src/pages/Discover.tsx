@@ -13,7 +13,6 @@ import {
   Heart,
   Camera,
   Shirt,
-  Suitcase,
   Star 
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -88,7 +87,7 @@ const Discover = () => {
               Mes Looks
             </TabsTrigger>
             <TabsTrigger value="suitcases" className="gap-2">
-              <Suitcase className="h-4 w-4" />
+              <Star className="h-4 w-4" />
               Mes Valises
             </TabsTrigger>
             <TabsTrigger value="favorites" className="gap-2">
@@ -98,7 +97,7 @@ const Discover = () => {
           </TabsList>
 
           <TabsContent value="wardrobe">
-            <ClothingTab />
+            <ClothingTab showFriendsClothes={false} />
           </TabsContent>
 
           <TabsContent value="outfits">

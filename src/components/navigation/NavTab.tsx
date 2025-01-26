@@ -35,8 +35,8 @@ export const NavTab = ({
         className={cn(
           "h-6 w-6 mb-1 transition-colors",
           isActive ? "text-primary" : "text-muted-foreground",
-          path === "/add" && "h-12 w-12 text-red-500 bg-background rounded-full p-2 shadow-lg",
-          color && `text-${color}-500`
+          path === "/add" && "h-12 w-12 bg-background rounded-full p-2 shadow-lg",
+          path === "/add" ? "text-red-500" : color === "red" ? "text-red-500" : ""
         )}
       />
       {label && (
