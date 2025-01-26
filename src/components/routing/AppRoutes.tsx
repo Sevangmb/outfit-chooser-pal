@@ -10,6 +10,7 @@ import Discover from "@/pages/Discover";
 import Favorites from "@/pages/Favorites";
 import Contest from "@/pages/Contest";
 import Admin from "@/pages/Admin";
+import Suitcase from "@/pages/Suitcase";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { PublicRoute } from "./PublicRoute";
 import { ShopSection } from "@/components/shop/ShopSection";
@@ -44,6 +45,7 @@ export const AppRoutes = () => {
               <Route path="/contest" element={<Contest />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/shop" element={<ShopSection />} />
+              <Route path="/suitcase" element={<Suitcase />} />
             </Routes>
           </ProtectedRoute>
         }

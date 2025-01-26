@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, Search, PlusCircle, ShoppingBag, Store } from "lucide-react";
+import { Home, Search, PlusCircle, ShoppingBag, Store, Luggage } from "lucide-react";
 import { NavTab } from "./navigation/NavTab";
 import { ProfileMenu } from "./navigation/ProfileMenu";
 
@@ -38,6 +38,12 @@ export const BottomNav = () => {
       label: "Placard",
       path: "/closet",
       ariaLabel: "Voir mon placard",
+    },
+    {
+      icon: Luggage,
+      label: "Valise",
+      path: "/suitcase",
+      ariaLabel: "Préparer ma valise",
     },
   ];
 
