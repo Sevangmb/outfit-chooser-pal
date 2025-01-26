@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
@@ -48,23 +48,43 @@ export const GroupMembersDialog = ({ groupId, isOpen, onClose }: GroupMembersDia
   const fetchMembers = async () => {
     try {
       console.log("Fetching group members for group:", groupId);
-      const { data, error } = await supabase
+      const { data: membersData, error: membersError } = await supabase
         .from("message_group_members")
         .select(`
-          *,
-          user:profiles(email)
+          id,
+          user_id,
+          role,
+          joined_at,
+          is_approved,
+          user:user_id (
+            email
+          )
         `)
         .eq("group_id", groupId);
 
-      if (error) throw error;
+      if (membersError) throw membersError;
 
-      console.log("Fetched members:", data);
-      setMembers(data || []);
+      // Transform the data to match the Member interface
+      const transformedMembers = membersData?.map(member => ({
+        ...member,
+        user: {
+          email: member.user?.email || 'Unknown'
+        }
+      })) || [];
+
+      console.log("Fetched members:", transformedMembers);
+      setMembers(transformedMembers);
     } catch (error) {
       console.error("Error fetching members:", error);
       toast.error("Erreur lors du chargement des membres");
     }
   };
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchMembers();
+    }
+  }, [isOpen, groupId]);
 
   const updateMemberRole = async (memberId: number, newRole: string) => {
     try {
