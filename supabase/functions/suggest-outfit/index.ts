@@ -15,43 +15,32 @@ serve(async (req) => {
   }
 
   try {
-    const { temperature, weatherDescription, conditions, userId } = await req.json()
+    const { temperature, weatherDescription, conditions, userId, clothes } = await req.json()
     console.log("Received request with:", { temperature, weatherDescription, conditions, userId })
-
-    // Initialize Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-    const supabase = createClient(supabaseUrl, supabaseKey)
-
-    // Fetch user's clothes
-    const { data: userClothes, error: clothesError } = await supabase
-      .from('clothes')
-      .select('*')
-      .eq('user_id', userId)
-
-    if (clothesError) {
-      console.error("Error fetching clothes:", clothesError)
-      throw new Error("Failed to fetch user's clothes")
-    }
-
-    console.log("Found clothes in wardrobe:", userClothes.length)
+    console.log("User's wardrobe:", clothes.length, "items")
 
     // Organize clothes by category
-    const tops = userClothes.filter(item => 
+    const tops = clothes.filter(item => 
       item.category.toLowerCase().includes('haut') || 
       item.category.toLowerCase().includes('t-shirt') ||
       item.category.toLowerCase().includes('chemise') ||
       item.category.toLowerCase().includes('pull')
     )
 
-    const bottoms = userClothes.filter(item => 
+    const bottoms = clothes.filter(item => 
       item.category.toLowerCase().includes('bas') || 
       item.category.toLowerCase().includes('pantalon') ||
       item.category.toLowerCase().includes('jean') ||
       item.category.toLowerCase().includes('short')
     )
 
-    const shoes = userClothes.filter(item => 
+    const outerwear = clothes.filter(item =>
+      item.category.toLowerCase().includes('manteau') ||
+      item.category.toLowerCase().includes('veste') ||
+      item.category.toLowerCase().includes('blouson')
+    )
+
+    const shoes = clothes.filter(item => 
       item.category.toLowerCase().includes('chaussure') || 
       item.category.toLowerCase().includes('basket') ||
       item.category.toLowerCase().includes('botte')
@@ -61,8 +50,11 @@ serve(async (req) => {
     const wardrobeDescription = `
     Hauts disponibles: ${tops.map(t => `${t.name} (${t.color})`).join(', ')}
     Bas disponibles: ${bottoms.map(b => `${b.name} (${b.color})`).join(', ')}
+    Vestes/Manteaux disponibles: ${outerwear.map(o => `${o.name} (${o.color})`).join(', ')}
     Chaussures disponibles: ${shoes.map(s => `${s.name} (${s.color})`).join(', ')}
     `
+
+    console.log("Wardrobe description:", wardrobeDescription)
 
     const genAI = new GoogleGenerativeAI(Deno.env.get('GEMINI_API_KEY'))
     const model = genAI.getGenerativeModel({ model: "gemini-pro" })
@@ -81,6 +73,8 @@ serve(async (req) => {
     1. Utilise uniquement les vêtements listés ci-dessus
     2. Tient compte de la température et des conditions météo
     3. Crée une combinaison harmonieuse de couleurs
+    4. Si la température est inférieure à 15°C, inclure un vêtement chaud
+    5. Si la température est inférieure à 5°C, inclure un manteau
     
     Format souhaité: Une phrase concise en français qui liste les vêtements spécifiques recommandés.`
 
