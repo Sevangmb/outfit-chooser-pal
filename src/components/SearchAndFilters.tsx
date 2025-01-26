@@ -35,6 +35,14 @@ export const SearchAndFilters = ({
     onReset();
   };
 
+  const handleCategoryChange = (value: string) => {
+    onFilterCategory(value === "all" ? "" : value);
+  };
+
+  const handleColorChange = (value: string) => {
+    onFilterColor(value === "all" ? "" : value);
+  };
+
   return (
     <div className="space-y-4 mb-8">
       <div className="flex gap-2">
@@ -54,23 +62,23 @@ export const SearchAndFilters = ({
         )}
       </div>
       <div className="flex gap-4">
-        <Select onValueChange={onFilterCategory}>
+        <Select onValueChange={handleCategoryChange} defaultValue="all">
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Catégorie" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Toutes les catégories</SelectItem>
+            <SelectItem value="all">Toutes les catégories</SelectItem>
             <SelectItem value="haut">Hauts</SelectItem>
             <SelectItem value="bas">Bas</SelectItem>
             <SelectItem value="chaussure">Chaussures</SelectItem>
           </SelectContent>
         </Select>
-        <Select onValueChange={onFilterColor}>
+        <Select onValueChange={handleColorChange} defaultValue="all">
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Couleur" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Toutes les couleurs</SelectItem>
+            <SelectItem value="all">Toutes les couleurs</SelectItem>
             <SelectItem value="noir">Noir</SelectItem>
             <SelectItem value="blanc">Blanc</SelectItem>
             <SelectItem value="bleu">Bleu</SelectItem>
