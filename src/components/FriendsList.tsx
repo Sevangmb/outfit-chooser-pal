@@ -1,149 +1,246 @@
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { AddFriendForm } from "@/components/friends/AddFriendForm";
-import { FriendCard } from "@/components/friends/FriendCard";
-import { ClothingTab } from "./ClothingTab";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ClothingTab } from "@/components/ClothingTab";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserPlus, UserMinus, Search } from "lucide-react";
 
 interface Friend {
-  id: number;
-  user_id: string;
-  friend_id: string;
-  status: string;
-  created_at: string;
-  friend_email?: string;
+  id: string;
+  email: string;
+  full_name: string;
+  avatar_url: string;
 }
 
-export const FriendsList = () => {
-  const { data: friends = [], refetch: refetchFriends } = useQuery({
-    queryKey: ["friends"],
-    queryFn: async () => {
-      console.log("Fetching friends...");
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error("No session");
+interface FriendsListProps {
+  userId: string;
+}
 
-      const { data: friendships, error: friendshipsError } = await supabase
+export const FriendsList = ({ userId }: FriendsListProps) => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<Friend[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+
+  const { data: friends, refetch: refetchFriends } = useQuery({
+    queryKey: ["friends", userId],
+    queryFn: async () => {
+      const { data: friendships, error } = await supabase
         .from("friendships")
-        .select("*");
+        .select(`
+          friend_id,
+          friends:friend_id(
+            id,
+            email,
+            full_name,
+            avatar_url
+          )
+        `)
+        .eq("user_id", userId)
+        .eq("status", "accepted");
 
-      if (friendshipsError) {
-        console.error("Error fetching friendships:", friendshipsError);
-        throw friendshipsError;
-      }
-
-      const friendsWithEmails = await Promise.all(
-        friendships.map(async (friendship) => {
-          const friendId = friendship.friend_id;
-          
-          const { data: profiles, error: profilesError } = await supabase
-            .from("profiles")
-            .select("email")
-            .eq("id", friendId)
-            .single();
-
-          if (profilesError) {
-            console.error("Error fetching friend profile:", profilesError);
-            return {
-              ...friendship,
-              friend_email: "Unknown user"
-            };
-          }
-
-          return {
-            ...friendship,
-            friend_email: profiles?.email
-          };
-        })
-      );
-
-      console.log("Fetched friends:", friendsWithEmails);
-      return friendsWithEmails;
+      if (error) throw error;
+      return friendships.map((f) => f.friends as Friend);
     },
   });
 
-  const { data: friendsClothes = [] } = useQuery({
-    queryKey: ["friendsClothes"],
+  const { data: pendingFriends } = useQuery({
+    queryKey: ["pending-friends", userId],
     queryFn: async () => {
-      const acceptedFriends = friends.filter(f => f.status === 'accepted');
-      if (acceptedFriends.length === 0) return [];
+      const { data: friendships, error } = await supabase
+        .from("friendships")
+        .select(`
+          user_id,
+          users:user_id(
+            id,
+            email,
+            full_name,
+            avatar_url
+          )
+        `)
+        .eq("friend_id", userId)
+        .eq("status", "pending");
 
-      const { data, error } = await supabase
-        .from("clothes")
-        .select("*")
-        .in('user_id', acceptedFriends.map(f => f.friend_id));
-
-      if (error) {
-        console.error("Error fetching friends' clothes:", error);
-        throw error;
-      }
-
-      return data;
+      if (error) throw error;
+      return friendships.map((f) => f.users as Friend);
     },
-    enabled: friends.length > 0,
   });
 
-  const handleAcceptFriend = async (friendshipId: number) => {
+  const searchUsers = async (query: string) => {
+    if (query.length < 3) {
+      setSearchResults([]);
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const { data, error } = await supabase
+        .from("users")
+        .select("id, email, full_name, avatar_url")
+        .ilike("email", `%${query}%`)
+        .limit(5);
+
+      if (error) throw error;
+      setSearchResults(data);
+    } catch (error) {
+      console.error("Error searching users:", error);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const sendFriendRequest = async (friendId: string) => {
+    try {
+      const { error } = await supabase.from("friendships").insert([
+        {
+          user_id: userId,
+          friend_id: friendId,
+          status: "pending",
+        },
+      ]);
+
+      if (error) throw error;
+      setSearchResults([]);
+      setSearchQuery("");
+    } catch (error) {
+      console.error("Error sending friend request:", error);
+    }
+  };
+
+  const acceptFriendRequest = async (friendId: string) => {
     try {
       const { error } = await supabase
         .from("friendships")
         .update({ status: "accepted" })
-        .eq("id", friendshipId);
+        .eq("user_id", friendId)
+        .eq("friend_id", userId);
 
-      if (error) {
-        toast.error("Erreur lors de l'acceptation de la demande");
-        return;
-      }
-
-      toast.success("Demande d'ami acceptée");
+      if (error) throw error;
       refetchFriends();
     } catch (error) {
-      console.error("Error accepting friend:", error);
-      toast.error("Erreur lors de l'acceptation de la demande");
+      console.error("Error accepting friend request:", error);
     }
   };
 
-  const handleRemoveFriend = async (friendshipId: number) => {
-    try {
-      const { error } = await supabase
-        .from("friendships")
-        .delete()
-        .eq("id", friendshipId);
+  useEffect(() => {
+    const debounceTimeout = setTimeout(() => {
+      searchUsers(searchQuery);
+    }, 300);
 
-      if (error) {
-        toast.error("Erreur lors de la suppression de l'ami");
-        return;
-      }
-
-      toast.success("Ami supprimé");
-      refetchFriends();
-    } catch (error) {
-      console.error("Error removing friend:", error);
-      toast.error("Erreur lors de la suppression de l'ami");
-    }
-  };
+    return () => clearTimeout(debounceTimeout);
+  }, [searchQuery]);
 
   return (
-    <div className="space-y-6">
-      <Tabs defaultValue="friends" className="w-full">
-        <TabsList className="mb-4">
+    <div className="space-y-4">
+      <div className="relative">
+        <Input
+          type="text"
+          placeholder="Rechercher un ami par email..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full"
+        />
+        <Search className="absolute right-3 top-2.5 h-5 w-5 text-muted-foreground" />
+      </div>
+
+      {searchResults.length > 0 && (
+        <div className="border rounded-md p-4 space-y-2">
+          <h3 className="font-medium mb-2">Résultats de la recherche</h3>
+          {searchResults.map((user) => (
+            <div key={user.id} className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Avatar>
+                  <AvatarImage src={user.avatar_url} />
+                  <AvatarFallback>{user.full_name?.[0]}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="font-medium">{user.full_name}</p>
+                  <p className="text-sm text-muted-foreground">{user.email}</p>
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => sendFriendRequest(user.id)}
+              >
+                <UserPlus className="h-4 w-4" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <Tabs defaultValue="friends">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="friends">Mes Amis</TabsTrigger>
-          <TabsTrigger value="clothes">Leurs Vêtements</TabsTrigger>
+          <TabsTrigger value="pending">
+            Demandes en attente
+            {pendingFriends?.length ? ` (${pendingFriends.length})` : ""}
+          </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="friends">
-          <AddFriendForm onFriendAdded={refetchFriends} />
-          <div className="space-y-4 mt-6">
-            {friends.map((friend: Friend) => (
-              <FriendCard
+        <TabsContent value="friends" className="space-y-4">
+          {friends?.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">
+              Vous n'avez pas encore d'amis
+            </p>
+          ) : (
+            friends?.map((friend) => (
+              <div
                 key={friend.id}
-                friendEmail={friend.friend_email || "Unknown user"}
-                status={friend.status}
-                onAccept={() => handleAcceptFriend(friend.id)}
-                onRemove={() => handleRemoveFriend(friend.id)}
-              />
-            ))}
-          </div>
+                className="flex items-center justify-between border rounded-lg p-4"
+              >
+                <div className="flex items-center gap-2">
+                  <Avatar>
+                    <AvatarImage src={friend.avatar_url} />
+                    <AvatarFallback>{friend.full_name?.[0]}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium">{friend.full_name}</p>
+                    <p className="text-sm text-muted-foreground">{friend.email}</p>
+                  </div>
+                </div>
+                <Button variant="ghost" size="sm">
+                  <UserMinus className="h-4 w-4" />
+                </Button>
+              </div>
+            ))
+          )}
+        </TabsContent>
+
+        <TabsContent value="pending" className="space-y-4">
+          {pendingFriends?.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">
+              Aucune demande d'ami en attente
+            </p>
+          ) : (
+            pendingFriends?.map((friend) => (
+              <div
+                key={friend.id}
+                className="flex items-center justify-between border rounded-lg p-4"
+              >
+                <div className="flex items-center gap-2">
+                  <Avatar>
+                    <AvatarImage src={friend.avatar_url} />
+                    <AvatarFallback>{friend.full_name?.[0]}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium">{friend.full_name}</p>
+                    <p className="text-sm text-muted-foreground">{friend.email}</p>
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => acceptFriendRequest(friend.id)}
+                >
+                  Accepter
+                </Button>
+              </div>
+            ))
+          )}
         </TabsContent>
 
         <TabsContent value="clothes">
