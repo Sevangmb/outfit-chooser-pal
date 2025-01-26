@@ -21,7 +21,7 @@ export const BottomNav = () => {
       ariaLabel: "Découvrir du contenu",
     },
     {
-      path: "/add",
+      path: "/perso",
       icon: Heart,
       label: "Perso",
       ariaLabel: "Accéder à mon espace personnel",

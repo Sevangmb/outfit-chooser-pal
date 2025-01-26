@@ -25,7 +25,7 @@ export const NavTab = ({
       onClick={onClick}
       className={cn(
         "flex flex-col items-center justify-center w-full h-full transition-colors",
-        path === "/add" && "relative -top-3"
+        path === "/perso" && "relative -top-3"
       )}
       aria-label={ariaLabel}
       role="tab"
@@ -35,8 +35,8 @@ export const NavTab = ({
         className={cn(
           "h-6 w-6 mb-1 transition-colors",
           isActive ? "text-primary" : "text-muted-foreground",
-          path === "/add" && "h-12 w-12 bg-background rounded-full p-2 shadow-lg",
-          path === "/add" ? "text-red-500" : color === "red" ? "text-red-500" : ""
+          path === "/perso" && "h-12 w-12 bg-background rounded-full p-2 shadow-lg",
+          path === "/perso" ? "text-red-500" : color === "red" ? "text-red-500" : ""
         )}
       />
       {label && (

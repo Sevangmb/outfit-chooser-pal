@@ -28,7 +28,7 @@ export const AppRoutes = () => (
     <Route element={<ProtectedRoute />}>
       <Route path="/" element={<Index />} />
       <Route path="/discover" element={<Discover />} />
-      <Route path="/add" element={<Add />} />
+      <Route path="/perso" element={<Add />} />
       <Route path="/shops" element={<Shops />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/settings" element={<Settings />} />
