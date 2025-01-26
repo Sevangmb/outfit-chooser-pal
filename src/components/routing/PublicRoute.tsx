@@ -1,12 +1,8 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-interface PublicRouteProps {
-  children: React.ReactNode;
-}
-
-export const PublicRoute = ({ children }: PublicRouteProps) => {
+export const PublicRoute = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -16,7 +12,7 @@ export const PublicRoute = ({ children }: PublicRouteProps) => {
         const { data: { session } } = await supabase.auth.getSession();
         setIsAuthenticated(!!session);
       } catch (error) {
-        console.error("Error checking auth status:", error);
+        console.error("Error checking auth:", error);
         setIsAuthenticated(false);
       } finally {
         setIsLoading(false);
@@ -38,5 +34,5 @@ export const PublicRoute = ({ children }: PublicRouteProps) => {
     return <Navigate to="/" replace />;
   }
 
-  return <>{children}</>;
+  return <Outlet />;
 };

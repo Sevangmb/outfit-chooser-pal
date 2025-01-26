@@ -1,14 +1,10 @@
 import { useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { BottomNav } from "@/components/BottomNav";
 import { toast } from "sonner";
 
-interface ProtectedRouteProps {
-  children: React.ReactNode;
-}
-
-export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
+export const ProtectedRoute = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -19,7 +15,6 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
         
         if (sessionError) {
           console.error("Error checking session:", sessionError);
-          // Try to refresh the session
           const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
           
           if (refreshError) {
@@ -49,7 +44,6 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
       
       if (event === 'SIGNED_OUT') {
         setIsAuthenticated(false);
-        // Ensure clean logout
         await supabase.auth.signOut();
       } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         setIsAuthenticated(true);
@@ -78,7 +72,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
   return (
     <div className="pb-16">
-      {children}
+      <Outlet />
       <BottomNav />
     </div>
   );
