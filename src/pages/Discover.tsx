@@ -1,6 +1,6 @@
 import { BottomNav } from "@/components/BottomNav";
 import { Input } from "@/components/ui/input";
-import { Compass, MapPin, Search, Sparkles, Store, TrendingUp, Users, BarChart, Hashtag } from "lucide-react";
+import { Compass, MapPin, Search, Sparkles, Store, TrendingUp, Users, BarChart, Hash } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RecommendedOutfits } from "@/components/discover/RecommendedOutfits";
 import { useState } from "react";
@@ -114,7 +114,7 @@ const Discover = () => {
                   Articles populaires
                 </TabsTrigger>
                 <TabsTrigger value="hashtags" className="gap-2">
-                  <Hashtag className="h-4 w-4" />
+                  <Hash className="h-4 w-4" />
                   Hashtags populaires
                 </TabsTrigger>
               </TabsList>
