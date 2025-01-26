@@ -1170,6 +1170,30 @@ export type Database = {
           },
         ]
       }
+      user_favorites: {
+        Row: {
+          created_at: string
+          favorite_id: string
+          favorite_type: string
+          id: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          favorite_id: string
+          favorite_type: string
+          id?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          favorite_id?: string
+          favorite_type?: string
+          id?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_files: {
         Row: {
           content_type: string | null
