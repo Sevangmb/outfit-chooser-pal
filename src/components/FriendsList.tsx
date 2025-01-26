@@ -31,7 +31,7 @@ export const FriendsList = ({ userId }: FriendsListProps) => {
         .from("friendships")
         .select(`
           friend_id,
-          friends:friend_id(
+          friend:profiles!friendships_friend_id_fkey(
             id,
             email,
             full_name,
@@ -42,7 +42,7 @@ export const FriendsList = ({ userId }: FriendsListProps) => {
         .eq("status", "accepted");
 
       if (error) throw error;
-      return friendships.map((f) => f.friends as Friend);
+      return friendships.map((f) => f.friend) as Friend[];
     },
   });
 
@@ -53,7 +53,7 @@ export const FriendsList = ({ userId }: FriendsListProps) => {
         .from("friendships")
         .select(`
           user_id,
-          users:user_id(
+          user:profiles!friendships_user_id_fkey(
             id,
             email,
             full_name,
@@ -64,7 +64,7 @@ export const FriendsList = ({ userId }: FriendsListProps) => {
         .eq("status", "pending");
 
       if (error) throw error;
-      return friendships.map((f) => f.users as Friend);
+      return friendships.map((f) => f.user) as Friend[];
     },
   });
 
@@ -77,13 +77,13 @@ export const FriendsList = ({ userId }: FriendsListProps) => {
     setIsSearching(true);
     try {
       const { data, error } = await supabase
-        .from("users")
+        .from("profiles")
         .select("id, email, full_name, avatar_url")
         .ilike("email", `%${query}%`)
         .limit(5);
 
       if (error) throw error;
-      setSearchResults(data);
+      setSearchResults(data as Friend[]);
     } catch (error) {
       console.error("Error searching users:", error);
     } finally {
@@ -241,10 +241,6 @@ export const FriendsList = ({ userId }: FriendsListProps) => {
               </div>
             ))
           )}
-        </TabsContent>
-
-        <TabsContent value="clothes">
-          <ClothingTab showFriendsClothes={true} />
         </TabsContent>
       </Tabs>
     </div>
