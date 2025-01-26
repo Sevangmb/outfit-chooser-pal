@@ -41,7 +41,14 @@ export const CreateGroupDialog = ({ onCreateGroup, isCreating }: CreateGroupDial
   });
 
   const onSubmit = (values: GroupFormValues) => {
-    onCreateGroup(values);
+    // Ici, values est déjà du bon type grâce au schema Zod
+    const newGroup: NewGroup = {
+      name: values.name,
+      description: values.description,
+      privacy: values.privacy
+    };
+    
+    onCreateGroup(newGroup);
     if (!isCreating) {
       setIsOpen(false);
       form.reset();
