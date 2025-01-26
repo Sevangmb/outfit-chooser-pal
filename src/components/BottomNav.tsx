@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { NavTab } from "./navigation/NavTab";
-import { Home, Search, PlusCircle, Store, User } from "lucide-react";
+import { Home, Search, Shirt, Store, User } from "lucide-react";
 
 export const BottomNav = () => {
   const navigate = useNavigate();
@@ -22,9 +22,9 @@ export const BottomNav = () => {
     },
     {
       path: "/add",
-      icon: PlusCircle,
-      label: "Ajouter",
-      ariaLabel: "Ajouter du contenu",
+      icon: Shirt,
+      label: "Perso",
+      ariaLabel: "Accéder à mon espace personnel",
     },
     {
       path: "/shops",
