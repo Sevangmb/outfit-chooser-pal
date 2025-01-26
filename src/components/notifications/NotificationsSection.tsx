@@ -12,9 +12,18 @@ export const NotificationsSection = () => {
     queryKey: ["notifications"],
     queryFn: async () => {
       console.log("Fetching notifications...");
+      const { data: sessionData } = await supabase.auth.getSession();
+      const userId = sessionData?.session?.user?.id;
+
+      if (!userId) {
+        console.log("No user session found");
+        return [];
+      }
+
       const { data, error } = await supabase
         .from("admin_messages")
         .select("*")
+        .eq("user_id", userId)
         .order("created_at", { ascending: false });
 
       if (error) {
