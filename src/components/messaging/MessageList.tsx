@@ -17,10 +17,10 @@ interface Message {
   is_deleted: boolean | null;
   sender: {
     email: string;
-  };
+  } | null;
   recipient: {
     email: string;
-  };
+  } | null;
 }
 
 interface GroupMessage {
@@ -31,7 +31,7 @@ interface GroupMessage {
   created_at: string;
   message_groups: {
     name: string;
-  };
+  } | null;
 }
 
 interface MessageListProps {
@@ -52,8 +52,8 @@ export const MessageList = ({ onSelectConversation, selectedConversation }: Mess
 
   useEffect(() => {
     const getUser = async () => {
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-      if (!sessionError && sessionData?.session?.user) {
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (sessionData?.session?.user) {
         setCurrentUserId(sessionData.session.user.id);
       }
     };
@@ -64,8 +64,7 @@ export const MessageList = ({ onSelectConversation, selectedConversation }: Mess
     queryKey: ["messages"],
     queryFn: async () => {
       console.log("Fetching direct messages...");
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError) throw sessionError;
+      const { data: sessionData } = await supabase.auth.getSession();
       const user = sessionData?.session?.user;
       if (!user) return [];
 
@@ -86,14 +85,14 @@ export const MessageList = ({ onSelectConversation, selectedConversation }: Mess
       console.log("Direct messages fetched:", data);
       return data as Message[];
     },
+    enabled: !!currentUserId
   });
 
   const { data: groupMessages = [], isLoading: isLoadingGroup } = useQuery({
     queryKey: ["groupMessages"],
     queryFn: async () => {
       console.log("Fetching group messages...");
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError) throw sessionError;
+      const { data: sessionData } = await supabase.auth.getSession();
       const user = sessionData?.session?.user;
       if (!user) return [];
 
@@ -107,7 +106,7 @@ export const MessageList = ({ onSelectConversation, selectedConversation }: Mess
         throw memberError;
       }
 
-      const groupIds = memberGroups.map(g => g.group_id);
+      const groupIds = memberGroups?.map(g => g.group_id) || [];
       
       if (groupIds.length === 0) {
         console.log("User is not a member of any groups");
@@ -132,6 +131,7 @@ export const MessageList = ({ onSelectConversation, selectedConversation }: Mess
       console.log("Group messages fetched:", data);
       return data as GroupMessage[];
     },
+    enabled: !!currentUserId
   });
 
   if (isLoadingDirect || isLoadingGroup) {
@@ -143,17 +143,23 @@ export const MessageList = ({ onSelectConversation, selectedConversation }: Mess
   }
 
   const uniqueConversations = directMessages.reduce((acc, message) => {
-    if (!currentUserId) return acc;
+    if (!currentUserId || !message.sender || !message.recipient) return acc;
     
     const otherUserId = message.sender_id === currentUserId 
       ? message.recipient_id 
       : message.sender_id;
     
+    const otherUserEmail = message.sender_id === currentUserId 
+      ? message.recipient?.email 
+      : message.sender?.email;
+
+    if (!otherUserEmail) return acc;
+
     if (!acc.some(conv => conv.id === otherUserId)) {
       acc.push({
         type: "direct" as const,
         id: otherUserId,
-        name: message.sender_id === currentUserId ? message.recipient.email : message.sender.email,
+        name: otherUserEmail,
         lastMessage: message.content,
         timestamp: message.created_at,
       });
@@ -168,6 +174,8 @@ export const MessageList = ({ onSelectConversation, selectedConversation }: Mess
   }>);
 
   const groupConversations = groupMessages.reduce((acc, message) => {
+    if (!message.message_groups?.name) return acc;
+
     if (!acc.some(conv => conv.id === message.group_id)) {
       acc.push({
         type: "group" as const,
