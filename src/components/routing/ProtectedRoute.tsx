@@ -24,9 +24,37 @@ export const ProtectedRoute = () => {
             await supabase.auth.signOut();
           } else if (refreshData.session) {
             console.log("Session refreshed successfully");
+            
+            // Fetch user data after successful authentication
+            const { data: userData, error: userError } = await supabase
+              .from('users')
+              .select('*')
+              .eq('id', refreshData.session.user.id)
+              .single();
+
+            if (userError) {
+              console.error("Error fetching user data:", userError);
+            } else {
+              console.log("User data fetched:", userData);
+            }
+            
             setIsAuthenticated(true);
           }
         } else {
+          if (session) {
+            // Fetch user data when session exists
+            const { data: userData, error: userError } = await supabase
+              .from('users')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
+
+            if (userError) {
+              console.error("Error fetching user data:", userError);
+            } else {
+              console.log("User data fetched:", userData);
+            }
+          }
           setIsAuthenticated(!!session);
         }
       } catch (error) {
@@ -46,6 +74,20 @@ export const ProtectedRoute = () => {
         setIsAuthenticated(false);
         await supabase.auth.signOut();
       } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        if (session) {
+          // Fetch user data on sign in
+          const { data: userData, error: userError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+
+          if (userError) {
+            console.error("Error fetching user data:", userError);
+          } else {
+            console.log("User data fetched:", userData);
+          }
+        }
         setIsAuthenticated(true);
       }
       

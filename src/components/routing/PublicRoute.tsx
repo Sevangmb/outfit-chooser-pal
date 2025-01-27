@@ -10,6 +10,20 @@ export const PublicRoute = () => {
     const checkAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          // Fetch user data when session exists
+          const { data: userData, error: userError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+
+          if (userError) {
+            console.error("Error fetching user data:", userError);
+          } else {
+            console.log("User data fetched:", userData);
+          }
+        }
         setIsAuthenticated(!!session);
       } catch (error) {
         console.error("Error checking auth:", error);
