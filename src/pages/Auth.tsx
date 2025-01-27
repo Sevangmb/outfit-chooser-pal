@@ -153,7 +153,7 @@ const Auth = () => {
                 label: 'text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70',
               },
             }}
-            providers={["google"]}
+            providers={["github", "google"]}
             localization={{
               variables: {
                 sign_in: {
