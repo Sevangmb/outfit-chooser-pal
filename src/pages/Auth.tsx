@@ -13,22 +13,31 @@ const Auth = () => {
   const handleGuestLogin = async () => {
     try {
       setLoading(true);
+      console.log("Attempting guest login...");
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email: 'guest@fring.app',
         password: 'guest123'
       });
 
       if (error) {
-        console.error("Guest login error:", error);
-        toast.error("Erreur lors de la connexion invité");
+        console.error("Guest login error details:", {
+          message: error.message,
+          status: error.status,
+          name: error.name
+        });
+        toast.error(error.message || "Erreur lors de la connexion invité");
         return;
       }
 
-      toast.success("Connexion invité réussie !");
-      navigate("/");
+      if (data?.user) {
+        console.log("Guest login successful:", data.user);
+        toast.success("Connexion invité réussie !");
+        navigate("/");
+      }
     } catch (error) {
-      console.error("Error in guest login:", error);
-      toast.error("Une erreur est survenue");
+      console.error("Unexpected error in guest login:", error);
+      toast.error("Une erreur inattendue est survenue");
     } finally {
       setLoading(false);
     }
@@ -41,6 +50,7 @@ const Auth = () => {
     if (event === "SIGNED_IN" && session?.user) {
       try {
         setLoading(true);
+        console.log("Checking profile for user:", session.user.id);
         
         // First check if profile exists
         const { data: existingProfile, error: profileError } = await supabase
@@ -65,6 +75,7 @@ const Auth = () => {
                 id: session.user.id,
                 email: session.user.email,
                 username: session.user.email?.split('@')[0],
+                has_completed_onboarding: false,
                 status: 'active'
               }
             ]);
@@ -96,7 +107,7 @@ const Auth = () => {
           return;
         }
 
-        console.log("Profile verified:", existingProfile || "New profile created");
+        console.log("Profile setup completed:", existingProfile || "New profile created");
         toast.success("Connexion réussie !");
         navigate("/");
       } catch (error) {
