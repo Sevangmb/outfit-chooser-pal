@@ -53,11 +53,11 @@ export const UserManagement = () => {
   const fetchUsers = async () => {
     try {
       console.log("Fetching users...");
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
+      const { data: usersData, error: usersError } = await supabase
+        .from('users')
         .select('id, email, status, last_login');
 
-      if (profilesError) throw profilesError;
+      if (usersError) throw usersError;
 
       const { data: roles, error: rolesError } = await supabase
         .from('user_roles')
@@ -65,12 +65,12 @@ export const UserManagement = () => {
 
       if (rolesError) throw rolesError;
 
-      const usersWithRoles = profiles.map((profile: any) => ({
-        id: profile.id,
-        email: profile.email,
-        status: profile.status || 'active',
-        last_login: profile.last_login,
-        role: roles.find((r: any) => r.user_id === profile.id)?.role || 'user'
+      const usersWithRoles = usersData.map((user: any) => ({
+        id: user.id,
+        email: user.email,
+        status: user.status || 'active',
+        last_login: user.last_login,
+        role: roles.find((r: any) => r.user_id === user.id)?.role || 'user'
       }));
 
       console.log("Users fetched:", usersWithRoles);
