@@ -1,41 +1,36 @@
-import { useInfiniteQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
 import { useEffect } from "react";
 import { useInView } from "react-intersection-observer";
-import { toast } from "sonner";
-import { FeedHeader } from "./FeedHeader";
-import { AIFeatures } from "./AIFeatures";
-import { EmptyFeed } from "./EmptyFeed";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { OutfitGrid } from "./OutfitGrid";
+import { EmptyFeed } from "./EmptyFeed";
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 9;
 
-export const OutfitFeed = () => {
+interface OutfitFeedProps {
+  filter?: "trending" | "following";
+}
+
+export const OutfitFeed = ({ filter }: OutfitFeedProps) => {
   const { ref, inView } = useInView();
 
   const {
     data,
-    isLoading,
+    error,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-    refetch,
-    isRefetching,
-    error
+    status,
   } = useInfiniteQuery({
-    queryKey: ["outfits-feed"],
+    queryKey: ["outfits-feed", filter],
     initialPageParam: 0,
     queryFn: async ({ pageParam = 0 }) => {
-      console.log("Starting to fetch outfits page:", pageParam);
+      console.log("Starting to fetch outfits page:", pageParam, "with filter:", filter);
       
       const start = pageParam * ITEMS_PER_PAGE;
       const end = start + ITEMS_PER_PAGE - 1;
       
-      console.log(`Fetching range ${start} to ${end}`);
-
-      const { data: outfits, error: outfitsError, count } = await supabase
+      let query = supabase
         .from("outfits")
         .select(`
           *,
@@ -43,7 +38,24 @@ export const OutfitFeed = () => {
             clothes(id, name, category, color, image)
           ),
           user:users(email)
-        `, { count: 'exact' })
+        `, { count: 'exact' });
+
+      if (filter === "trending") {
+        query = query.order('rating', { ascending: false });
+      } else if (filter === "following") {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: following } = await supabase
+            .from('followers')
+            .select('following_id')
+            .eq('follower_id', user.id);
+          
+          const followingIds = following?.map(f => f.following_id) || [];
+          query = query.in('user_id', followingIds);
+        }
+      }
+
+      const { data: outfits, error: outfitsError, count } = await query
         .order('created_at', { ascending: false })
         .range(start, end);
 
@@ -51,9 +63,6 @@ export const OutfitFeed = () => {
         console.error("Error fetching outfits:", outfitsError);
         throw outfitsError;
       }
-
-      console.log("Fetched outfits:", outfits);
-      console.log("Total count:", count);
 
       if (!outfits || outfits.length === 0) {
         console.log("No outfits found for this page");
@@ -63,19 +72,13 @@ export const OutfitFeed = () => {
         };
       }
 
-      const formattedOutfits = outfits.map(outfit => {
-        console.log("Processing outfit:", outfit.id, "User:", outfit.user?.email);
-        return {
-          ...outfit,
-          user_email: outfit.user?.email || "Utilisateur inconnu",
-          clothes: outfit.clothes || []
-        };
-      });
-
-      console.log("Formatted outfits:", formattedOutfits);
+      const formattedOutfits = outfits.map(outfit => ({
+        ...outfit,
+        user_email: outfit.user?.email || "Utilisateur inconnu",
+        clothes: outfit.clothes || []
+      }));
 
       const hasMore = count ? start + outfits.length < count : false;
-      console.log("Has more pages:", hasMore);
 
       return {
         outfits: formattedOutfits,
@@ -92,51 +95,28 @@ export const OutfitFeed = () => {
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  if (error) {
-    console.error("Feed error:", error);
-    return (
-      <div className="text-center py-12 space-y-6">
-        <p className="text-destructive">Une erreur est survenue lors du chargement des tenues</p>
-        <Button onClick={() => refetch()}>Réessayer</Button>
-      </div>
-    );
+  if (status === "pending") {
+    return <OutfitGrid outfits={[]} isFetchingNextPage={true} />;
+  }
+
+  if (status === "error") {
+    console.error("Error in OutfitFeed:", error);
+    return <div>Une erreur s'est produite lors du chargement des tenues.</div>;
   }
 
   const allOutfits = data?.pages.flatMap(page => page.outfits) || [];
-  console.log("Total outfits rendered:", allOutfits.length);
+
+  if (allOutfits.length === 0) {
+    return <EmptyFeed />;
+  }
 
   return (
     <div className="space-y-6">
-      <div className="sticky top-0 z-10 bg-background pb-4">
-        <FeedHeader />
-        <AIFeatures />
-      </div>
-
-      <div className="relative">
-        {isRefetching && !isFetchingNextPage && (
-          <div className="absolute top-0 left-0 right-0 flex justify-center py-4 bg-background/80 backdrop-blur-sm z-10">
-            <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-primary" />
-          </div>
-        )}
-
-        {isLoading && (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {[...Array(6)].map((_, i) => (
-              <Skeleton key={i} className="h-[400px] rounded-xl" />
-            ))}
-          </div>
-        )}
-
-        {!isLoading && allOutfits.length === 0 && <EmptyFeed />}
-
-        {!isLoading && allOutfits.length > 0 && (
-          <OutfitGrid 
-            outfits={allOutfits}
-            isFetchingNextPage={isFetchingNextPage}
-            observerRef={ref}
-          />
-        )}
-      </div>
+      <OutfitGrid 
+        outfits={allOutfits}
+        isFetchingNextPage={isFetchingNextPage}
+        observerRef={ref}
+      />
     </div>
   );
 };
