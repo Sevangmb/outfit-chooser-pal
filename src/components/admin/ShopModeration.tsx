@@ -48,7 +48,7 @@ const ShopModeration = () => {
         .from('shop_profiles')
         .select(`
           *,
-          profiles:shop_profiles_user_id_fkey (
+          profiles (
             email
           )
         `)
@@ -61,7 +61,7 @@ const ShopModeration = () => {
       }
 
       console.log("Fetched shop data:", shopData);
-      return (shopData || []) as ShopProfile[];
+      return shopData as ShopProfile[];
     }
   });
 
