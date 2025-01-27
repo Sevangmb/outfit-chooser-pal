@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { WeatherWidget } from "@/components/weather/WeatherWidget";
@@ -8,17 +7,23 @@ import { Sparkles, Trophy, Home } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { useNavigate } from "react-router-dom";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useState } from "react";
 
-const Index = () => {
+export default function Index() {
   const [suggestion, setSuggestion] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
-
+  
   const getOutfitSuggestion = async () => {
     try {
       setIsLoading(true);
       console.log("Starting outfit suggestion request...");
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error("Vous devez être connecté pour obtenir une suggestion");
+        return;
+      }
 
       const weatherDataStr = localStorage.getItem('weatherData');
       if (!weatherDataStr) {
@@ -34,10 +39,15 @@ const Index = () => {
           temperature: weatherData.temperature,
           weatherDescription: weatherData.description,
           conditions: weatherData.conditions
+        },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
         }
       });
 
       if (error) throw error;
+
+      console.log("Received suggestion:", data);
       setSuggestion(data.suggestion);
       toast.success("Suggestion générée avec succès !");
 
@@ -50,33 +60,27 @@ const Index = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-8">
-      {/* Header Section */}
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-3">
-          <Home className="h-8 w-8 text-primary" />
-          <h1 className="text-3xl font-bold text-primary">Mon Dressing</h1>
-        </div>
-      </div>
+    <div className="container py-8 px-4 mx-auto mt-16">
+      <div className="max-w-5xl mx-auto space-y-8">
+        <div className="space-y-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Home className="h-6 w-6 text-primary" />
+            <h1 className="text-2xl font-bold text-primary">Accueil</h1>
+          </div>
 
-      {/* Main Content */}
-      <div className="grid gap-8 md:grid-cols-12">
-        {/* Left Sidebar */}
-        <div className="md:col-span-4 space-y-6">
-          <Card className="p-6 bg-gradient-to-br from-background to-muted/50">
+          <Card className="p-4">
             <WeatherWidget />
-            <div className="mt-6 pt-6 border-t">
+            <div className="mt-4 pt-4 border-t">
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h3 className="font-medium">Suggestion tenue</h3>
-                  <p className="text-sm text-muted-foreground">Basée sur la météo</p>
+                  <p className="text-sm text-muted-foreground">Basée sur la météo et votre garde-robe</p>
                 </div>
                 <Button 
                   variant="ghost" 
                   size="icon"
                   onClick={getOutfitSuggestion}
                   disabled={isLoading}
-                  className="hover:bg-primary/10"
                 >
                   {isLoading ? (
                     <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-primary" />
@@ -86,37 +90,28 @@ const Index = () => {
                 </Button>
               </div>
               
-              <div className={cn(
-                "p-4 rounded-lg transition-all",
-                suggestion ? "bg-primary/5" : "bg-muted"
-              )}>
-                {suggestion ? (
-                  <p className="text-sm">{suggestion}</p>
-                ) : (
-                  <p className="text-sm text-muted-foreground italic">
-                    Cliquez sur l'icône pour obtenir une suggestion
-                  </p>
-                )}
-              </div>
+              {suggestion ? (
+                <p className="text-sm">{suggestion}</p>
+              ) : (
+                <p className="text-sm text-muted-foreground italic">
+                  Cliquez sur l'icône pour obtenir une suggestion
+                </p>
+              )}
             </div>
           </Card>
 
-          <Card className="p-6 bg-gradient-to-br from-accent/5 to-background">
-            <div className="flex items-center gap-2 mb-4">
-              <Trophy className="h-5 w-5 text-accent" />
-              <h3 className="font-medium">Challenge en cours</h3>
-            </div>
-            <p className="text-sm text-muted-foreground mb-4">
-              Créez votre tenue d'automne !
-            </p>
-            <Button variant="outline" className="w-full" onClick={() => navigate("/contest")}>
-              Participer
-            </Button>
-          </Card>
+          <Alert className="bg-primary/5 border-primary/20">
+            <Trophy className="h-4 w-4 text-primary" />
+            <AlertDescription className="flex items-center justify-between">
+              <span>Challenge en cours : Créez votre tenue d'automne !</span>
+              <Button variant="link" className="text-primary" onClick={() => navigate("/contest")}>
+                Participer
+              </Button>
+            </AlertDescription>
+          </Alert>
         </div>
 
-        {/* Main Feed Area */}
-        <div className="md:col-span-8">
+        <div className={cn("rounded-lg", "bg-background")}>
           <Tabs defaultValue="feed" className="w-full">
             <TabsList className="w-full mb-6">
               <TabsTrigger value="feed" className="flex items-center gap-2">
@@ -132,8 +127,8 @@ const Index = () => {
             </TabsContent>
 
             <TabsContent value="trends">
-              <div className="text-center py-12 text-muted-foreground">
-                Les tendances seront bientôt disponibles
+              <div className="text-center p-8 text-muted-foreground">
+                <p>Les tendances arrivent bientôt !</p>
               </div>
             </TabsContent>
           </Tabs>
@@ -141,6 +136,4 @@ const Index = () => {
       </div>
     </div>
   );
-};
-
-export default Index;
+}
