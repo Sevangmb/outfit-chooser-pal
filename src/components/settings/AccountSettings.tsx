@@ -44,10 +44,10 @@ export const AccountSettings = () => {
       if (!user) return null;
 
       const { data, error } = await supabase
-        .from("profiles")
+        .from("users")
         .select("*")
         .eq("id", user.id)
-        .maybeSingle();
+        .single();
 
       if (error) throw error;
       return data;
@@ -119,7 +119,7 @@ export const AccountSettings = () => {
       };
 
       const { error } = await supabase
-        .from("profiles")
+        .from("users")
         .update(updates)
         .eq("id", user.id);
 

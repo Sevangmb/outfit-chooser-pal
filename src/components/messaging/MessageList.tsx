@@ -73,8 +73,8 @@ export const MessageList = ({ onSelectConversation, selectedConversation }: Mess
         .from("user_messages")
         .select(`
           *,
-          sender:profiles!user_messages_sender_id_fkey(email),
-          recipient:profiles!user_messages_recipient_id_fkey(email)
+          sender:users!user_messages_sender_id_fkey(email),
+          recipient:users!user_messages_recipient_id_fkey(email)
         `)
         .or(`sender_id.eq.${user.id},recipient_id.eq.${user.id}`)
         .order("created_at", { ascending: false });

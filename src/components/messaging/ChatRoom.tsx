@@ -1,95 +1,22 @@
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useGroupMessages } from "@/hooks/useGroupMessages";
 import { toast } from "sonner";
-import { socket } from "@/integrations/socket/client";
-import { GroupChatRoom } from "./GroupChatRoom";
-import { Message } from "@/types/social";
+import { supabase } from "@/integrations/supabase/client";
 
-interface ChatRoomProps {
-  type: "direct" | "group";
-  recipientId: string | number;
-  recipientName: string;
+interface GroupChatRoomProps {
+  groupId: number;
+  groupName: string;
 }
 
-export const ChatRoom = ({ type, recipientId, recipientName }: ChatRoomProps) => {
-  if (type === "group") {
-    return (
-      <GroupChatRoom 
-        groupId={typeof recipientId === 'string' ? parseInt(recipientId, 10) : recipientId} 
-        groupName={recipientName} 
-      />
-    );
-  }
-
-  const [messages, setMessages] = useState<Message[]>([]);
+export const GroupChatRoom = ({ groupId, groupName }: GroupChatRoomProps) => {
   const [newMessage, setNewMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    const initializeChat = async () => {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData?.session?.access_token;
-      
-      if (token) {
-        socket.auth = { token };
-        socket.connect();
-        
-        const room = `direct_${recipientId}`;
-        socket.emit("join_room", room);
-        
-        socket.on("new_message", (message: Message) => {
-          console.log("New direct message received:", message);
-          setMessages(prev => [...prev, message]);
-        });
-      }
-    };
-
-    initializeChat();
-    fetchMessages();
-
-    return () => {
-      socket.off("new_message");
-      socket.emit("leave_room");
-    };
-  }, [recipientId]);
-
-  const fetchMessages = async () => {
-    setIsLoading(true);
-    try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const currentUserId = sessionData?.session?.user?.id;
-      if (!currentUserId) return;
-
-      const { data, error } = await supabase
-        .from("user_messages")
-        .select(`
-          id,
-          content,
-          created_at,
-          sender:users!user_messages_sender_id_fkey (
-            email,
-            avatar_url
-          )
-        `)
-        .or(`and(sender_id.eq.${currentUserId},recipient_id.eq.${recipientId}),and(sender_id.eq.${recipientId},recipient_id.eq.${currentUserId})`)
-        .order("created_at", { ascending: true });
-
-      if (error) throw error;
-      console.log("Fetched direct messages:", data);
-      setMessages(data || []);
-    } catch (error) {
-      console.error("Error fetching messages:", error);
-      toast.error("Erreur lors du chargement des messages");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { messages, loading: isLoading, error } = useGroupMessages(groupId);
 
   const handleSendMessage = async () => {
     if (!newMessage.trim()) return;
@@ -99,10 +26,10 @@ export const ChatRoom = ({ type, recipientId, recipientName }: ChatRoomProps) =>
       if (!user) throw new Error("Not authenticated");
 
       const { error: sendError } = await supabase
-        .from("user_messages")
+        .from("group_messages")
         .insert({
+          group_id: groupId,
           sender_id: user.id,
-          recipient_id: recipientId.toString(),
           content: newMessage.trim()
         });
 
@@ -123,10 +50,18 @@ export const ChatRoom = ({ type, recipientId, recipientName }: ChatRoomProps) =>
     );
   }
 
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-full text-destructive">
+        {error}
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-full">
       <div className="p-4 border-b">
-        <h3 className="font-semibold">{recipientName}</h3>
+        <h3 className="font-semibold">{groupName}</h3>
       </div>
 
       <ScrollArea className="flex-1 p-4">
@@ -134,14 +69,14 @@ export const ChatRoom = ({ type, recipientId, recipientName }: ChatRoomProps) =>
           {messages.map((message) => (
             <div key={message.id} className="flex items-start gap-3">
               <Avatar>
-                <AvatarImage src={message.sender.avatar_url || undefined} />
+                <AvatarImage src={message.sender?.avatar_url} />
                 <AvatarFallback>
-                  {message.sender.email[0].toUpperCase()}
+                  {message.sender?.email?.[0]?.toUpperCase() || 'U'}
                 </AvatarFallback>
               </Avatar>
               <div className="flex flex-col">
                 <div className="flex items-center gap-2">
-                  <span className="font-medium">{message.sender.email}</span>
+                  <span className="font-medium">{message.sender?.email}</span>
                   <span className="text-xs text-muted-foreground">
                     {formatDistanceToNow(new Date(message.created_at), {
                       addSuffix: true,

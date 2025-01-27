@@ -17,7 +17,7 @@ export const PrivacySettings = () => {
       if (!user) return null;
 
       const { data, error } = await supabase
-        .from("profiles")
+        .from("users")
         .select("*")
         .eq("id", user.id)
         .single();
@@ -34,7 +34,7 @@ export const PrivacySettings = () => {
       };
 
       const { error } = await supabase
-        .from("profiles")
+        .from("users")
         .update(updates)
         .eq("id", profile?.id);
 

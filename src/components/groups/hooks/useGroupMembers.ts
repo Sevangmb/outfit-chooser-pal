@@ -34,7 +34,7 @@ export const useGroupMembers = (groupId: number) => {
       const formattedMembers: Member[] = membersData.map(member => ({
         id: member.id,
         user_id: member.user_id,
-        email: member.users.email,
+        email: member.users?.email || '',
         joined_at: member.joined_at,
         role: member.role,
         is_approved: member.is_approved
