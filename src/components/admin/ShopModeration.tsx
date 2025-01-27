@@ -91,7 +91,7 @@ const ShopModeration = () => {
   const filteredShops = shops?.filter(shop =>
     shop.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     shop.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    shop.profiles?.email.toLowerCase().includes(searchTerm.toLowerCase())
+    shop.profiles?.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (isLoading) {
