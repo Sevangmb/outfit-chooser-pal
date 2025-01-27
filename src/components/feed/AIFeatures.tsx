@@ -2,23 +2,39 @@ import { Button } from "@/components/ui/button";
 import { Search, CloudSun } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export const AIFeatures = () => {
   const navigate = useNavigate();
   
-  const handleWeatherOutfitSuggestion = () => {
+  const handleWeatherOutfitSuggestion = async () => {
     const weatherData = localStorage.getItem('weatherData');
     if (!weatherData) {
       toast.error("Les données météo ne sont pas disponibles");
       return;
     }
-    
-    navigate("/discover", { 
-      state: { 
-        suggestOutfit: true,
-        weatherData: JSON.parse(weatherData)
-      } 
-    });
+
+    try {
+      const parsedWeatherData = JSON.parse(weatherData);
+      
+      const { data, error } = await supabase.functions.invoke('suggest-outfit', {
+        body: {
+          temperature: parsedWeatherData.temperature,
+          weatherDescription: parsedWeatherData.description,
+          conditions: parsedWeatherData.conditions
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.suggestion) {
+        toast.success(data.suggestion);
+      }
+
+    } catch (error) {
+      console.error("Error getting outfit suggestion:", error);
+      toast.error("Impossible d'obtenir une suggestion de tenue");
+    }
   };
 
   return (
