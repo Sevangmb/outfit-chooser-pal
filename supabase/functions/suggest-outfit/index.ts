@@ -9,6 +9,22 @@ const corsHeaders = {
 
 console.log("Loading suggest-outfit function...")
 
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1000; // 1 second
+
+async function retryWithDelay(fn: () => Promise<any>, retries: number = MAX_RETRIES): Promise<any> {
+  try {
+    return await fn();
+  } catch (error) {
+    if (retries > 0) {
+      console.log(`Retrying... ${MAX_RETRIES - retries + 1} attempt`);
+      await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+      return retryWithDelay(fn, retries - 1);
+    }
+    throw error;
+  }
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -150,10 +166,13 @@ serve(async (req) => {
 
     console.log("Sending prompt to Gemini:", prompt)
 
-    const result = await model.generateContent(prompt)
-    const response = await result.response
-    const suggestion = response.text()
+    // Use the retry mechanism for the Gemini API call
+    const result = await retryWithDelay(async () => {
+      const response = await model.generateContent(prompt)
+      return response.response
+    });
 
+    const suggestion = result.text()
     console.log("Received suggestion from Gemini:", suggestion)
 
     return new Response(
@@ -169,7 +188,8 @@ serve(async (req) => {
     console.error("Error in suggest-outfit function:", error)
     return new Response(
       JSON.stringify({ 
-        error: error.message || "Une erreur est survenue lors de la génération de la suggestion" 
+        error: error.message || "Une erreur est survenue lors de la génération de la suggestion",
+        details: error.toString()
       }),
       { 
         status: 500,
