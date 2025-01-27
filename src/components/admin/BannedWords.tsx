@@ -17,9 +17,9 @@ interface BannedWord {
   id: string;
   word: string;
   created_at: string;
-  users?: {
+  users: {
     email: string;
-  };
+  } | null;
 }
 
 export const BannedWords = () => {
@@ -34,8 +34,8 @@ export const BannedWords = () => {
         .from('banned_words')
         .select(`
           *,
-          users (
-            email
+          users:profiles!banned_words_created_by_user_id_fkey (
+            email:username
           )
         `)
         .order('created_at', { ascending: false });

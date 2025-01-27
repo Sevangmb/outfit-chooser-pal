@@ -32,8 +32,8 @@ export const AuditLogs = () => {
         .from('audit_logs')
         .select(`
           *,
-          users (
-            email
+          users:profiles!audit_logs_admin_user_id_fkey (
+            email:username
           )
         `)
         .order('created_at', { ascending: false });

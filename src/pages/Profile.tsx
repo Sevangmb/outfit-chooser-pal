@@ -36,7 +36,7 @@ const Profile = () => {
       console.log("Fetching user data for:", session.user.id);
       const { data, error } = await supabase
         .from("profiles")
-        .select()
+        .select("*, email:username")
         .eq("id", session.user.id)
         .single();
 
@@ -46,7 +46,10 @@ const Profile = () => {
         throw error;
       }
 
-      return data;
+      return {
+        ...data,
+        created_at: new Date().toISOString() // Fallback created_at
+      };
     },
     enabled: !!session?.user?.id,
     retry: 1,
