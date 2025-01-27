@@ -1,15 +1,14 @@
 export interface Profile {
   id: string;
   email: string;
-  full_name: string | null;
-  avatar_url: string | null;
-  username: string | null;
-  bio: string | null;
-  is_profile_public: boolean;
   created_at: string;
   has_completed_onboarding: boolean;
   status: string;
   last_login: string | null;
+  username?: string;
+  bio?: string;
+  avatar_url?: string;
+  is_profile_public?: boolean;
 }
 
 export interface Message {
@@ -34,4 +33,13 @@ export interface Member {
   joined_at: string;
   role: string;
   is_approved: boolean;
+}
+
+export interface Follower {
+  id: number;
+  follower_id: string;
+  following_id: string;
+  created_at: string;
+  follower: Profile;
+  following: Profile;
 }

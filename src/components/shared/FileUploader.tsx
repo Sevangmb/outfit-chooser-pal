@@ -7,12 +7,14 @@ import { toast } from "sonner";
 interface FileUploaderProps {
   onUploadSuccess?: (url: string) => void;
   onUploadError?: (error: string) => void;
+  onFileSelect?: (file: File) => void;
   accept?: string;
 }
 
 export const FileUploader = ({ 
   onUploadSuccess, 
   onUploadError,
+  onFileSelect,
   accept = "*"
 }: FileUploaderProps) => {
   const { isUploading, uploadFile } = useDropboxUpload();
@@ -23,11 +25,14 @@ export const FileUploader = ({
 
     try {
       console.log("Starting file upload:", file.name);
-      const url = await uploadFile(file);
+      if (onFileSelect) {
+        onFileSelect(file);
+      }
       
-      if (url) {
+      const url = await uploadFile(file);
+      if (url && onUploadSuccess) {
         console.log("Upload successful:", url);
-        onUploadSuccess?.(url);
+        onUploadSuccess(url);
       }
     } catch (error) {
       console.error("Upload error:", error);

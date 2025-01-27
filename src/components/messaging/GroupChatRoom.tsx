@@ -7,6 +7,7 @@ import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useGroupMessages } from "@/hooks/useGroupMessages";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface GroupChatRoomProps {
   groupId: number;

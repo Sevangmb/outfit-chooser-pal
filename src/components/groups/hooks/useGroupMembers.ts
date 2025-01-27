@@ -19,8 +19,9 @@ export const useGroupMembers = (groupId: number) => {
           joined_at,
           role,
           is_approved,
-          users (
-            email
+          users!message_group_members_user_id_fkey (
+            email,
+            avatar_url
           )
         `)
         .eq('group_id', groupId);
