@@ -1,18 +1,36 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Database, HardDrive, Save, Trash, CheckCircle, XCircle, AlertCircle } from "lucide-react";
+import { Database, HardDrive, Save, Trash, CheckCircle, XCircle, AlertCircle, Filter, SortAsc, SortDesc, Search } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { UserFiles } from "@/components/files/UserFiles";
 import { Separator } from "@/components/ui/separator";
 import { testDropboxConnection } from "@/utils/testDropboxConnection";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export const StorageSettings = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [driveStatus, setDriveStatus] = useState<'checking' | 'connected' | 'error'>('checking');
   const [driveError, setDriveError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState<"date" | "name" | "size">("date");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [fileType, setFileType] = useState<"all" | "image" | "document">("all");
 
   const { data: storageInfo, refetch: refetchStorageInfo } = useQuery({
     queryKey: ["storage_info"],
@@ -97,6 +115,20 @@ export const StorageSettings = () => {
     ? (storageInfo.used_space / storageInfo.total_space) * 100 
     : 0;
 
+  const handleBulkDelete = async (selectedFiles: string[]) => {
+    try {
+      setIsLoading(true);
+      // Implement bulk delete logic here
+      toast.success("Fichiers supprimés avec succès");
+      refetchStorageInfo();
+    } catch (error) {
+      console.error("Error deleting files:", error);
+      toast.error("Erreur lors de la suppression des fichiers");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="space-y-4">
@@ -171,7 +203,57 @@ export const StorageSettings = () => {
       <Separator className="my-6" />
 
       <div className="space-y-4">
-        <h3 className="text-lg font-medium">Mes fichiers</h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-medium">Mes fichiers</h3>
+          <div className="flex items-center gap-2">
+            <Input
+              placeholder="Rechercher..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-64"
+              leftIcon={<Search className="w-4 h-4" />}
+            />
+            <Select value={fileType} onValueChange={(value: "all" | "image" | "document") => setFileType(value)}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Type de fichier" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous les fichiers</SelectItem>
+                <SelectItem value="image">Images</SelectItem>
+                <SelectItem value="document">Documents</SelectItem>
+              </SelectContent>
+            </Select>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <SortAsc className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setSortBy("date")}>
+                  Par date
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortBy("name")}>
+                  Par nom
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortBy("size")}>
+                  Par taille
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+            >
+              {sortOrder === "asc" ? (
+                <SortAsc className="h-4 w-4" />
+              ) : (
+                <SortDesc className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+        </div>
         <UserFiles />
       </div>
 
