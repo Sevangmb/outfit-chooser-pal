@@ -53,29 +53,29 @@ export const OutfitFeed = () => {
         }
 
         const userIds = [...new Set(outfitsData.map((outfit: any) => outfit.user_id))];
-        console.log("Fetching profiles for users:", userIds);
+        console.log("Fetching users for outfits:", userIds);
 
         const BATCH_SIZE = 5;
-        const profiles: any[] = [];
+        const users: any[] = [];
         
         for (let i = 0; i < userIds.length; i += BATCH_SIZE) {
           const batchIds = userIds.slice(i, i + BATCH_SIZE);
-          const { data: batchProfiles, error: profilesError } = await supabase
-            .from("profiles")
+          const { data: batchUsers, error: usersError } = await supabase
+            .from("users")
             .select("id, email")
             .in("id", batchIds);
 
-          if (profilesError) {
-            console.error("Error fetching profiles batch:", profilesError);
+          if (usersError) {
+            console.error("Error fetching users batch:", usersError);
             continue;
           }
 
-          if (batchProfiles) {
-            profiles.push(...batchProfiles);
+          if (batchUsers) {
+            users.push(...batchUsers);
           }
         }
 
-        const emailMap = new Map(profiles.map((p) => [p.id, p.email]));
+        const emailMap = new Map(users.map((p) => [p.id, p.email]));
 
         const formattedOutfits = outfitsData.map((outfit: any) => ({
           ...outfit,
