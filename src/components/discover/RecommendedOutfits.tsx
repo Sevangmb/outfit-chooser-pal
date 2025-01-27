@@ -99,17 +99,17 @@ export const RecommendedOutfits = () => {
 
       // Fetch user emails
       const userIds = outfitsData.map((outfit: any) => outfit.user_id);
-      const { data: profiles, error: profilesError } = await supabase
-        .from("profiles")
+      const { data: users, error: usersError } = await supabase
+        .from("users")
         .select("id, email")
         .in("id", userIds);
 
-      if (profilesError) {
-        console.error("Error fetching profiles:", profilesError);
-        throw profilesError;
+      if (usersError) {
+        console.error("Error fetching users:", usersError);
+        throw usersError;
       }
 
-      const emailMap = new Map(profiles?.map((p) => [p.id, p.email]));
+      const emailMap = new Map(users?.map((u) => [u.id, u.email]));
 
       // Filter and sort outfits based on preferences
       const outfitsWithScores = outfitsData.map((outfit: any) => {
