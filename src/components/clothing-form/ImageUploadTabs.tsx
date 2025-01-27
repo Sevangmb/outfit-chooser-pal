@@ -1,4 +1,4 @@
-import { Camera, Upload, FolderOpen, Search } from "lucide-react";
+import { Camera, Upload, FolderOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormControl, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -9,7 +9,6 @@ import { useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
-import { uploadImageToSupabase } from "@/utils/uploadImage";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
