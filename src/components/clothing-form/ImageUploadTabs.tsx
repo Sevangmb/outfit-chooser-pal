@@ -1,4 +1,4 @@
-import { Camera, Upload, FolderOpen } from "lucide-react";
+import { Camera, Upload, FolderOpen, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormControl, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -91,7 +91,6 @@ export const ImageUploadTabs = ({
     }
 
     try {
-      // Validate URL format
       const urlPattern = /^https?:\/\/.+\.(jpg|jpeg|png|webp|gif)$/i;
       if (!urlPattern.test(imageUrl)) {
         toast.error("L'URL doit pointer vers une image valide (JPG, PNG, WEBP ou GIF)");
@@ -106,6 +105,12 @@ export const ImageUploadTabs = ({
       console.error("Erreur d'import URL:", error);
       toast.error("Erreur lors de l'import de l'image");
       form.setValue("image", null);
+    }
+  };
+
+  const handleUploadClick = async () => {
+    if (selectedFile) {
+      await onFileUpload(selectedFile);
     }
   };
 
@@ -144,7 +149,7 @@ export const ImageUploadTabs = ({
             </div>
             <Button
               type="button"
-              onClick={onFileUpload}
+              onClick={handleUploadClick}
               disabled={isUploading || !selectedFile}
             >
               <Upload className="h-4 w-4 mr-2" />
