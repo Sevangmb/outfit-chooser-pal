@@ -28,9 +28,12 @@ export const OutfitFeed = () => {
     queryKey: ["outfits-feed"],
     initialPageParam: 0,
     queryFn: async ({ pageParam = 0 }) => {
-      console.log("Fetching outfits for feed, page:", pageParam);
+      console.log("Fetching outfits page:", pageParam);
       
-      const { data: outfitsData, error: outfitsError } = await supabase
+      const start = pageParam * ITEMS_PER_PAGE;
+      const end = start + ITEMS_PER_PAGE - 1;
+      
+      const { data: outfits, error: outfitsError } = await supabase
         .from("outfits")
         .select(`
           *,
@@ -38,25 +41,25 @@ export const OutfitFeed = () => {
             clothes(id, name, category, color, image)
           )
         `)
-        .order("created_at", { ascending: false })
-        .range(pageParam * ITEMS_PER_PAGE, (pageParam + 1) * ITEMS_PER_PAGE - 1);
+        .order('created_at', { ascending: false })
+        .range(start, end);
 
       if (outfitsError) {
         console.error("Error fetching outfits:", outfitsError);
         throw outfitsError;
       }
 
-      if (!outfitsData || outfitsData.length === 0) {
-        console.log("No outfits found for page", pageParam);
+      console.log("Fetched outfits:", outfits);
+
+      if (!outfits || outfits.length === 0) {
         return {
           outfits: [],
           nextPage: null
         };
       }
 
-      const userIds = [...new Set(outfitsData.map(outfit => outfit.user_id))];
-      console.log("Fetching users for outfits:", userIds);
-
+      // Fetch user emails in a single query
+      const userIds = [...new Set(outfits.map(outfit => outfit.user_id))];
       const { data: users, error: usersError } = await supabase
         .from("users")
         .select("id, email")
@@ -67,17 +70,13 @@ export const OutfitFeed = () => {
         throw usersError;
       }
 
-      const emailMap = new Map(users?.map(user => [user.id, user.email]) || []);
+      const emailMap = new Map(users?.map(user => [user.id, user.email]));
 
-      const formattedOutfits = outfitsData.map(outfit => ({
+      const formattedOutfits = outfits.map(outfit => ({
         ...outfit,
         user_email: emailMap.get(outfit.user_id) || "Utilisateur inconnu",
-        clothes: outfit.clothes.map(item => ({
-          clothes: item.clothes,
-        })),
+        clothes: outfit.clothes || []
       }));
-
-      console.log("Formatted outfits:", formattedOutfits);
 
       return {
         outfits: formattedOutfits,
@@ -105,7 +104,6 @@ export const OutfitFeed = () => {
   }
 
   const allOutfits = data?.pages.flatMap(page => page.outfits) || [];
-  console.log("All outfits:", allOutfits);
 
   return (
     <div className="space-y-6">
