@@ -3,18 +3,16 @@ import { toast } from "sonner";
 import { WeatherWidget } from "@/components/weather/WeatherWidget";
 import { OutfitFeed } from "@/components/feed/OutfitFeed";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Trophy } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { FeedHeader } from "@/components/feed/FeedHeader";
 
 export default function Index() {
   const [suggestion, setSuggestion] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
   
   const getOutfitSuggestion = async () => {
     try {
@@ -112,15 +110,7 @@ export default function Index() {
               </Card>
             </div>
 
-            <Alert className="bg-primary/5 border-primary/20">
-              <Trophy className="h-4 w-4 text-primary" />
-              <AlertDescription className="flex items-center justify-between">
-                <span>Challenge en cours : Créez votre tenue d'automne !</span>
-                <Button variant="link" className="text-primary" onClick={() => navigate("/contest")}>
-                  Participer
-                </Button>
-              </AlertDescription>
-            </Alert>
+            <FeedHeader />
 
             <div className={cn("rounded-lg", "bg-background")}>
               <OutfitFeed />
