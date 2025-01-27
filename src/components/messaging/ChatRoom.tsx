@@ -1,3 +1,4 @@
+<lov-code>
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -9,16 +10,7 @@ import { fr } from "date-fns/locale";
 import { toast } from "sonner";
 import { socket } from "@/integrations/socket/client";
 import { GroupChatRoom } from "./GroupChatRoom";
-
-interface Message {
-  id: number;
-  content: string;
-  created_at: string;
-  sender: {
-    email: string;
-    avatar_url?: string;
-  };
-}
+import { Message } from "@/types/social";
 
 interface ChatRoomProps {
   type: "direct" | "group";
@@ -81,7 +73,7 @@ export const ChatRoom = ({ type, recipientId, recipientName }: ChatRoomProps) =>
           id,
           content,
           created_at,
-          sender:users!user_messages_sender_id_fkey(
+          sender:users!user_messages_sender_id_fkey (
             email,
             avatar_url
           )
@@ -100,28 +92,22 @@ export const ChatRoom = ({ type, recipientId, recipientName }: ChatRoomProps) =>
     }
   };
 
-  const sendMessage = async () => {
+  const handleSendMessage = async () => {
     if (!newMessage.trim()) return;
-
+    
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const currentUserId = sessionData?.session?.user?.id;
-      if (!currentUserId) throw new Error("Not authenticated");
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
 
-      socket.emit("send_message", {
-        type: "direct",
-        recipientId,
-        content: newMessage.trim(),
-        senderId: currentUserId
-      });
+      const { error: sendError } = await supabase
+        .from("user_messages")
+        .insert({
+          sender_id: user.id,
+          recipient_id: recipientId.toString(),
+          content: newMessage.trim()
+        });
 
-      const { error } = await supabase.from("user_messages").insert({
-        sender_id: currentUserId,
-        recipient_id: recipientId.toString(),
-        content: newMessage.trim(),
-      });
-
-      if (error) throw error;
+      if (sendError) throw sendError;
       setNewMessage("");
       toast.success("Message envoyé");
     } catch (error) {
@@ -149,7 +135,7 @@ export const ChatRoom = ({ type, recipientId, recipientName }: ChatRoomProps) =>
           {messages.map((message) => (
             <div key={message.id} className="flex items-start gap-3">
               <Avatar>
-                <AvatarImage src={message.sender.avatar_url} />
+                <AvatarImage src={message.sender.avatar_url || undefined} />
                 <AvatarFallback>
                   {message.sender.email[0].toUpperCase()}
                 </AvatarFallback>
@@ -175,18 +161,4 @@ export const ChatRoom = ({ type, recipientId, recipientName }: ChatRoomProps) =>
         <Input
           placeholder="Votre message..."
           value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          onKeyPress={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              sendMessage();
-            }
-          }}
-        />
-        <Button onClick={sendMessage}>
-          Envoyer
-        </Button>
-      </div>
-    </div>
-  );
-};
+          onChange={(e) => set

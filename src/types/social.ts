@@ -17,7 +17,7 @@ export interface Message {
   created_at: string;
   sender: {
     email: string;
-    avatar_url?: string | null;
+    avatar_url?: string;
   };
 }
 
