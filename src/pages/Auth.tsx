@@ -34,67 +34,50 @@ const Auth = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("État de l'authentification changé:", event, session);
       
-      if (event === 'SIGNED_IN') {
+      if (event === 'SIGNED_IN' && session?.user) {
         try {
           // Vérifier si l'utilisateur existe déjà dans la table des profils
-          const { data: profile, error: profileError } = await supabase
+          const { error: profileError } = await supabase
             .from('profiles')
             .select('id')
-            .eq('id', session?.user?.id)
+            .eq('id', session.user.id)
             .single();
 
-          if (profileError && profileError.code !== 'PGRST116') {
-            console.error("Erreur lors de la vérification du profil:", profileError);
-            toast.error("Erreur lors de la création du profil");
-            return;
-          }
-
-          if (!profile) {
-            // Créer un nouveau profil si nécessaire
+          // Si le profil n'existe pas, on le crée
+          if (profileError?.code === 'PGRST116') {
             const { error: insertError } = await supabase
               .from('profiles')
-              .insert([
-                {
-                  id: session?.user?.id,
-                  email: session?.user?.email,
-                  username: session?.user?.email?.split('@')[0]
-                }
-              ]);
+              .insert({
+                id: session.user.id,
+                email: session.user.email,
+                username: session.user.email?.split('@')[0],
+                has_completed_onboarding: false
+              });
 
             if (insertError) {
               console.error("Erreur lors de la création du profil:", insertError);
-              toast.error("Erreur lors de la création du profil");
               return;
             }
           }
 
           // Vérifier si l'utilisateur a un rôle
-          const { data: role, error: roleError } = await supabase
+          const { error: roleError } = await supabase
             .from('user_roles')
             .select('role')
-            .eq('user_id', session?.user?.id)
+            .eq('user_id', session.user.id)
             .single();
 
-          if (roleError && roleError.code !== 'PGRST116') {
-            console.error("Erreur lors de la vérification du rôle:", roleError);
-            toast.error("Erreur lors de la vérification des permissions");
-            return;
-          }
-
-          if (!role) {
-            // Attribuer le rôle 'user' par défaut
+          // Si l'utilisateur n'a pas de rôle, on lui attribue le rôle 'user'
+          if (roleError?.code === 'PGRST116') {
             const { error: insertRoleError } = await supabase
               .from('user_roles')
-              .insert([
-                {
-                  user_id: session?.user?.id,
-                  role: 'user'
-                }
-              ]);
+              .insert({
+                user_id: session.user.id,
+                role: 'user'
+              });
 
             if (insertRoleError) {
               console.error("Erreur lors de l'attribution du rôle:", insertRoleError);
-              toast.error("Erreur lors de l'attribution des permissions");
               return;
             }
           }
