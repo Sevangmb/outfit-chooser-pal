@@ -60,8 +60,8 @@ export default function Index() {
   };
 
   return (
-    <div className="container py-4 px-4 mx-auto mt-16">
-      <div className="max-w-5xl mx-auto space-y-6">
+    <div className="container mx-auto px-4 pb-20">
+      <div className="max-w-5xl mx-auto space-y-6 pt-4">
         <Tabs defaultValue="feed" className="w-full">
           <TabsList className="w-full mb-6">
             <TabsTrigger value="feed" className="flex items-center gap-2">
