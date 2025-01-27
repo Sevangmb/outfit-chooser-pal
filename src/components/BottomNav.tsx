@@ -27,12 +27,14 @@ export const BottomNav = () => {
       ariaLabel: "Accéder à mon espace personnel",
       color: "red"
     },
-    {
-      path: "/chat",
-      icon: MessageSquare,
-      label: "Chat",
-      ariaLabel: "Accéder au chat",
-    },
+    ...(currentPath === "/community" ? [
+      {
+        path: "/chat",
+        icon: MessageSquare,
+        label: "Chat",
+        ariaLabel: "Accéder au chat",
+      }
+    ] : []),
     {
       path: "/community",
       icon: Users,
@@ -49,7 +51,7 @@ export const BottomNav = () => {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 h-16 bg-background border-t">
-      <div className="grid h-full grid-cols-6 mx-auto">
+      <div className={`grid h-full mx-auto ${currentPath === "/community" ? "grid-cols-6" : "grid-cols-5"}`}>
         {navigationTabs.map((tab) => (
           <NavTab
             key={tab.path}
