@@ -604,14 +604,14 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "friendships_users_friend_id_fkey"
+            foreignKeyName: "friendships_profiles_friend_id_fkey"
             columns: ["friend_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "friendships_users_user_id_fkey"
+            foreignKeyName: "friendships_profiles_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
@@ -743,6 +743,13 @@ export type Database = {
             columns: ["group_id"]
             isOneToOne: false
             referencedRelation: "message_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_messages_profiles_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -908,7 +915,7 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "message_group_members_user_id_fkey"
+            foreignKeyName: "message_group_members_profiles_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
@@ -1134,6 +1141,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "outfits_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       profiles: {
@@ -1270,6 +1284,13 @@ export type Database = {
           website?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "shop_profiles_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "shop_profiles_user_id_fkey_users"
             columns: ["user_id"]
@@ -1585,8 +1606,15 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "user_messages_recipient_id_fkey"
+            foreignKeyName: "user_messages_profiles_recipient_id_fkey"
             columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_messages_profiles_sender_id_fkey"
+            columns: ["sender_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -1594,13 +1622,6 @@ export type Database = {
           {
             foreignKeyName: "user_messages_recipient_user_id_fkey"
             columns: ["recipient_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_messages_sender_id_fkey"
-            columns: ["sender_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]

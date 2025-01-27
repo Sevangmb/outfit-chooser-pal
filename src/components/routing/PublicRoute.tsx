@@ -17,6 +17,7 @@ export const PublicRoute = ({ children }: PublicRouteProps) => {
     const checkAuth = async () => {
       if (user) {
         try {
+          console.log("Checking profile completion for user:", user.id);
           const { data: profile, error } = await supabase
             .from("profiles")
             .select("has_completed_onboarding")
@@ -24,13 +25,14 @@ export const PublicRoute = ({ children }: PublicRouteProps) => {
             .single();
 
           if (error) {
-            console.error("Error fetching user data:", error);
+            console.error("Error fetching profile data:", error);
             setIsProfileComplete(false);
           } else {
+            console.log("Profile completion status:", profile?.has_completed_onboarding);
             setIsProfileComplete(profile?.has_completed_onboarding ?? false);
           }
         } catch (error) {
-          console.error("Error fetching user data:", error);
+          console.error("Error in checkAuth:", error);
           setIsProfileComplete(false);
         }
       }
