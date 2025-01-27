@@ -1,195 +1,83 @@
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { OutfitCard } from "@/components/feed/OutfitCard";
-import { useInView } from "react-intersection-observer";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useEffect } from "react";
-
-interface Outfit {
-  id: number;
-  name: string;
-  description: string | null;
-  user_id: string;
-  rating: number;
-  created_at: string;
-  user_email?: string;
-  clothes: {
-    clothes: {
-      id: number;
-      name: string;
-      category: string;
-      color: string;
-      image: string | null;
-    };
-  }[];
-}
-
-interface UserPreference {
-  id: number;
-  user_id: string;
-  category: string;
-  color: string;
-  created_at: string;
-}
-
-interface PageData {
-  outfits: Outfit[];
-  nextPage: number | null;
-}
-
-const ITEMS_PER_PAGE = 6;
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 export const RecommendedOutfits = () => {
-  const { ref, inView } = useInView();
+  const navigate = useNavigate();
 
-  // Cache les préférences utilisateur pendant 5 minutes
-  const { data: userPreferences } = useQuery<UserPreference[]>({
-    queryKey: ["user-preferences"],
+  const { data: recommendedOutfits } = useQuery({
+    queryKey: ["recommendedOutfits"],
     queryFn: async () => {
-      console.log("Fetching user preferences...");
-      const { data: preferences, error } = await supabase
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
+      // First get user preferences
+      const { data: preferences } = await supabase
         .from("user_preferences")
-        .select("*");
+        .select("*")
+        .eq("user_id", user.id);
 
-      if (error) {
-        console.error("Error fetching user preferences:", error);
-        throw error;
-      }
-
-      return preferences;
-    },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
-  });
-
-  // Cache les tenues recommandées pendant 2 minutes
-  const { 
-    data, 
-    isLoading, 
-    fetchNextPage, 
-    hasNextPage,
-    isFetchingNextPage 
-  } = useInfiniteQuery<PageData>({
-    queryKey: ["recommended-outfits", userPreferences],
-    queryFn: async ({ pageParam = 0 }) => {
-      if (!userPreferences?.length) return { outfits: [], nextPage: null };
-
-      console.log("Fetching recommended outfits for page:", pageParam);
-      const preferredCategories = userPreferences.map((pref) => pref.category);
-      const preferredColors = userPreferences.map((pref) => pref.color);
-
-      const from = Number(pageParam) * ITEMS_PER_PAGE;
-      const to = from + ITEMS_PER_PAGE - 1;
-
-      const { data: outfitsData, error: outfitsError } = await supabase
+      // Get outfits matching preferences
+      const { data: outfits, error } = await supabase
         .from("outfits")
         .select(`
           *,
-          clothes:outfit_clothes(
-            clothes(id, name, category, color, image)
+          profiles!outfits_profiles_user_id_fkey (
+            id,
+            username,
+            email
+          ),
+          outfit_clothes (
+            clothes (
+              id,
+              category,
+              color
+            )
           )
         `)
-        .order("rating", { ascending: false })
-        .range(from, to);
+        .eq("is_flagged", false)
+        .order("created_at", { ascending: false })
+        .limit(10);
 
-      if (outfitsError) {
-        console.error("Error fetching recommended outfits:", outfitsError);
-        throw outfitsError;
+      if (error) throw error;
+
+      // Filter outfits based on preferences if any exist
+      if (preferences && preferences.length > 0) {
+        return outfits.filter(outfit => {
+          const outfitCategories = outfit.outfit_clothes.map(oc => oc.clothes.category);
+          const outfitColors = outfit.outfit_clothes.map(oc => oc.clothes.color);
+          
+          return preferences.some(pref => 
+            outfitCategories.includes(pref.category) || 
+            outfitColors.includes(pref.color)
+          );
+        });
       }
 
-      // Fetch user emails
-      const userIds = outfitsData.map((outfit: any) => outfit.user_id);
-      const { data: users, error: usersError } = await supabase
-        .from("users")
-        .select("id, email")
-        .in("id", userIds);
-
-      if (usersError) {
-        console.error("Error fetching users:", usersError);
-        throw usersError;
-      }
-
-      const emailMap = new Map(users?.map((u) => [u.id, u.email]));
-
-      // Filter and sort outfits based on preferences
-      const outfitsWithScores = outfitsData.map((outfit: any) => {
-        const clothes = outfit.clothes.map((item: any) => item.clothes);
-        const preferenceScore = clothes.reduce((score: number, clothing: any) => {
-          if (preferredCategories.includes(clothing.category)) score += 1;
-          if (preferredColors.includes(clothing.color)) score += 1;
-          return score;
-        }, 0);
-
-        return {
-          ...outfit,
-          user_email: emailMap.get(outfit.user_id),
-          clothes: outfit.clothes.map((item: any) => ({
-            clothes: item.clothes,
-          })),
-          preferenceScore,
-        };
-      });
-
-      const sortedOutfits = outfitsWithScores.sort((a, b) => b.preferenceScore - a.preferenceScore);
-      const hasMore = sortedOutfits.length === ITEMS_PER_PAGE;
-
-      return {
-        outfits: sortedOutfits,
-        nextPage: hasMore ? Number(pageParam) + 1 : null,
-      };
+      return outfits;
     },
-    initialPageParam: 0,
-    getNextPageParam: (lastPage) => lastPage.nextPage,
-    enabled: !!userPreferences?.length,
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    gcTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  // Charger plus de tenues quand l'utilisateur atteint le bas de la page
-  useEffect(() => {
-    if (inView && !isLoading && !isFetchingNextPage && hasNextPage) {
-      fetchNextPage();
-    }
-  }, [inView, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage]);
-
-  if (!userPreferences?.length) {
-    return null;
-  }
-
   return (
-    <div className="space-y-4">
-      <h2 className="text-xl font-semibold">Recommandés pour vous</h2>
-      {isLoading ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[...Array(6)].map((_, i) => (
-            <Skeleton key={i} className="h-[400px] rounded-xl" />
-          ))}
-        </div>
-      ) : data?.pages[0].outfits.length > 0 ? (
-        <>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {data.pages.map((page) =>
-              page.outfits.map((outfit: Outfit) => (
-                <OutfitCard key={outfit.id} outfit={outfit} />
-              ))
-            )}
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {recommendedOutfits?.map((outfit) => (
+        <Card key={outfit.id} className="p-4">
+          <h3 className="font-semibold">{outfit.name}</h3>
+          <p className="text-sm text-muted-foreground">
+            By {outfit.profiles?.username || "Unknown"}
+          </p>
+          <div className="mt-4">
+            <Button
+              variant="outline"
+              onClick={() => navigate(`/outfit/${outfit.id}`)}
+            >
+              View Details
+            </Button>
           </div>
-          {/* Intersection Observer target */}
-          <div ref={ref} className="h-20 flex items-center justify-center">
-            {isFetchingNextPage && (
-              <div className="grid grid-cols-3 gap-4 w-full">
-                {[...Array(3)].map((_, i) => (
-                  <Skeleton key={i} className="h-[400px] rounded-xl" />
-                ))}
-              </div>
-            )}
-          </div>
-        </>
-      ) : (
-        <div className="text-center py-8 text-muted-foreground">
-          Aucune recommandation disponible
-        </div>
-      )}
+        </Card>
+      ))}
     </div>
   );
 };

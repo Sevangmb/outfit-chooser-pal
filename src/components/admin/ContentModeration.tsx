@@ -1,197 +1,144 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Check, X, Search } from "lucide-react";
-
-interface FlaggedContent {
-  id: number;
-  type: 'outfit' | 'comment';
-  content: string;
-  flag_reason: string;
-  created_at: string;
-  user: {
-    email: string;
-  };
-}
 
 export const ContentModeration = () => {
-  const [content, setContent] = useState<FlaggedContent[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const fetchFlaggedContent = async () => {
+  const { data: flaggedOutfits } = useQuery({
+    queryKey: ["flaggedOutfits"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("outfits")
+        .select(`
+          *,
+          profiles!outfits_profiles_user_id_fkey (
+            username,
+            email
+          )
+        `)
+        .eq("is_flagged", true);
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: flaggedComments } = useQuery({
+    queryKey: ["flaggedComments"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("outfit_comments")
+        .select(`
+          *,
+          profiles!outfit_comments_user_id_fkey (
+            username,
+            email
+          )
+        `)
+        .eq("is_flagged", true);
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const handleModerateOutfit = async (outfitId: number, action: "approve" | "reject") => {
+    setLoading(true);
     try {
-      console.log('Fetching flagged content...');
-      const [outfitsResponse, commentsResponse] = await Promise.all([
-        supabase
-          .from('outfits')
-          .select(`
-            id,
-            name,
-            flag_reason,
-            created_at,
-            profiles!outfits_profiles_user_id_fkey (
-              username
-            )
-          `)
-          .eq('is_flagged', true)
-          .order('created_at', { ascending: false }),
-        supabase
-          .from('outfit_comments')
-          .select(`
-            id,
-            content,
-            flag_reason,
-            created_at,
-            profiles!outfit_comments_user_id_fkey (
-              username
-            )
-          `)
-          .eq('is_flagged', true)
-          .order('created_at', { ascending: false })
-      ]);
+      const { error } = await supabase.rpc("moderate_outfit", {
+        p_outfit_id: outfitId,
+        p_action: action,
+      });
 
-      if (outfitsResponse.error) throw outfitsResponse.error;
-      if (commentsResponse.error) throw commentsResponse.error;
-
-      const flaggedOutfits = (outfitsResponse.data || []).map(item => ({
-        id: item.id,
-        type: 'outfit' as const,
-        content: item.name,
-        flag_reason: item.flag_reason || '',
-        created_at: item.created_at,
-        user: { email: item.profiles?.username || 'Unknown' }
-      }));
-
-      const flaggedComments = (commentsResponse.data || []).map(item => ({
-        id: item.id,
-        type: 'comment' as const,
-        content: item.content,
-        flag_reason: item.flag_reason || '',
-        created_at: item.created_at,
-        user: { email: item.profiles?.username || 'Unknown' }
-      }));
-
-      const flaggedContent = [...flaggedOutfits, ...flaggedComments]
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-
-      console.log('Flagged content:', flaggedContent);
-      setContent(flaggedContent);
+      if (error) throw error;
+      toast.success(`Outfit ${action}ed successfully`);
     } catch (error) {
-      console.error('Error fetching flagged content:', error);
-      toast.error("Erreur lors du chargement du contenu signalé");
+      console.error("Error moderating outfit:", error);
+      toast.error("Failed to moderate outfit");
     } finally {
       setLoading(false);
     }
   };
 
-  const moderateContent = async (id: number, type: 'outfit' | 'comment', action: 'approve' | 'remove') => {
+  const handleModerateComment = async (commentId: number, action: "approve" | "reject") => {
+    setLoading(true);
     try {
-      console.log('Moderating content:', { id, type, action });
-      const { error } = await supabase.rpc(
-        type === 'outfit' ? 'moderate_outfit' : 'moderate_comment',
-        {
-          p_outfit_id: type === 'outfit' ? id : null,
-          p_comment_id: type === 'comment' ? id : null,
-          p_action: action,
-          p_reason: action === 'remove' ? 'Content violates community guidelines' : null
-        }
-      );
+      const { error } = await supabase.rpc("moderate_comment", {
+        p_comment_id: commentId,
+        p_action: action,
+      });
 
       if (error) throw error;
-
-      toast.success("Contenu modéré avec succès");
-      fetchFlaggedContent();
+      toast.success(`Comment ${action}ed successfully`);
     } catch (error) {
-      console.error('Error moderating content:', error);
-      toast.error("Erreur lors de la modération du contenu");
+      console.error("Error moderating comment:", error);
+      toast.error("Failed to moderate comment");
+    } finally {
+      setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchFlaggedContent();
-  }, []);
-
-  const filteredContent = content.filter(item =>
-    item.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.flag_reason?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  if (loading) {
-    return (
-      <div className="flex justify-center p-4">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-4">
-      <div className="flex items-center space-x-2 mb-4">
-        <Search className="h-4 w-4 text-gray-500" />
-        <Input
-          placeholder="Rechercher dans le contenu signalé..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-sm"
-        />
-      </div>
-
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Type</TableHead>
-            <TableHead>Contenu</TableHead>
-            <TableHead>Raison</TableHead>
-            <TableHead>Utilisateur</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filteredContent.map((item) => (
-            <TableRow key={`${item.type}-${item.id}`}>
-              <TableCell className="capitalize">{item.type}</TableCell>
-              <TableCell>{item.content}</TableCell>
-              <TableCell>{item.flag_reason}</TableCell>
-              <TableCell>{item.user?.email}</TableCell>
-              <TableCell>
-                {new Date(item.created_at).toLocaleDateString()}
-              </TableCell>
-              <TableCell>
-                <div className="flex space-x-2">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => moderateContent(item.id, item.type, 'approve')}
-                    className="text-green-600"
-                  >
-                    <Check className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => moderateContent(item.id, item.type, 'remove')}
-                    className="text-red-600"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
+    <div className="space-y-6">
+      <section>
+        <h3 className="text-lg font-semibold mb-4">Flagged Outfits</h3>
+        <div className="space-y-4">
+          {flaggedOutfits?.map((outfit) => (
+            <div key={outfit.id} className="border p-4 rounded-lg">
+              <p>Posted by: {outfit.profiles?.username || "Unknown user"}</p>
+              <p>Reason: {outfit.flag_reason}</p>
+              <div className="flex gap-2 mt-2">
+                <Button
+                  variant="outline"
+                  onClick={() => handleModerateOutfit(outfit.id, "approve")}
+                  disabled={loading}
+                >
+                  Approve
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => handleModerateOutfit(outfit.id, "reject")}
+                  disabled={loading}
+                >
+                  Reject
+                </Button>
+              </div>
+            </div>
           ))}
-        </TableBody>
-      </Table>
+        </div>
+      </section>
+
+      <section>
+        <h3 className="text-lg font-semibold mb-4">Flagged Comments</h3>
+        <div className="space-y-4">
+          {flaggedComments?.map((comment) => (
+            <div key={comment.id} className="border p-4 rounded-lg">
+              <p>Posted by: {comment.profiles?.username || "Unknown user"}</p>
+              <p>Content: {comment.content}</p>
+              <p>Reason: {comment.flag_reason}</p>
+              <div className="flex gap-2 mt-2">
+                <Button
+                  variant="outline"
+                  onClick={() => handleModerateComment(comment.id, "approve")}
+                  disabled={loading}
+                >
+                  Approve
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => handleModerateComment(comment.id, "reject")}
+                  disabled={loading}
+                >
+                  Reject
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 };

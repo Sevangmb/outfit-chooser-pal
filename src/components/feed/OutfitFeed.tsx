@@ -1,122 +1,54 @@
-import { useEffect } from "react";
-import { useInView } from "react-intersection-observer";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { OutfitGrid } from "./OutfitGrid";
-import { EmptyFeed } from "./EmptyFeed";
+import { Card } from "@/components/ui/card";
 
-const ITEMS_PER_PAGE = 9;
-
-interface OutfitFeedProps {
-  filter?: "trending" | "following";
-}
-
-export const OutfitFeed = ({ filter }: OutfitFeedProps) => {
-  const { ref, inView } = useInView();
-
-  const {
-    data,
-    error,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    status,
-  } = useInfiniteQuery({
-    queryKey: ["outfits-feed", filter],
-    initialPageParam: 0,
-    queryFn: async ({ pageParam = 0 }) => {
-      console.log("Starting to fetch outfits page:", pageParam, "with filter:", filter);
-      
-      const start = pageParam * ITEMS_PER_PAGE;
-      const end = start + ITEMS_PER_PAGE - 1;
-      
-      let query = supabase
+export const OutfitFeed = () => {
+  const { data: outfits } = useQuery({
+    queryKey: ["outfits"],
+    queryFn: async () => {
+      const { data, error } = await supabase
         .from("outfits")
         .select(`
           *,
-          clothes:outfit_clothes(
-            clothes(id, name, category, color, image)
+          profiles!outfits_profiles_user_id_fkey (
+            username,
+            email
           ),
-          profiles!outfits_profiles_user_id_fkey(email)
-        `, { count: 'exact' });
+          clothes:outfit_clothes (
+            clothes (
+              id,
+              name,
+              category,
+              color,
+              image
+            )
+          )
+        `)
+        .order("created_at", { ascending: false })
+        .limit(9);
 
-      if (filter === "trending") {
-        query = query.order('rating', { ascending: false });
-      } else if (filter === "following") {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const { data: following } = await supabase
-            .from('followers')
-            .select('following_id')
-            .eq('follower_id', user.id);
-          
-          const followingIds = following?.map(f => f.following_id) || [];
-          query = query.in('user_id', followingIds);
-        }
-      }
-
-      const { data: outfits, error: outfitsError, count } = await query
-        .order('created_at', { ascending: false })
-        .range(start, end);
-
-      if (outfitsError) {
-        console.error("Error fetching outfits:", outfitsError);
-        throw outfitsError;
-      }
-
-      if (!outfits || outfits.length === 0) {
-        console.log("No outfits found for this page");
-        return {
-          outfits: [],
-          nextPage: null
-        };
-      }
-
-      const formattedOutfits = outfits.map(outfit => ({
-        ...outfit,
-        user_email: outfit.profiles?.email || "Utilisateur inconnu",
-        clothes: outfit.clothes || []
-      }));
-
-      const hasMore = count ? start + outfits.length < count : false;
-
-      return {
-        outfits: formattedOutfits,
-        nextPage: hasMore ? pageParam + 1 : null,
-      };
+      if (error) throw error;
+      return data;
     },
-    getNextPageParam: (lastPage) => lastPage.nextPage,
   });
 
-  useEffect(() => {
-    if (inView && hasNextPage && !isFetchingNextPage) {
-      console.log("Loading next page due to scroll...");
-      fetchNextPage();
-    }
-  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
-
-  if (status === "pending") {
-    return <OutfitGrid outfits={[]} isFetchingNextPage={true} observerRef={ref} />;
-  }
-
-  if (status === "error") {
-    console.error("Error in OutfitFeed:", error);
-    return <div>Une erreur s'est produite lors du chargement des tenues.</div>;
-  }
-
-  const allOutfits = data?.pages.flatMap(page => page.outfits) || [];
-
-  if (allOutfits.length === 0) {
-    return <EmptyFeed />;
-  }
-
   return (
-    <div className="space-y-6">
-      <OutfitGrid 
-        outfits={allOutfits}
-        isFetchingNextPage={isFetchingNextPage}
-        observerRef={ref}
-      />
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {outfits?.map((outfit) => (
+        <Card key={outfit.id} className="p-4">
+          <h3 className="font-semibold">{outfit.name}</h3>
+          <p className="text-sm text-muted-foreground">
+            By {outfit.profiles?.username || "Unknown"}
+          </p>
+          <div className="mt-2 space-y-1">
+            {outfit.clothes?.map((item) => (
+              <div key={item.clothes.id} className="text-sm">
+                {item.clothes.name} ({item.clothes.color})
+              </div>
+            ))}
+          </div>
+        </Card>
+      ))}
     </div>
   );
 };

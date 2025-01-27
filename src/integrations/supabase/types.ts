@@ -921,6 +921,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "message_group_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       message_groups: {
@@ -1060,6 +1067,13 @@ export type Database = {
             columns: ["outfit_id"]
             isOneToOne: false
             referencedRelation: "outfits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "outfit_comments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
