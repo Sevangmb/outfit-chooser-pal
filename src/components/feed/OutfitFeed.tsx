@@ -30,79 +30,72 @@ export const OutfitFeed = () => {
     queryFn: async ({ pageParam = 0 }) => {
       console.log("Fetching outfits for feed, page:", pageParam);
       
-      try {
-        const { data: outfitsData, error: outfitsError } = await supabase
-          .from("outfits")
-          .select(`
-            *,
-            clothes:outfit_clothes(
-              clothes(id, name, category, color, image)
-            )
-          `)
-          .order("created_at", { ascending: false })
-          .range(pageParam * ITEMS_PER_PAGE, (pageParam + 1) * ITEMS_PER_PAGE - 1);
+      const { data: outfitsData, error: outfitsError } = await supabase
+        .from("outfits")
+        .select(`
+          *,
+          clothes:outfit_clothes(
+            clothes(id, name, category, color, image)
+          )
+        `)
+        .order("created_at", { ascending: false })
+        .range(pageParam * ITEMS_PER_PAGE, (pageParam + 1) * ITEMS_PER_PAGE - 1);
 
-        if (outfitsError) throw outfitsError;
-
-        if (!outfitsData || outfitsData.length === 0) {
-          return {
-            outfits: [],
-            nextPage: null
-          };
-        }
-
-        const userIds = [...new Set(outfitsData.map((outfit: any) => outfit.user_id))];
-        console.log("Fetching users for outfits:", userIds);
-
-        const BATCH_SIZE = 5;
-        const users: any[] = [];
-        
-        for (let i = 0; i < userIds.length; i += BATCH_SIZE) {
-          const batchIds = userIds.slice(i, i + BATCH_SIZE);
-          const { data: batchUsers, error: usersError } = await supabase
-            .from("users")
-            .select("id, email")
-            .in("id", batchIds);
-
-          if (usersError) {
-            console.error("Error fetching users batch:", usersError);
-            continue;
-          }
-
-          if (batchUsers) {
-            users.push(...batchUsers);
-          }
-        }
-
-        const emailMap = new Map(users.map((p) => [p.id, p.email]));
-
-        const formattedOutfits = outfitsData.map((outfit: any) => ({
-          ...outfit,
-          user_email: emailMap.get(outfit.user_id) || "Utilisateur inconnu",
-          clothes: outfit.clothes.map((item: any) => ({
-            clothes: item.clothes,
-          })),
-        }));
-
-        return {
-          outfits: formattedOutfits,
-          nextPage: outfitsData.length === ITEMS_PER_PAGE ? pageParam + 1 : null,
-        };
-      } catch (error) {
-        console.error("Error in queryFn:", error);
-        throw error;
+      if (outfitsError) {
+        console.error("Error fetching outfits:", outfitsError);
+        throw outfitsError;
       }
+
+      if (!outfitsData || outfitsData.length === 0) {
+        console.log("No outfits found for page", pageParam);
+        return {
+          outfits: [],
+          nextPage: null
+        };
+      }
+
+      const userIds = [...new Set(outfitsData.map(outfit => outfit.user_id))];
+      console.log("Fetching users for outfits:", userIds);
+
+      const { data: users, error: usersError } = await supabase
+        .from("users")
+        .select("id, email")
+        .in("id", userIds);
+
+      if (usersError) {
+        console.error("Error fetching users:", usersError);
+        throw usersError;
+      }
+
+      const emailMap = new Map(users?.map(user => [user.id, user.email]) || []);
+
+      const formattedOutfits = outfitsData.map(outfit => ({
+        ...outfit,
+        user_email: emailMap.get(outfit.user_id) || "Utilisateur inconnu",
+        clothes: outfit.clothes.map(item => ({
+          clothes: item.clothes,
+        })),
+      }));
+
+      console.log("Formatted outfits:", formattedOutfits);
+
+      return {
+        outfits: formattedOutfits,
+        nextPage: formattedOutfits.length === ITEMS_PER_PAGE ? pageParam + 1 : null,
+      };
     },
     getNextPageParam: (lastPage) => lastPage.nextPage,
   });
 
   useEffect(() => {
     if (inView && hasNextPage && !isFetchingNextPage) {
+      console.log("Loading next page...");
       fetchNextPage();
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   if (error) {
+    console.error("Feed error:", error);
     return (
       <div className="text-center py-12 space-y-6">
         <p className="text-destructive">Une erreur est survenue lors du chargement des tenues</p>
@@ -110,6 +103,9 @@ export const OutfitFeed = () => {
       </div>
     );
   }
+
+  const allOutfits = data?.pages.flatMap(page => page.outfits) || [];
+  console.log("All outfits:", allOutfits);
 
   return (
     <div className="space-y-6">
@@ -133,11 +129,11 @@ export const OutfitFeed = () => {
           </div>
         )}
 
-        {!isLoading && data?.pages[0].outfits.length === 0 && <EmptyFeed />}
+        {!isLoading && allOutfits.length === 0 && <EmptyFeed />}
 
-        {!isLoading && data?.pages[0].outfits.length > 0 && (
+        {!isLoading && allOutfits.length > 0 && (
           <OutfitGrid 
-            outfits={data.pages.flatMap((page) => page.outfits)}
+            outfits={allOutfits}
             isFetchingNextPage={isFetchingNextPage}
             observerRef={ref}
           />

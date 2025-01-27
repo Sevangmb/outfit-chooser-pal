@@ -33,7 +33,7 @@ export const OutfitGrid = ({ outfits, isFetchingNextPage, observerRef }: OutfitG
         <OutfitCard key={outfit.id} outfit={outfit} />
       ))}
       
-      <div ref={observerRef} className="col-span-full h-20 flex items-center justify-center">
+      <div ref={observerRef} className="col-span-full">
         {isFetchingNextPage && (
           <div className="grid grid-cols-3 gap-4 w-full">
             {[...Array(3)].map((_, i) => (
