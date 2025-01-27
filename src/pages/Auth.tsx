@@ -13,27 +13,51 @@ const Auth = () => {
   supabase.auth.onAuthStateChange(async (event, session) => {
     console.log("Auth state changed:", event, session);
     
-    if (event === "SIGNED_IN") {
+    if (event === "SIGNED_IN" && session?.user) {
       try {
-        // Check if profile exists
-        const { data: profile, error: profileError } = await supabase
+        setLoading(true);
+        
+        // First check if profile exists
+        const { data: existingProfile, error: profileError } = await supabase
           .from("profiles")
           .select("*")
-          .eq("id", session?.user?.id)
-          .single();
+          .eq("id", session.user.id)
+          .maybeSingle();
 
         if (profileError) {
-          console.error("Error fetching profile:", profileError);
-          toast.error("Erreur lors de la récupération du profil");
+          console.error("Error checking profile:", profileError);
+          toast.error("Erreur lors de la vérification du profil");
           return;
         }
 
-        console.log("User profile:", profile);
+        // If profile doesn't exist, create it
+        if (!existingProfile) {
+          console.log("Creating new profile for user:", session.user.id);
+          const { error: insertError } = await supabase
+            .from("profiles")
+            .insert([
+              {
+                id: session.user.id,
+                email: session.user.email,
+                username: session.user.email?.split('@')[0],
+              }
+            ]);
+
+          if (insertError) {
+            console.error("Error creating profile:", insertError);
+            toast.error("Erreur lors de la création du profil");
+            return;
+          }
+        }
+
+        console.log("Profile verified:", existingProfile || "New profile created");
         toast.success("Connexion réussie !");
         navigate("/");
       } catch (error) {
-        console.error("Error in auth state change:", error);
-        toast.error("Une erreur est survenue");
+        console.error("Error in auth flow:", error);
+        toast.error("Une erreur est survenue lors de l'authentification");
+      } finally {
+        setLoading(false);
       }
     } else if (event === "SIGNED_OUT") {
       console.log("User signed out");
