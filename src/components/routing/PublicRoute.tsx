@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
 interface PublicRouteProps {
@@ -7,46 +8,47 @@ interface PublicRouteProps {
 }
 
 export const PublicRoute = ({ children }: PublicRouteProps) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const { user, loading } = useAuth();
+  const [isProfileComplete, setIsProfileComplete] = useState<boolean | null>(null);
+  const [checkingProfile, setCheckingProfile] = useState(true);
+  const location = useLocation();
 
   useEffect(() => {
     const checkAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          // Fetch user data when session exists
-          const { data: userData, error: userError } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', session.user.id)
+      if (user) {
+        try {
+          const { data: profile, error } = await supabase
+            .from("profiles")
+            .select("has_completed_onboarding")
+            .eq("id", user.id)
             .single();
 
-          if (userError) {
-            console.error("Error fetching user data:", userError);
+          if (error) {
+            console.error("Error fetching user data:", error);
+            setIsProfileComplete(false);
           } else {
-            console.log("User data fetched:", userData);
+            setIsProfileComplete(profile?.has_completed_onboarding ?? false);
           }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+          setIsProfileComplete(false);
         }
-        setIsAuthenticated(!!session);
-      } catch (error) {
-        console.error("Error checking auth:", error);
-        setIsAuthenticated(false);
       }
+      setCheckingProfile(false);
     };
 
     checkAuth();
-  }, []);
+  }, [user]);
 
-  if (isAuthenticated === null) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
+  if (loading || checkingProfile) {
+    return <div>Chargement...</div>;
   }
 
-  if (isAuthenticated) {
-    return <Navigate to="/" />;
+  if (user) {
+    if (isProfileComplete === false) {
+      return <Navigate to="/onboarding" replace />;
+    }
+    return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;

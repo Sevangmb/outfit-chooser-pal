@@ -37,7 +37,7 @@ export const OutfitFeed = ({ filter }: OutfitFeedProps) => {
           clothes:outfit_clothes(
             clothes(id, name, category, color, image)
           ),
-          user:users(email)
+          profiles(email)
         `, { count: 'exact' });
 
       if (filter === "trending") {
@@ -74,7 +74,7 @@ export const OutfitFeed = ({ filter }: OutfitFeedProps) => {
 
       const formattedOutfits = outfits.map(outfit => ({
         ...outfit,
-        user_email: outfit.user?.email || "Utilisateur inconnu",
+        user_email: outfit.profiles?.email || "Utilisateur inconnu",
         clothes: outfit.clothes || []
       }));
 
