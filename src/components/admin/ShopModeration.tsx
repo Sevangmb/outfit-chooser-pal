@@ -48,7 +48,7 @@ const ShopModeration = () => {
         .from('shop_profiles')
         .select(`
           *,
-          profiles:user_id (
+          profiles!shop_profiles_user_id_fkey (
             email
           )
         `)
