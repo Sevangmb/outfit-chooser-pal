@@ -27,8 +27,7 @@ export const OutfitFeed = () => {
   } = useInfiniteQuery({
     queryKey: ["outfits-feed"],
     initialPageParam: 0,
-    queryFn: async (context) => {
-      const pageParam = Number(context.pageParam);
+    queryFn: async ({ pageParam = 0 }) => {
       console.log("Fetching outfits for feed, page:", pageParam);
       
       try {
