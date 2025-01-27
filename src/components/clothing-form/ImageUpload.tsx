@@ -13,6 +13,7 @@ interface ImageUploadProps {
   previewUrl: string | null;
   uploadError: string | null;
   onCameraCapture: () => Promise<void>;
+  onFileSelect: (file: File) => void;
 }
 
 export const ImageUpload = ({
@@ -21,12 +22,8 @@ export const ImageUpload = ({
   previewUrl,
   uploadError,
   onCameraCapture,
+  onFileSelect,
 }: ImageUploadProps) => {
-  const handleUploadSuccess = (url: string) => {
-    console.log("Setting image URL in form:", url);
-    form.setValue("image", url, { shouldValidate: true });
-  };
-
   return (
     <FormItem>
       <FormLabel>Image</FormLabel>
@@ -35,7 +32,7 @@ export const ImageUpload = ({
           <FormControl>
             <FileUploader
               accept="image/*"
-              onUploadSuccess={handleUploadSuccess}
+              onUploadSuccess={onFileSelect}
             />
           </FormControl>
           <Button

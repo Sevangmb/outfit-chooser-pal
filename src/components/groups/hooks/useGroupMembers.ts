@@ -1,79 +1,92 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Member } from '../types/member';
+import { toast } from 'sonner';
 
 export const useGroupMembers = (groupId: number) => {
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState('');
+
+  const fetchMembers = async () => {
+    try {
+      console.log('Fetching members for group:', groupId);
+      const { data: membersData, error: membersError } = await supabase
+        .from('message_group_members')
+        .select(`
+          id,
+          user_id,
+          joined_at,
+          role,
+          is_approved,
+          users!inner (
+            email
+          )
+        `)
+        .eq('group_id', groupId);
+
+      if (membersError) {
+        console.error('Error fetching members:', membersError);
+        throw membersError;
+      }
+
+      const formattedMembers: Member[] = membersData.map(member => ({
+        id: member.id,
+        user_id: member.user_id,
+        email: member.users.email,
+        joined_at: member.joined_at,
+        role: member.role,
+        is_approved: member.is_approved
+      }));
+
+      console.log('Fetched members:', formattedMembers);
+      setMembers(formattedMembers);
+    } catch (err) {
+      console.error('Error in fetchMembers:', err);
+      setError('Failed to load group members');
+      toast.error('Failed to load group members');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchMembers = async () => {
-      try {
-        console.log('Fetching members for group:', groupId);
-        
-        const { data: membersData, error: membersError } = await supabase
-          .from('message_group_members')
-          .select(`
-            id,
-            user_id,
-            joined_at,
-            role,
-            is_approved
-          `)
-          .eq('group_id', groupId);
-
-        if (membersError) {
-          console.error('Error fetching members:', membersError);
-          throw membersError;
-        }
-
-        if (!membersData) {
-          console.log('No members found for group:', groupId);
-          setMembers([]);
-          return;
-        }
-
-        // Fetch user details for each member
-        const userIds = membersData.map(member => member.user_id);
-        const { data: users, error: usersError } = await supabase
-          .from('users')
-          .select('id, email')
-          .in('id', userIds);
-
-        if (usersError) {
-          console.error('Error fetching users:', usersError);
-          throw usersError;
-        }
-
-        // Create a map of user emails
-        const userMap = new Map(users?.map(u => [u.id, u.email]));
-
-        // Combine member data with user data
-        const formattedMembers = membersData.map(member => ({
-          id: member.id,
-          userId: member.user_id,
-          email: userMap.get(member.user_id) || 'Unknown User',
-          joinedAt: member.joined_at,
-          role: member.role,
-          isApproved: member.is_approved
-        }));
-
-        console.log('Formatted members:', formattedMembers);
-        setMembers(formattedMembers);
-
-      } catch (err) {
-        console.error('Error in useGroupMembers:', err);
-        setError(err instanceof Error ? err.message : 'An error occurred');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (groupId) {
-      fetchMembers();
-    }
+    fetchMembers();
   }, [groupId]);
 
-  return { members, loading, error };
+  const updateMemberRole = async (memberId: number, newRole: string) => {
+    try {
+      const { error: updateError } = await supabase
+        .from('message_group_members')
+        .update({ role: newRole })
+        .eq('id', memberId);
+
+      if (updateError) throw updateError;
+
+      await fetchMembers();
+      toast.success('Member role updated successfully');
+    } catch (err) {
+      console.error('Error updating member role:', err);
+      toast.error('Failed to update member role');
+    }
+  };
+
+  const removeMember = async (memberId: number) => {
+    try {
+      const { error: deleteError } = await supabase
+        .from('message_group_members')
+        .delete()
+        .eq('id', memberId);
+
+      if (deleteError) throw deleteError;
+
+      await fetchMembers();
+      toast.success('Member removed successfully');
+    } catch (err) {
+      console.error('Error removing member:', err);
+      toast.error('Failed to remove member');
+    }
+  };
+
+  return { members, loading, error, updateMemberRole, removeMember };
 };

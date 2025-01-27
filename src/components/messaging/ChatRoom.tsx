@@ -81,7 +81,7 @@ export const ChatRoom = ({ type, recipientId, recipientName }: ChatRoomProps) =>
           id,
           content,
           created_at,
-          sender:profiles!user_messages_sender_id_fkey(
+          sender:users!user_messages_sender_id_fkey(
             email,
             avatar_url
           )

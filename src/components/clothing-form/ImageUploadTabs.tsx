@@ -2,18 +2,34 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ImageUpload } from "./ImageUpload";
 import { Button } from "@/components/ui/button";
 import { Camera, Upload } from "lucide-react";
-import { useCameraCapture } from "./hooks/useCameraCapture";
+import { UseFormReturn } from "react-hook-form";
+import { FormValues } from "@/types/clothing";
 
 interface ImageUploadTabsProps {
-  onImageSelect: (file: File) => void;
-  onImageCapture: (imageBlob: Blob) => void;
+  form: UseFormReturn<FormValues>;
+  isUploading: boolean;
+  previewUrl: string | null;
+  uploadError: string | null;
+  uploadProgress: number;
+  onFileUpload: (file: File) => Promise<string | null>;
+  onCameraCapture: () => Promise<void>;
+  onUrlUpload: (url: string) => Promise<void>;
+  onResetPreview: () => void;
 }
 
-export const ImageUploadTabs = ({ onImageSelect, onImageCapture }: ImageUploadTabsProps) => {
-  const { startCapture, stopCapture } = useCameraCapture();
-
-  const handleCameraStart = () => {
-    startCapture(onImageCapture);
+export const ImageUploadTabs = ({
+  form,
+  isUploading,
+  previewUrl,
+  uploadError,
+  onCameraCapture,
+  onFileUpload,
+}: ImageUploadTabsProps) => {
+  const handleFileSelect = async (file: File) => {
+    const url = await onFileUpload(file);
+    if (url) {
+      form.setValue("image", url);
+    }
   };
 
   return (
@@ -29,14 +45,20 @@ export const ImageUploadTabs = ({ onImageSelect, onImageCapture }: ImageUploadTa
         </TabsTrigger>
       </TabsList>
       <TabsContent value="upload">
-        <ImageUpload onImageSelect={onImageSelect} />
+        <ImageUpload
+          form={form}
+          isUploading={isUploading}
+          previewUrl={previewUrl}
+          uploadError={uploadError}
+          onCameraCapture={onCameraCapture}
+          onFileSelect={handleFileSelect}
+        />
       </TabsContent>
       <TabsContent value="camera">
         <div className="flex flex-col items-center gap-4">
           <video id="camera-preview" className="w-full aspect-video bg-black rounded-lg" />
           <div className="flex gap-4">
-            <Button onClick={handleCameraStart}>Start Camera</Button>
-            <Button variant="outline" onClick={stopCapture}>Stop Camera</Button>
+            <Button onClick={onCameraCapture}>Start Camera</Button>
           </div>
         </div>
       </TabsContent>
