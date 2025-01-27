@@ -109,8 +109,12 @@ export const ImageUploadTabs = ({
   };
 
   const handleUploadClick = async () => {
-    if (selectedFile) {
+    if (!selectedFile) return;
+    try {
       await onFileUpload(selectedFile);
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      toast.error("Erreur lors de l'envoi du fichier");
     }
   };
 

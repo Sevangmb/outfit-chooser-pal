@@ -1,85 +1,40 @@
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { FileUploadForm } from "./FileUploadForm";
 import { FileList } from "./FileList";
-import { FilePreviewDialog } from "./FilePreviewDialog";
+import { toast } from "sonner";
 
-export const UserFiles = () => {
-  const [uploading, setUploading] = useState(false);
-  const [files, setFiles] = useState<any[]>([]);
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
+interface UserFilesProps {
+  searchTerm: string;
+  fileType: "all" | "image" | "document";
+  sortBy: "date" | "name" | "size";
+  sortOrder: "asc" | "desc";
+}
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    try {
-      const file = event.target.files?.[0];
-      if (!file) return;
-
-      setUploading(true);
-      console.log("Starting file upload:", file.name);
-
+export const UserFiles = ({ searchTerm, fileType, sortBy, sortOrder }: UserFilesProps) => {
+  const { data: files, isLoading } = useQuery({
+    queryKey: ["user_files", searchTerm, fileType, sortBy, sortOrder],
+    queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast.error("Utilisateur non connecté");
-        return;
-      }
-
-      const fileExt = file.name.split('.').pop();
-      const filePath = `${crypto.randomUUID()}.${fileExt}`;
-
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('user_files')
-        .upload(filePath, file);
-
-      if (uploadError) {
-        console.error("Upload error:", uploadError);
-        toast.error("Erreur lors de l'upload du fichier");
-        return;
-      }
-
-      const { error: dbError } = await supabase
-        .from('user_files')
-        .insert({
-          filename: file.name,
-          file_path: filePath,
-          content_type: file.type,
-          size: file.size,
-          user_id: user.id
-        });
-
-      if (dbError) {
-        console.error("Database error:", dbError);
-        toast.error("Erreur lors de l'enregistrement des métadonnées");
-        return;
-      }
-
-      toast.success("Fichier uploadé avec succès");
-      fetchFiles();
-    } catch (error) {
-      console.error("Error:", error);
-      toast.error("Une erreur est survenue");
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const fetchFiles = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) return [];
 
       const { data, error } = await supabase
         .from('user_files')
         .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+        .eq('user_id', user.id);
 
-      if (error) throw error;
-      setFiles(data || []);
-    } catch (error) {
-      console.error("Error fetching files:", error);
-      toast.error("Erreur lors du chargement des fichiers");
+      if (error) {
+        console.error("Error fetching files:", error);
+        toast.error("Erreur lors du chargement des fichiers");
+        return [];
+      }
+
+      return data || [];
     }
+  });
+
+  const handleFileClick = (file: any) => {
+    // Handle file click
+    console.log("File clicked:", file);
   };
 
   const handleFileDelete = async (fileId: string, filePath: string) => {
@@ -97,57 +52,26 @@ export const UserFiles = () => {
 
       if (dbError) throw dbError;
 
-      toast.success("Fichier supprimé");
-      fetchFiles();
+      toast.success("Fichier supprimé avec succès");
     } catch (error) {
       console.error("Error deleting file:", error);
-      toast.error("Erreur lors de la suppression");
+      toast.error("Erreur lors de la suppression du fichier");
     }
   };
 
-  const handleFileClick = async (file: any) => {
-    if (file.content_type.startsWith('image/')) {
-      try {
-        console.log("Getting public URL for file:", file.file_path);
-        
-        const { data } = supabase.storage
-          .from('user_files')
-          .getPublicUrl(file.file_path);
-
-        if (!data.publicUrl) {
-          console.error("Error: No public URL returned");
-          toast.error("Erreur lors de la récupération de l'URL de l'image");
-          return;
-        }
-
-        console.log("Generated public URL:", data.publicUrl);
-        setPreviewImage(data.publicUrl);
-      } catch (error) {
-        console.error("Error handling file click:", error);
-        toast.error("Erreur lors de l'affichage de l'image");
-      }
-    }
-  };
-
-  useEffect(() => {
-    fetchFiles();
-  }, []);
+  if (isLoading) {
+    return <div>Chargement...</div>;
+  }
 
   return (
-    <div className="space-y-4">
-      <FileUploadForm 
-        uploading={uploading}
-        onFileUpload={handleFileUpload}
-      />
-      <FileList 
-        files={files}
-        onFileClick={handleFileClick}
-        onFileDelete={handleFileDelete}
-      />
-      <FilePreviewDialog 
-        previewImage={previewImage}
-        onOpenChange={(open) => !open && setPreviewImage(null)}
-      />
-    </div>
+    <FileList
+      files={files || []}
+      onFileClick={handleFileClick}
+      onFileDelete={handleFileDelete}
+      searchTerm={searchTerm}
+      fileType={fileType}
+      sortBy={sortBy}
+      sortOrder={sortOrder}
+    />
   );
 };

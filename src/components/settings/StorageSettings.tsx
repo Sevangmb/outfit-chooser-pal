@@ -81,7 +81,7 @@ export const StorageSettings = () => {
         // Check Google Drive connection
         const driveResult = await testDriveConnection();
         setDriveStatus(driveResult.success ? 'connected' : 'error');
-        setDriveError(driveResult.error || null);
+        setDriveError(driveResult.message || null);
 
         // Check OneDrive connection
         const oneDriveResult = await testOneDriveConnection();
