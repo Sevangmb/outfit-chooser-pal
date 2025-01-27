@@ -4,10 +4,35 @@ import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 const Auth = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const handleGuestLogin = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: 'guest@fring.app',
+        password: 'guest123'
+      });
+
+      if (error) {
+        console.error("Guest login error:", error);
+        toast.error("Erreur lors de la connexion invité");
+        return;
+      }
+
+      toast.success("Connexion invité réussie !");
+      navigate("/");
+    } catch (error) {
+      console.error("Error in guest login:", error);
+      toast.error("Une erreur est survenue");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Listen for auth state changes with improved error handling
   supabase.auth.onAuthStateChange(async (event, session) => {
@@ -40,6 +65,7 @@ const Auth = () => {
                 id: session.user.id,
                 email: session.user.email,
                 username: session.user.email?.split('@')[0],
+                status: 'active'
               }
             ]);
 
@@ -48,6 +74,26 @@ const Auth = () => {
             toast.error("Erreur lors de la création du profil");
             return;
           }
+        }
+
+        // Add default user role if not exists
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .upsert(
+            { 
+              user_id: session.user.id, 
+              role: 'user' 
+            },
+            { 
+              onConflict: 'user_id',
+              ignoreDuplicates: true 
+            }
+          );
+
+        if (roleError) {
+          console.error("Error setting user role:", roleError);
+          toast.error("Erreur lors de la configuration du rôle");
+          return;
         }
 
         console.log("Profile verified:", existingProfile || "New profile created");
@@ -77,7 +123,7 @@ const Auth = () => {
           </p>
         </div>
 
-        <div className="mt-8 bg-card p-6 rounded-lg shadow-sm border">
+        <div className="mt-8 bg-card p-6 rounded-lg shadow-sm border space-y-6">
           <SupabaseAuth
             supabaseClient={supabase}
             appearance={{
@@ -112,6 +158,24 @@ const Auth = () => {
               },
             }}
           />
+          
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">Ou</span>
+            </div>
+          </div>
+
+          <Button
+            onClick={handleGuestLogin}
+            className="w-full"
+            variant="outline"
+            disabled={loading}
+          >
+            {loading ? "Chargement..." : "Continuer en tant qu'invité"}
+          </Button>
         </div>
       </div>
     </div>
