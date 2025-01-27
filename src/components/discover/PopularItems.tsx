@@ -9,9 +9,10 @@ interface ClothingItem {
 }
 
 export const PopularItems = () => {
-  const { data: items, isLoading } = useQuery({
+  const { data: items, isLoading, error } = useQuery({
     queryKey: ["popular-items"],
     queryFn: async () => {
+      console.log("Fetching popular items...");
       const { data, error } = await supabase
         .from("clothes")
         .select("id, name, selling_price")
@@ -19,7 +20,12 @@ export const PopularItems = () => {
         .order("rating", { ascending: false })
         .limit(6);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching popular items:", error);
+        throw error;
+      }
+      
+      console.log("Popular items fetched:", data);
       return data as ClothingItem[];
     },
   });
@@ -32,6 +38,16 @@ export const PopularItems = () => {
         ))}
       </div>
     );
+  }
+
+  if (error) {
+    console.error("Error in PopularItems component:", error);
+    return <div>Une erreur est survenue lors du chargement des articles populaires.</div>;
+  }
+
+  if (!items?.length) {
+    console.log("No popular items found");
+    return <div className="text-muted-foreground">Aucun article populaire pour le moment</div>;
   }
 
   return (

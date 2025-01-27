@@ -3,9 +3,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export const PopularOutfits = () => {
-  const { data: outfits, isLoading } = useQuery({
+  const { data: outfits, isLoading, error } = useQuery({
     queryKey: ["popular-outfits"],
     queryFn: async () => {
+      console.log("Fetching popular outfits...");
       const { data, error } = await supabase
         .from("outfits")
         .select(`
@@ -17,7 +18,12 @@ export const PopularOutfits = () => {
         .order("rating", { ascending: false })
         .limit(6);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching popular outfits:", error);
+        throw error;
+      }
+
+      console.log("Popular outfits fetched:", data);
       return data;
     },
   });
@@ -30,6 +36,16 @@ export const PopularOutfits = () => {
         ))}
       </div>
     );
+  }
+
+  if (error) {
+    console.error("Error in PopularOutfits component:", error);
+    return <div>Une erreur est survenue lors du chargement des tenues populaires.</div>;
+  }
+
+  if (!outfits?.length) {
+    console.log("No popular outfits found");
+    return <div className="text-muted-foreground">Aucune tenue populaire pour le moment</div>;
   }
 
   return (

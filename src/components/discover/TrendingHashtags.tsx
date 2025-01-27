@@ -4,15 +4,21 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export const TrendingHashtags = () => {
-  const { data: tags, isLoading } = useQuery({
+  const { data: tags, isLoading, error } = useQuery({
     queryKey: ["trending-hashtags"],
     queryFn: async () => {
+      console.log("Fetching trending hashtags...");
       const { data, error } = await supabase
         .from("clothing_tags")
         .select("name, id")
         .limit(10);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching trending hashtags:", error);
+        throw error;
+      }
+
+      console.log("Trending hashtags fetched:", data);
       return data;
     },
   });
@@ -25,6 +31,16 @@ export const TrendingHashtags = () => {
         ))}
       </div>
     );
+  }
+
+  if (error) {
+    console.error("Error in TrendingHashtags component:", error);
+    return <div>Une erreur est survenue lors du chargement des hashtags tendances.</div>;
+  }
+
+  if (!tags?.length) {
+    console.log("No trending hashtags found");
+    return <div className="text-muted-foreground">Aucun hashtag tendance pour le moment</div>;
   }
 
   return (
