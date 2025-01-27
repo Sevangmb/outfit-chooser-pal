@@ -6,6 +6,7 @@ export interface Message {
   content: string;
   created_at: string;
   sender: {
+    id: string;
     email: string;
     avatar_url?: string;
   };
@@ -25,7 +26,7 @@ export const useGroupMessages = (groupId: number) => {
             id,
             content,
             created_at,
-            sender:users(email, avatar_url)
+            sender:users(id, email, avatar_url)
           `)
           .eq('group_id', groupId)
           .order('created_at', { ascending: true });
@@ -60,7 +61,7 @@ export const useGroupMessages = (groupId: number) => {
             id,
             content,
             created_at,
-            sender:users(email, avatar_url)
+            sender:users(id, email, avatar_url)
           `)
           .eq('id', payload.new.id)
           .single();

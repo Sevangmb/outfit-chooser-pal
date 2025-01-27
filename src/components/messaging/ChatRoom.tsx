@@ -73,7 +73,7 @@ export const ChatRoom = ({ recipientId, type }: ChatRoomProps) => {
             <div
               key={message.id}
               className={`p-2 rounded-lg ${
-                message.sender_id === user.id
+                message.sender.id === user.id
                   ? "bg-primary text-primary-foreground ml-auto"
                   : "bg-muted"
               }`}
