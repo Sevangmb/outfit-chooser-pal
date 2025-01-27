@@ -1,4 +1,3 @@
-<lov-code>
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -161,4 +160,18 @@ export const ChatRoom = ({ type, recipientId, recipientName }: ChatRoomProps) =>
         <Input
           placeholder="Votre message..."
           value={newMessage}
-          onChange={(e) => set
+          onChange={(e) => setNewMessage(e.target.value)}
+          onKeyPress={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              handleSendMessage();
+            }
+          }}
+        />
+        <Button onClick={handleSendMessage}>
+          Envoyer
+        </Button>
+      </div>
+    </div>
+  );
+};
