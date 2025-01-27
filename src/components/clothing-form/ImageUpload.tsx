@@ -24,6 +24,11 @@ export const ImageUpload = ({
   onCameraCapture,
   onFileSelect,
 }: ImageUploadProps) => {
+  const handleFileUploadSuccess = (url: string) => {
+    // Handle the URL if needed
+    console.log("File uploaded successfully:", url);
+  };
+
   return (
     <FormItem>
       <FormLabel>Image</FormLabel>
@@ -32,7 +37,8 @@ export const ImageUpload = ({
           <FormControl>
             <FileUploader
               accept="image/*"
-              onUploadSuccess={onFileSelect}
+              onUploadSuccess={handleFileUploadSuccess}
+              onFileSelect={onFileSelect}
             />
           </FormControl>
           <Button

@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useGroupMessages } from "@/hooks/useGroupMessages";
+import { toast } from "sonner";
 
 interface GroupChatRoomProps {
   groupId: number;
@@ -14,14 +15,29 @@ interface GroupChatRoomProps {
 
 export const GroupChatRoom = ({ groupId, groupName }: GroupChatRoomProps) => {
   const [newMessage, setNewMessage] = useState("");
-  const { messages, isLoading, sendMessage } = useGroupMessages(groupId);
+  const { messages, loading: isLoading, error } = useGroupMessages(groupId);
 
   const handleSendMessage = async () => {
     if (!newMessage.trim()) return;
     
-    const success = await sendMessage(newMessage);
-    if (success) {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { error: sendError } = await supabase
+        .from("group_messages")
+        .insert({
+          group_id: groupId,
+          sender_id: user.id,
+          content: newMessage.trim()
+        });
+
+      if (sendError) throw sendError;
       setNewMessage("");
+      toast.success("Message envoyé");
+    } catch (error) {
+      console.error("Error sending message:", error);
+      toast.error("Erreur lors de l'envoi du message");
     }
   };
 
@@ -29,6 +45,14 @@ export const GroupChatRoom = ({ groupId, groupName }: GroupChatRoomProps) => {
     return (
       <div className="flex justify-center items-center h-full">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-full text-destructive">
+        {error}
       </div>
     );
   }
@@ -44,7 +68,7 @@ export const GroupChatRoom = ({ groupId, groupName }: GroupChatRoomProps) => {
           {messages.map((message) => (
             <div key={message.id} className="flex items-start gap-3">
               <Avatar>
-                <AvatarImage src={message.sender.avatar_url} />
+                <AvatarImage src={message.sender.avatar_url || undefined} />
                 <AvatarFallback>
                   {message.sender.email[0].toUpperCase()}
                 </AvatarFallback>

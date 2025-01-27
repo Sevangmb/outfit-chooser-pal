@@ -19,7 +19,7 @@ export const useGroupMembers = (groupId: number) => {
           joined_at,
           role,
           is_approved,
-          users!inner (
+          users (
             email
           )
         `)
