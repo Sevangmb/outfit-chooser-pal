@@ -96,7 +96,7 @@ export const OutfitFeed = ({ filter }: OutfitFeedProps) => {
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   if (status === "pending") {
-    return <OutfitGrid outfits={[]} isFetchingNextPage={true} />;
+    return <OutfitGrid outfits={[]} isFetchingNextPage={true} observerRef={ref} />;
   }
 
   if (status === "error") {
