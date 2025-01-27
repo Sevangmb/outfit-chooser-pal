@@ -2,10 +2,9 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { WeatherWidget } from "@/components/weather/WeatherWidget";
-import { AIFeatures } from "@/components/feed/AIFeatures";
 import { OutfitFeed } from "@/components/feed/OutfitFeed";
 import { Button } from "@/components/ui/button";
-import { LayoutList, Sparkles, TrendingUp, Trophy, Home } from "lucide-react";
+import { Sparkles, Trophy, Home } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
@@ -121,25 +120,15 @@ const Index = () => {
           <Tabs defaultValue="feed" className="w-full">
             <TabsList className="w-full mb-6">
               <TabsTrigger value="feed" className="flex items-center gap-2">
-                <LayoutList className="h-4 w-4" />
                 Fil d'actualité
               </TabsTrigger>
-              <TabsTrigger value="suggestions" className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4" />
-                Suggestions IA
-              </TabsTrigger>
               <TabsTrigger value="trends" className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4" />
                 Tendances
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="feed" className="space-y-6">
               <OutfitFeed />
-            </TabsContent>
-
-            <TabsContent value="suggestions">
-              <AIFeatures />
             </TabsContent>
 
             <TabsContent value="trends">
