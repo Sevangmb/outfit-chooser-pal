@@ -1,13 +1,11 @@
 import { AuthTypes, Json } from './auth'
 import { ClothesTypes } from './clothes'
 import { OutfitsTypes } from './outfits'
-import { ProfilesTypes } from './profiles'
 
 export type Database = {
   public: AuthTypes['Tables'] &
     ClothesTypes['Tables'] &
-    OutfitsTypes['Tables'] &
-    ProfilesTypes['Tables']
+    OutfitsTypes['Tables']
 }
 
 export type Tables<

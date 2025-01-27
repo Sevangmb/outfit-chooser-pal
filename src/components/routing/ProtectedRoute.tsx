@@ -1,26 +1,25 @@
 import { useEffect, useState } from "react";
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { BottomNav } from "@/components/BottomNav";
-import { toast } from "sonner";
 
-export const ProtectedRoute = () => {
+interface ProtectedRouteProps {
+  children: React.ReactNode;
+}
+
+export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        const { data: { session } } = await supabase.auth.getSession();
         
-        if (sessionError) {
-          console.error("Error checking session:", sessionError);
+        if (!session) {
           const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
           
           if (refreshError) {
             console.error("Error refreshing session:", refreshError);
             setIsAuthenticated(false);
-            toast.error("Votre session a expiré. Veuillez vous reconnecter.");
             await supabase.auth.signOut();
           } else if (refreshData.session) {
             console.log("Session refreshed successfully");
@@ -58,17 +57,15 @@ export const ProtectedRoute = () => {
           setIsAuthenticated(!!session);
         }
       } catch (error) {
-        console.error("Error in checkAuth:", error);
+        console.error("Error checking auth:", error);
         setIsAuthenticated(false);
-      } finally {
-        setIsLoading(false);
       }
     };
 
     checkAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event, "Session:", !!session);
+      console.log("Auth state changed:", event);
       
       if (event === 'SIGNED_OUT') {
         setIsAuthenticated(false);
@@ -90,8 +87,6 @@ export const ProtectedRoute = () => {
         }
         setIsAuthenticated(true);
       }
-      
-      setIsLoading(false);
     });
 
     return () => {
@@ -99,23 +94,17 @@ export const ProtectedRoute = () => {
     };
   }, []);
 
-  if (isLoading) {
+  if (isAuthenticated === null) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   if (!isAuthenticated) {
-    console.log("User not authenticated, redirecting to landing");
-    return <Navigate to="/landing" replace />;
+    return <Navigate to="/auth" />;
   }
 
-  return (
-    <div className="pb-16">
-      <Outlet />
-      <BottomNav />
-    </div>
-  );
+  return <>{children}</>;
 };

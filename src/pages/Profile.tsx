@@ -28,42 +28,22 @@ const Profile = () => {
     },
   });
 
-  const { data: profile, isLoading: isLoadingProfile } = useQuery({
-    queryKey: ["profile", session?.user?.id],
+  const { data: user, isLoading: isLoadingUser } = useQuery({
+    queryKey: ["user", session?.user?.id],
     queryFn: async () => {
       if (!session?.user?.id) return null;
 
-      console.log("Fetching profile for user:", session.user.id);
+      console.log("Fetching user data for:", session.user.id);
       const { data, error } = await supabase
-        .from("profiles")
+        .from("users")
         .select()
         .eq("id", session.user.id)
-        .maybeSingle();
+        .single();
 
       if (error) {
-        console.error("Error fetching profile:", error);
+        console.error("Error fetching user:", error);
         toast.error("Erreur lors du chargement du profil");
         throw error;
-      }
-
-      if (!data) {
-        console.log("No profile found, creating one...");
-        const { data: newProfile, error: createError } = await supabase
-          .from("profiles")
-          .insert([{ 
-            id: session.user.id, 
-            email: session.user.email 
-          }])
-          .select()
-          .single();
-
-        if (createError) {
-          console.error("Error creating profile:", createError);
-          toast.error("Erreur lors de la création du profil");
-          throw createError;
-        }
-
-        return newProfile;
       }
 
       return data;
@@ -73,15 +53,15 @@ const Profile = () => {
   });
 
   const { data: isAdmin } = useQuery({
-    queryKey: ["userRole", profile?.id],
+    queryKey: ["userRole", user?.id],
     queryFn: async () => {
-      if (!profile?.id) return false;
+      if (!user?.id) return false;
       
       const { data, error } = await supabase
         .from("user_roles")
         .select("role")
-        .eq("user_id", profile.id)
-        .maybeSingle();
+        .eq("user_id", user.id)
+        .single();
 
       if (error) {
         console.error("Error fetching user role:", error);
@@ -91,7 +71,7 @@ const Profile = () => {
 
       return data?.role === "admin";
     },
-    enabled: !!profile?.id
+    enabled: !!user?.id
   });
 
   const handleLogout = async () => {
@@ -110,7 +90,7 @@ const Profile = () => {
     setLoading(false);
   }, []);
 
-  if (loading || isLoadingProfile) {
+  if (loading || isLoadingUser) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-secondary/30">
         <div className="text-primary animate-pulse">Chargement...</div>
@@ -118,7 +98,7 @@ const Profile = () => {
     );
   }
 
-  if (!profile) {
+  if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-secondary/30">
         <div className="text-primary">Profil non trouvé</div>
@@ -132,8 +112,8 @@ const Profile = () => {
         <Card>
           <CardContent className="p-6">
             <ProfileHeader 
-              email={profile.email}
-              createdAt={profile.created_at}
+              email={user.email}
+              createdAt={user.created_at}
               isAdmin={isAdmin || false}
             />
 
@@ -153,7 +133,7 @@ const Profile = () => {
               </TabsList>
 
               <TabsContent value="profile">
-                <ProfileContent userId={profile.id} />
+                <ProfileContent userId={user.id} />
               </TabsContent>
 
               <TabsContent value="favorites">
