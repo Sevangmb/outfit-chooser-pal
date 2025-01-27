@@ -64,21 +64,17 @@ export const useCameraCapture = (onCapture: (imageData: string) => void) => {
       if (error instanceof DOMException) {
         switch (error.name) {
           case "NotAllowedError":
-            console.error("Camera permission denied by user");
-            break;
+            throw new Error("L'accès à la caméra a été refusé. Veuillez autoriser l'accès à la caméra dans les paramètres de votre navigateur.");
           case "NotFoundError":
-            console.error("No camera device found");
-            break;
+            throw new Error("Aucune caméra n'a été trouvée sur votre appareil.");
           case "NotReadableError":
-            console.error("Camera is already in use");
-            break;
+            throw new Error("La caméra est déjà utilisée par une autre application.");
           default:
-            console.error("Camera error:", error.name);
+            throw new Error(`Erreur d'accès à la caméra: ${error.name}`);
         }
       }
       
-      // Re-throw the error to be handled by the component
-      throw error;
+      throw new Error("Une erreur est survenue lors de l'accès à la caméra.");
     }
   };
 
