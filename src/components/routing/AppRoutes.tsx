@@ -18,6 +18,7 @@ import Suitcase from "@/pages/Suitcase";
 import Community from "@/pages/Community";
 import { AddClothingForm } from "@/components/AddClothingForm";
 import { OutfitCreator } from "@/components/OutfitCreator";
+import Onboarding from "@/pages/Onboarding";
 
 export const AppRoutes = () => (
   <Routes>
@@ -30,6 +31,7 @@ export const AppRoutes = () => (
     </Route>
 
     <Route element={<ProtectedRoute><Outlet /></ProtectedRoute>}>
+      <Route path="/onboarding" element={<Onboarding />} />
       <Route path="/" element={<Index />} />
       <Route path="/discover" element={<Discover />} />
       <Route path="/perso" element={<Add />} />
