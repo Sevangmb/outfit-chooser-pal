@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Database, HardDrive, Save, Trash, CheckCircle, XCircle, AlertCircle, Filter, SortAsc, SortDesc, Search } from "lucide-react";
+import { Database, HardDrive, Save, Trash, CheckCircle, XCircle, AlertCircle, Filter, SortAsc, SortDesc, Search, Cloud } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { UserFiles } from "@/components/files/UserFiles";
 import { Separator } from "@/components/ui/separator";
 import { testDropboxConnection } from "@/utils/testDropboxConnection";
+import { testDriveConnection } from "@/utils/testDriveConnection";
+import { testOneDriveConnection } from "@/utils/testOneDriveConnection";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -22,10 +24,19 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export const StorageSettings = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [driveStatus, setDriveStatus] = useState<'checking' | 'connected' | 'error'>('checking');
+  const [oneDriveStatus, setOneDriveStatus] = useState<'checking' | 'connected' | 'error'>('checking');
+  const [dropboxStatus, setDropboxStatus] = useState<'checking' | 'connected' | 'error'>('checking');
   const [driveError, setDriveError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"date" | "name" | "size">("date");
@@ -37,76 +48,60 @@ export const StorageSettings = () => {
     queryFn: async () => {
       try {
         const { data: { user }, error: userError } = await supabase.auth.getUser();
-        if (userError) {
-          const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
-          if (refreshError) {
-            console.error("Error refreshing session:", refreshError);
-            toast.error("Votre session a expiré. Veuillez vous reconnecter.");
-            await supabase.auth.signOut();
-            return null;
-          }
-          if (!refreshData.session) {
-            throw new Error("No session after refresh");
-          }
-        }
-        
+        if (userError) throw userError;
         if (!user) return null;
 
-        // Simulé pour l'instant - à implémenter avec les vraies données
+        const { data: files, error } = await supabase
+          .from('user_files')
+          .select('size')
+          .eq('user_id', user.id);
+
+        if (error) throw error;
+
+        const totalSize = files?.reduce((acc, file) => acc + (file.size || 0), 0) || 0;
+        const maxSize = 100 * 1024 * 1024; // 100MB in bytes
+
         return {
-          total_space: 1024 * 1024 * 1024, // 1GB en bytes
-          used_space: 1024 * 1024 * 100, // 100MB en bytes
-          files_count: 25
+          total_space: maxSize,
+          used_space: totalSize,
+          files_count: files?.length || 0,
+          percentage: (totalSize / maxSize) * 100
         };
       } catch (error) {
         console.error("Error fetching storage info:", error);
         toast.error("Erreur lors de la récupération des informations de stockage");
         return null;
       }
-    },
-    retry: 1
+    }
   });
 
   useEffect(() => {
-    const checkDropboxConnection = async () => {
+    const checkConnections = async () => {
       try {
-        setDriveStatus('checking');
-        setDriveError(null);
-        
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError || !session) {
-          const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
-          if (refreshError || !refreshData.session) {
-            throw new Error("Session expired. Please login again.");
-          }
-        }
+        // Check Google Drive connection
+        const driveResult = await testDriveConnection();
+        setDriveStatus(driveResult.success ? 'connected' : 'error');
+        setDriveError(driveResult.error || null);
 
-        console.log("Checking Dropbox connection...");
-        const result = await testDropboxConnection();
-        
-        if (result.success) {
-          console.log("Dropbox connection successful");
-          setDriveStatus('connected');
-          setDriveError(null);
-        } else {
-          console.error("Dropbox connection failed:", result.error);
-          setDriveStatus('error');
-          setDriveError(result.error || "Erreur de connexion à Dropbox");
-        }
+        // Check OneDrive connection
+        const oneDriveResult = await testOneDriveConnection();
+        setOneDriveStatus(oneDriveResult.success ? 'connected' : 'error');
+
+        // Check Dropbox connection
+        const dropboxResult = await testDropboxConnection();
+        setDropboxStatus(dropboxResult.success ? 'connected' : 'error');
       } catch (error) {
-        console.error("Error checking Dropbox connection:", error);
-        setDriveStatus('error');
-        setDriveError(error instanceof Error ? error.message : "Erreur inattendue lors de la vérification");
+        console.error("Error checking connections:", error);
       }
     };
 
-    checkDropboxConnection();
+    checkConnections();
   }, []);
 
   const formatBytes = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return '0 B';
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
@@ -115,50 +110,12 @@ export const StorageSettings = () => {
     ? (storageInfo.used_space / storageInfo.total_space) * 100 
     : 0;
 
-  const handleBulkDelete = async (selectedFiles: string[]) => {
-    try {
-      setIsLoading(true);
-      // Implement bulk delete logic here
-      toast.success("Fichiers supprimés avec succès");
-      refetchStorageInfo();
-    } catch (error) {
-      console.error("Error deleting files:", error);
-      toast.error("Erreur lors de la suppression des fichiers");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
     <div className="space-y-6">
       <div className="space-y-4">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <h3 className="text-lg font-medium">Espace de stockage</h3>
-            <div className="flex items-center gap-1 text-sm">
-              <span className="text-muted-foreground">Dropbox:</span>
-              {driveStatus === 'checking' ? (
-                <span className="text-muted-foreground">Vérification...</span>
-              ) : driveStatus === 'connected' ? (
-                <div className="flex items-center gap-1 text-green-500">
-                  <CheckCircle className="w-4 h-4" />
-                  <span>Connecté</span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1 text-destructive">
-                    <XCircle className="w-4 h-4" />
-                    <span>Non connecté</span>
-                  </div>
-                  {driveError && (
-                    <div className="flex items-center gap-1 text-muted-foreground">
-                      <AlertCircle className="w-4 h-4" />
-                      <span className="text-sm">({driveError})</span>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
           </div>
           <span className="text-sm text-muted-foreground">
             {storageInfo ? formatBytes(storageInfo.used_space) : '0'} utilisés sur {storageInfo ? formatBytes(storageInfo.total_space) : '0'}
@@ -167,36 +124,123 @@ export const StorageSettings = () => {
         
         <Progress value={usedPercentage} className="h-2" />
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-          <div className="p-4 border rounded-lg">
-            <div className="flex items-center gap-2 mb-2">
-              <HardDrive className="w-4 h-4" />
-              <h4 className="font-medium">Espace total</h4>
-            </div>
-            <p className="text-2xl font-bold">
-              {storageInfo ? formatBytes(storageInfo.total_space) : '0'}
-            </p>
-          </div>
-          
-          <div className="p-4 border rounded-lg">
-            <div className="flex items-center gap-2 mb-2">
-              <Database className="w-4 h-4" />
-              <h4 className="font-medium">Espace utilisé</h4>
-            </div>
-            <p className="text-2xl font-bold">
-              {storageInfo ? formatBytes(storageInfo.used_space) : '0'}
-            </p>
-          </div>
-          
-          <div className="p-4 border rounded-lg">
-            <div className="flex items-center gap-2 mb-2">
-              <Save className="w-4 h-4" />
-              <h4 className="font-medium">Fichiers</h4>
-            </div>
-            <p className="text-2xl font-bold">
-              {storageInfo?.files_count || 0}
-            </p>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Services de stockage</CardTitle>
+              <CardDescription>État des connexions aux services</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between p-2 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Database className="w-4 h-4" />
+                  <span>Supabase Storage</span>
+                </div>
+                <div className="flex items-center gap-1 text-green-500">
+                  <CheckCircle className="w-4 h-4" />
+                  <span>Connecté</span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between p-2 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Cloud className="w-4 h-4" />
+                  <span>OneDrive</span>
+                </div>
+                {oneDriveStatus === 'checking' ? (
+                  <span className="text-muted-foreground">Vérification...</span>
+                ) : oneDriveStatus === 'connected' ? (
+                  <div className="flex items-center gap-1 text-green-500">
+                    <CheckCircle className="w-4 h-4" />
+                    <span>Connecté</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1 text-destructive">
+                    <XCircle className="w-4 h-4" />
+                    <span>Non connecté</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between p-2 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Cloud className="w-4 h-4" />
+                  <span>Google Drive</span>
+                </div>
+                {driveStatus === 'checking' ? (
+                  <span className="text-muted-foreground">Vérification...</span>
+                ) : driveStatus === 'connected' ? (
+                  <div className="flex items-center gap-1 text-green-500">
+                    <CheckCircle className="w-4 h-4" />
+                    <span>Connecté</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1 text-destructive">
+                    <XCircle className="w-4 h-4" />
+                    <span>Non connecté</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between p-2 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Cloud className="w-4 h-4" />
+                  <span>Dropbox</span>
+                </div>
+                {dropboxStatus === 'checking' ? (
+                  <span className="text-muted-foreground">Vérification...</span>
+                ) : dropboxStatus === 'connected' ? (
+                  <div className="flex items-center gap-1 text-green-500">
+                    <CheckCircle className="w-4 h-4" />
+                    <span>Connecté</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1 text-destructive">
+                    <XCircle className="w-4 h-4" />
+                    <span>Non connecté</span>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Statistiques de stockage</CardTitle>
+              <CardDescription>Répartition de l'espace utilisé</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="p-4 border rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <HardDrive className="w-4 h-4" />
+                  <h4 className="font-medium">Espace total</h4>
+                </div>
+                <p className="text-2xl font-bold">
+                  {storageInfo ? formatBytes(storageInfo.total_space) : '0'}
+                </p>
+              </div>
+              
+              <div className="p-4 border rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <Database className="w-4 h-4" />
+                  <h4 className="font-medium">Espace utilisé</h4>
+                </div>
+                <p className="text-2xl font-bold">
+                  {storageInfo ? formatBytes(storageInfo.used_space) : '0'}
+                </p>
+              </div>
+              
+              <div className="p-4 border rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <Save className="w-4 h-4" />
+                  <h4 className="font-medium">Fichiers</h4>
+                </div>
+                <p className="text-2xl font-bold">
+                  {storageInfo?.files_count || 0}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
@@ -256,7 +300,12 @@ export const StorageSettings = () => {
             </Button>
           </div>
         </div>
-        <UserFiles />
+        <UserFiles 
+          searchTerm={searchTerm}
+          fileType={fileType}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+        />
       </div>
 
       <Separator className="my-6" />
