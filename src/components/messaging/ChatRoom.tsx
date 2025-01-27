@@ -9,14 +9,14 @@ import { useGroupMessages } from "@/hooks/useGroupMessages";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
-interface GroupChatRoomProps {
-  groupId: number;
-  groupName: string;
+interface ChatRoomProps {
+  type: "direct" | "group";
+  recipientId: string | number;
+  recipientName: string;
 }
 
-export const GroupChatRoom = ({ groupId, groupName }: GroupChatRoomProps) => {
+export const ChatRoom = ({ type, recipientId, recipientName }: ChatRoomProps) => {
   const [newMessage, setNewMessage] = useState("");
-  const { messages, loading: isLoading, error } = useGroupMessages(groupId);
 
   const handleSendMessage = async () => {
     if (!newMessage.trim()) return;
@@ -25,15 +25,28 @@ export const GroupChatRoom = ({ groupId, groupName }: GroupChatRoomProps) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const { error: sendError } = await supabase
-        .from("group_messages")
-        .insert({
-          group_id: groupId,
-          sender_id: user.id,
-          content: newMessage.trim()
-        });
+      if (type === "direct") {
+        const { error: sendError } = await supabase
+          .from("user_messages")
+          .insert({
+            sender_id: user.id,
+            recipient_id: recipientId,
+            content: newMessage.trim()
+          });
 
-      if (sendError) throw sendError;
+        if (sendError) throw sendError;
+      } else {
+        const { error: sendError } = await supabase
+          .from("group_messages")
+          .insert({
+            group_id: recipientId,
+            sender_id: user.id,
+            content: newMessage.trim()
+          });
+
+        if (sendError) throw sendError;
+      }
+
       setNewMessage("");
       toast.success("Message envoyé");
     } catch (error) {
@@ -42,18 +55,74 @@ export const GroupChatRoom = ({ groupId, groupName }: GroupChatRoomProps) => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-full">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
+  if (type === "group") {
+    const { messages, loading: isLoading, error } = useGroupMessages(recipientId as number);
 
-  if (error) {
+    if (isLoading) {
+      return (
+        <div className="flex justify-center items-center h-full">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="flex justify-center items-center h-full text-destructive">
+          {error}
+        </div>
+      );
+    }
+
     return (
-      <div className="flex justify-center items-center h-full text-destructive">
-        {error}
+      <div className="flex flex-col h-full">
+        <div className="p-4 border-b">
+          <h3 className="font-semibold">{recipientName}</h3>
+        </div>
+
+        <ScrollArea className="flex-1 p-4">
+          <div className="space-y-4">
+            {messages.map((message) => (
+              <div key={message.id} className="flex items-start gap-3">
+                <Avatar>
+                  <AvatarImage src={message.sender?.avatar_url} />
+                  <AvatarFallback>
+                    {message.sender?.email?.[0]?.toUpperCase() || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{message.sender?.email}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {formatDistanceToNow(new Date(message.created_at), {
+                        addSuffix: true,
+                        locale: fr,
+                      })}
+                    </span>
+                  </div>
+                  <p className="text-sm mt-1">{message.content}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </ScrollArea>
+
+        <div className="p-4 border-t flex gap-2">
+          <Input
+            placeholder="Votre message..."
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleSendMessage();
+              }
+            }}
+          />
+          <Button onClick={handleSendMessage}>
+            Envoyer
+          </Button>
+        </div>
       </div>
     );
   }
@@ -61,49 +130,23 @@ export const GroupChatRoom = ({ groupId, groupName }: GroupChatRoomProps) => {
   return (
     <div className="flex flex-col h-full">
       <div className="p-4 border-b">
-        <h3 className="font-semibold">{groupName}</h3>
+        <h3 className="font-semibold">{recipientName}</h3>
       </div>
 
-      <ScrollArea className="flex-1 p-4">
-        <div className="space-y-4">
-          {messages.map((message) => (
-            <div key={message.id} className="flex items-start gap-3">
-              <Avatar>
-                <AvatarImage src={message.sender?.avatar_url} />
-                <AvatarFallback>
-                  {message.sender?.email?.[0]?.toUpperCase() || 'U'}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex flex-col">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium">{message.sender?.email}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {formatDistanceToNow(new Date(message.created_at), {
-                      addSuffix: true,
-                      locale: fr,
-                    })}
-                  </span>
-                </div>
-                <p className="text-sm mt-1">{message.content}</p>
-              </div>
-            </div>
-          ))}
+      <div className="flex-1 p-4">
+        <div className="text-center text-muted-foreground">
+          Messages directs en cours d'implémentation
         </div>
-      </ScrollArea>
+      </div>
 
       <div className="p-4 border-t flex gap-2">
         <Input
           placeholder="Votre message..."
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
-          onKeyPress={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              handleSendMessage();
-            }
-          }}
+          disabled
         />
-        <Button onClick={handleSendMessage}>
+        <Button onClick={handleSendMessage} disabled>
           Envoyer
         </Button>
       </div>
