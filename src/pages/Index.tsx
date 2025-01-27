@@ -4,6 +4,7 @@ import { OutfitFeed } from "@/components/feed/OutfitFeed";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WeatherWidget } from "@/components/weather/WeatherWidget";
 import { AIFeatures } from "@/components/feed/AIFeatures";
+import { BottomNav } from "@/components/BottomNav";
 
 export default function Index() {
   return (
@@ -38,6 +39,7 @@ export default function Index() {
           </div>
         </div>
       </div>
+      <BottomNav />
     </>
   );
 }
