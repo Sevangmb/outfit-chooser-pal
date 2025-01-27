@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Outlet } from "react-router-dom";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { PublicRoute } from "./PublicRoute";
 import Auth from "@/pages/Auth";
@@ -21,7 +21,7 @@ import { OutfitCreator } from "@/components/OutfitCreator";
 
 export const AppRoutes = () => (
   <Routes>
-    <Route element={<PublicRoute />}>
+    <Route element={<PublicRoute><Outlet /></PublicRoute>}>
       <Route path="/landing" element={<LandingPage />} />
       <Route path="/auth" element={<Auth />} />
       <Route path="/terms" element={<div>CGU</div>} />
@@ -29,7 +29,7 @@ export const AppRoutes = () => (
       <Route path="/about" element={<div>À propos de FRING!</div>} />
     </Route>
 
-    <Route element={<ProtectedRoute />}>
+    <Route element={<ProtectedRoute><Outlet /></ProtectedRoute>}>
       <Route path="/" element={<Index />} />
       <Route path="/discover" element={<Discover />} />
       <Route path="/perso" element={<Add />} />

@@ -879,6 +879,7 @@ export type Database = {
           joined_at: string
           role: string | null
           user_id: string | null
+          users: Json | null
         }
         Insert: {
           group_id?: number | null
@@ -887,6 +888,7 @@ export type Database = {
           joined_at?: string
           role?: string | null
           user_id?: string | null
+          users?: Json | null
         }
         Update: {
           group_id?: number | null
@@ -895,6 +897,7 @@ export type Database = {
           joined_at?: string
           role?: string | null
           user_id?: string | null
+          users?: Json | null
         }
         Relationships: [
           {
@@ -902,6 +905,13 @@ export type Database = {
             columns: ["group_id"]
             isOneToOne: false
             referencedRelation: "message_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_group_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -1536,8 +1546,22 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "user_messages_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "user_messages_recipient_user_id_fkey"
             columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_messages_sender_id_fkey"
+            columns: ["sender_id"]
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
