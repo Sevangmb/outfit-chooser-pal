@@ -44,7 +44,7 @@ export const AccountSettings = () => {
       if (!user) return null;
 
       const { data, error } = await supabase
-        .from("users")
+        .from("profiles")
         .select("*")
         .eq("id", user.id)
         .single();
@@ -119,7 +119,7 @@ export const AccountSettings = () => {
       };
 
       const { error } = await supabase
-        .from("users")
+        .from("profiles")
         .update(updates)
         .eq("id", user.id);
 

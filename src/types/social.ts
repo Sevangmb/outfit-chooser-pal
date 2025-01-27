@@ -9,6 +9,7 @@ export interface Profile {
   bio?: string;
   avatar_url?: string;
   is_profile_public?: boolean;
+  full_name?: string;
 }
 
 export interface Message {

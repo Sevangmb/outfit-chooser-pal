@@ -31,7 +31,7 @@ export const FriendsList = ({ userId }: FriendsListProps) => {
       const { data, error } = await supabase
         .from("friendships")
         .select(`
-          friend:users!friendships_users_friend_id_fkey(
+          friend:profiles!friendships_users_friend_id_fkey(
             id,
             email,
             full_name,
@@ -59,7 +59,7 @@ export const FriendsList = ({ userId }: FriendsListProps) => {
       const { data, error } = await supabase
         .from("friendships")
         .select(`
-          user:users!friendships_users_user_id_fkey(
+          user:profiles!friendships_users_user_id_fkey(
             id,
             email,
             full_name,
@@ -90,7 +90,7 @@ export const FriendsList = ({ userId }: FriendsListProps) => {
     try {
       console.log("Searching users with query:", query);
       const { data, error } = await supabase
-        .from("users")
+        .from("profiles")
         .select("id, email, full_name, avatar_url")
         .ilike("email", `%${query}%`)
         .limit(5);

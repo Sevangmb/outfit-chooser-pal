@@ -35,7 +35,7 @@ const Profile = () => {
 
       console.log("Fetching user data for:", session.user.id);
       const { data, error } = await supabase
-        .from("users")
+        .from("profiles")
         .select()
         .eq("id", session.user.id)
         .single();

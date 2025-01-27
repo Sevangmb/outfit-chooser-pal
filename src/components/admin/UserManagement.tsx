@@ -54,7 +54,7 @@ export const UserManagement = () => {
     try {
       console.log("Fetching users...");
       const { data: usersData, error: usersError } = await supabase
-        .from('users')
+        .from('profiles')
         .select('id, email, status, last_login');
 
       if (usersError) throw usersError;
