@@ -26,7 +26,11 @@ export const useGroupMessages = (groupId: number) => {
             id,
             content,
             created_at,
-            sender:users(id, email, avatar_url)
+            sender:profiles!group_messages_profiles_sender_id_fkey(
+              id, 
+              username,
+              avatar_url
+            )
           `)
           .eq('group_id', groupId)
           .order('created_at', { ascending: true });
@@ -34,7 +38,13 @@ export const useGroupMessages = (groupId: number) => {
         if (messagesError) throw messagesError;
 
         if (messagesData) {
-          setMessages(messagesData as Message[]);
+          setMessages(messagesData.map(msg => ({
+            ...msg,
+            sender: {
+              ...msg.sender,
+              email: msg.sender.username
+            }
+          })));
         }
       } catch (err) {
         console.error('Error fetching group messages:', err);
@@ -61,13 +71,23 @@ export const useGroupMessages = (groupId: number) => {
             id,
             content,
             created_at,
-            sender:users(id, email, avatar_url)
+            sender:profiles!group_messages_profiles_sender_id_fkey(
+              id, 
+              username,
+              avatar_url
+            )
           `)
           .eq('id', payload.new.id)
           .single();
 
         if (!messageError && newMessage) {
-          setMessages(prev => [...prev, newMessage as Message]);
+          setMessages(prev => [...prev, {
+            ...newMessage,
+            sender: {
+              ...newMessage.sender,
+              email: newMessage.sender.username
+            }
+          }]);
         }
       })
       .subscribe();

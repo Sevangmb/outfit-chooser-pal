@@ -72,8 +72,8 @@ export const MessageList = ({ onSelectConversation, selectedConversation }: Mess
         .from("user_messages")
         .select(`
           *,
-          sender:users!user_messages_sender_id_fkey(email),
-          recipient:users!user_messages_recipient_id_fkey(email)
+          sender:profiles!user_messages_profiles_sender_id_fkey(id, username, avatar_url),
+          recipient:profiles!user_messages_profiles_recipient_id_fkey(id, username, avatar_url)
         `)
         .or(`sender_id.eq.${user.id},recipient_id.eq.${user.id}`)
         .order("created_at", { ascending: false });
@@ -82,8 +82,18 @@ export const MessageList = ({ onSelectConversation, selectedConversation }: Mess
         console.error("Error fetching direct messages:", error);
         throw error;
       }
-      console.log("Direct messages fetched:", data);
-      return data as Message[];
+
+      return data.map(message => ({
+        ...message,
+        sender: {
+          ...message.sender,
+          email: message.sender.username
+        },
+        recipient: {
+          ...message.recipient,
+          email: message.recipient.username
+        }
+      }));
     },
     enabled: !!currentUserId
   });

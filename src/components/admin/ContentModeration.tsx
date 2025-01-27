@@ -19,7 +19,7 @@ interface FlaggedContent {
   content: string;
   flag_reason: string;
   created_at: string;
-  user?: {
+  user: {
     email: string;
   };
 }
@@ -40,7 +40,9 @@ export const ContentModeration = () => {
             name,
             flag_reason,
             created_at,
-            users:profiles!outfits_profiles_user_id_fkey(username)
+            profiles!outfits_profiles_user_id_fkey (
+              username
+            )
           `)
           .eq('is_flagged', true)
           .order('created_at', { ascending: false }),
@@ -51,7 +53,9 @@ export const ContentModeration = () => {
             content,
             flag_reason,
             created_at,
-            users:profiles!outfit_comments_user_id_fkey(username)
+            profiles!outfit_comments_user_id_fkey (
+              username
+            )
           `)
           .eq('is_flagged', true)
           .order('created_at', { ascending: false })
@@ -66,7 +70,7 @@ export const ContentModeration = () => {
         content: item.name,
         flag_reason: item.flag_reason || '',
         created_at: item.created_at,
-        user: { email: item.users?.username || 'Unknown' }
+        user: { email: item.profiles?.username || 'Unknown' }
       }));
 
       const flaggedComments = (commentsResponse.data || []).map(item => ({
@@ -75,7 +79,7 @@ export const ContentModeration = () => {
         content: item.content,
         flag_reason: item.flag_reason || '',
         created_at: item.created_at,
-        user: { email: item.users?.username || 'Unknown' }
+        user: { email: item.profiles?.username || 'Unknown' }
       }));
 
       const flaggedContent = [...flaggedOutfits, ...flaggedComments]

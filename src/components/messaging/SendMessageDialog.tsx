@@ -28,12 +28,16 @@ export const SendMessageDialog = () => {
       if (!user) throw new Error("Non authentifié");
 
       const { data, error } = await supabase
-        .from("users")
-        .select("id, email")
+        .from("profiles")
+        .select("id, username")
         .neq("id", user.id);
 
       if (error) throw error;
-      return data;
+      
+      return data.map(profile => ({
+        id: profile.id,
+        email: profile.username
+      }));
     },
   });
 
