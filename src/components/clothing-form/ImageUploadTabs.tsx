@@ -1,4 +1,4 @@
-import { Camera, Upload } from "lucide-react";
+import { Camera, Upload, FolderOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormControl, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -10,6 +10,14 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { uploadImageToSupabase } from "@/utils/uploadImage";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface ImageUploadTabsProps {
   form: UseFormReturn<FormValues>;
@@ -37,56 +45,42 @@ export const ImageUploadTabs = ({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState<string>("");
   const [fileInputValue, setFileInputValue] = useState<string>("");
+  const [userFiles, setUserFiles] = useState<any[]>([]);
+  const [isFileDialogOpen, setIsFileDialogOpen] = useState(false);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const loadUserFiles = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
 
-    // Validate file type
-    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-    if (!validTypes.includes(file.type)) {
-      toast.error("Le fichier doit être une image (JPEG, PNG, WEBP ou GIF)");
-      e.target.value = ''; // Reset input
+    const { data: files, error } = await supabase
+      .from('user_files')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('content_type', 'like', 'image/%');
+
+    if (error) {
+      console.error("Error loading user files:", error);
+      toast.error("Erreur lors du chargement des fichiers");
       return;
     }
 
-    // Validate file size (5MB)
-    const maxSize = 5 * 1024 * 1024;
-    if (file.size > maxSize) {
-      toast.error("Le fichier est trop volumineux (max 5MB)");
-      e.target.value = ''; // Reset input
-      return;
-    }
-
-    console.log("Fichier sélectionné:", file.name, file.type, file.size);
-    setSelectedFile(file);
-    setFileInputValue(file.name);
+    setUserFiles(files || []);
   };
 
-  const handleFileUpload = async () => {
-    if (!selectedFile) {
-      toast.error("Veuillez d'abord sélectionner un fichier");
-      return;
-    }
-
+  const handleFileSelect = async (file: any) => {
     try {
-      console.log("Démarrage de l'upload du fichier:", selectedFile.name);
-      const imageUrl = await uploadImageToSupabase(selectedFile);
-      
-      if (imageUrl) {
-        console.log("URL de l'image reçue:", imageUrl);
-        form.setValue("image", imageUrl, { shouldValidate: true });
-        toast.success("Image téléchargée avec succès");
-        setSelectedFile(null);
-        setFileInputValue("");
-      } else {
-        throw new Error("URL de l'image non reçue");
+      const { data } = supabase.storage
+        .from('user_files')
+        .getPublicUrl(file.file_path);
+
+      if (data?.publicUrl) {
+        await onUrlUpload(data.publicUrl);
+        setIsFileDialogOpen(false);
+        toast.success("Image sélectionnée avec succès");
       }
     } catch (error) {
-      console.error("Erreur d'upload:", error);
-      toast.error("Erreur lors du téléchargement de l'image");
-      setSelectedFile(null);
-      form.setValue("image", null);
+      console.error("Error selecting file:", error);
+      toast.error("Erreur lors de la sélection du fichier");
     }
   };
 
@@ -134,7 +128,13 @@ export const ImageUploadTabs = ({
                 id="clothing-image"
                 name="clothing-image"
                 accept="image/jpeg,image/png,image/webp,image/gif"
-                onChange={handleFileSelect}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    setSelectedFile(file);
+                    setFileInputValue(file.name);
+                  }
+                }}
                 disabled={isUploading}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               />
@@ -144,13 +144,53 @@ export const ImageUploadTabs = ({
             </div>
             <Button
               type="button"
-              onClick={handleFileUpload}
+              onClick={onFileUpload}
               disabled={isUploading || !selectedFile}
             >
               <Upload className="h-4 w-4 mr-2" />
               Envoyer
             </Button>
           </div>
+          <Dialog open={isFileDialogOpen} onOpenChange={setIsFileDialogOpen}>
+            <DialogTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  loadUserFiles();
+                }}
+              >
+                <FolderOpen className="h-4 w-4 mr-2" />
+                Mes fichiers
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Sélectionner une image</DialogTitle>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                {userFiles.map((file) => (
+                  <div
+                    key={file.id}
+                    onClick={() => handleFileSelect(file)}
+                    className="flex items-center gap-4 p-4 border rounded-lg cursor-pointer hover:bg-accent"
+                  >
+                    <img
+                      src={supabase.storage.from('user_files').getPublicUrl(file.file_path).data.publicUrl}
+                      alt={file.filename}
+                      className="w-16 h-16 object-cover rounded"
+                    />
+                    <div>
+                      <p className="font-medium">{file.filename}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {new Date(file.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </DialogContent>
+          </Dialog>
           <Button
             type="button"
             onClick={onCameraCapture}
