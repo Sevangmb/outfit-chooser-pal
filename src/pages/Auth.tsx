@@ -1,126 +1,11 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { GuestLoginButton } from "@/components/auth/GuestLoginButton";
+import { useAuthStateHandler } from "@/components/auth/AuthStateHandler";
 
 const Auth = () => {
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
-
-  const handleGuestLogin = async () => {
-    try {
-      setLoading(true);
-      console.log("Attempting guest login...");
-      
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: 'guest@fring.app',
-        password: 'guest123'
-      });
-
-      if (error) {
-        console.error("Guest login error details:", {
-          message: error.message,
-          status: error.status,
-          name: error.name
-        });
-        toast.error(error.message || "Erreur lors de la connexion invité");
-        return;
-      }
-
-      if (data?.user) {
-        console.log("Guest login successful:", data.user);
-        toast.success("Connexion invité réussie !");
-        navigate("/");
-      }
-    } catch (error) {
-      console.error("Unexpected error in guest login:", error);
-      toast.error("Une erreur inattendue est survenue");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Listen for auth state changes with improved error handling
-  supabase.auth.onAuthStateChange(async (event, session) => {
-    console.log("Auth state changed:", event, session);
-    
-    if (event === "SIGNED_IN" && session?.user) {
-      try {
-        setLoading(true);
-        console.log("Checking profile for user:", session.user.id);
-        
-        // First check if profile exists
-        const { data: existingProfile, error: profileError } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", session.user.id)
-          .maybeSingle();
-
-        if (profileError) {
-          console.error("Error checking profile:", profileError);
-          toast.error("Erreur lors de la vérification du profil");
-          return;
-        }
-
-        // If profile doesn't exist, create it
-        if (!existingProfile) {
-          console.log("Creating new profile for user:", session.user.id);
-          const { error: insertError } = await supabase
-            .from("profiles")
-            .insert([
-              {
-                id: session.user.id,
-                email: session.user.email,
-                username: session.user.email?.split('@')[0],
-                has_completed_onboarding: false,
-                status: 'active'
-              }
-            ]);
-
-          if (insertError) {
-            console.error("Error creating profile:", insertError);
-            toast.error("Erreur lors de la création du profil");
-            return;
-          }
-        }
-
-        // Add default user role if not exists
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .upsert(
-            { 
-              user_id: session.user.id, 
-              role: 'user' 
-            },
-            { 
-              onConflict: 'user_id',
-              ignoreDuplicates: true 
-            }
-          );
-
-        if (roleError) {
-          console.error("Error setting user role:", roleError);
-          toast.error("Erreur lors de la configuration du rôle");
-          return;
-        }
-
-        console.log("Profile setup completed:", existingProfile || "New profile created");
-        toast.success("Connexion réussie !");
-        navigate("/");
-      } catch (error) {
-        console.error("Error in auth flow:", error);
-        toast.error("Une erreur est survenue lors de l'authentification");
-      } finally {
-        setLoading(false);
-      }
-    } else if (event === "SIGNED_OUT") {
-      console.log("User signed out");
-      toast.info("Déconnexion réussie");
-    }
-  });
+  useAuthStateHandler();
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -179,14 +64,7 @@ const Auth = () => {
             </div>
           </div>
 
-          <Button
-            onClick={handleGuestLogin}
-            className="w-full"
-            variant="outline"
-            disabled={loading}
-          >
-            {loading ? "Chargement..." : "Continuer en tant qu'invité"}
-          </Button>
+          <GuestLoginButton />
         </div>
       </div>
     </div>
