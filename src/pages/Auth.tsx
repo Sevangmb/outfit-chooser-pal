@@ -9,12 +9,35 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Listen for auth state changes
-  supabase.auth.onAuthStateChange((event, session) => {
+  // Listen for auth state changes with improved error handling
+  supabase.auth.onAuthStateChange(async (event, session) => {
     console.log("Auth state changed:", event, session);
+    
     if (event === "SIGNED_IN") {
-      toast.success("Connexion réussie !");
-      navigate("/");
+      try {
+        // Check if profile exists
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", session?.user?.id)
+          .single();
+
+        if (profileError) {
+          console.error("Error fetching profile:", profileError);
+          toast.error("Erreur lors de la récupération du profil");
+          return;
+        }
+
+        console.log("User profile:", profile);
+        toast.success("Connexion réussie !");
+        navigate("/");
+      } catch (error) {
+        console.error("Error in auth state change:", error);
+        toast.error("Une erreur est survenue");
+      }
+    } else if (event === "SIGNED_OUT") {
+      console.log("User signed out");
+      toast.info("Déconnexion réussie");
     }
   });
 
