@@ -14,47 +14,97 @@ const Auth = () => {
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
-          console.error("Error checking session:", error);
-          // Try to refresh the session
-          const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
-          if (refreshError) {
-            console.error("Error refreshing session:", refreshError);
-            toast.error("Erreur d'authentification. Veuillez vous reconnecter.");
-            // Clear any existing session data
-            await supabase.auth.signOut();
-            return;
-          }
-          if (refreshData.session) {
-            console.log("Session refreshed successfully");
-            navigate("/");
-            return;
-          }
+          console.error("Erreur lors de la vérification de la session:", error);
+          toast.error("Erreur d'authentification. Veuillez réessayer.");
+          return;
         }
 
         if (session) {
-          console.log("Valid session found, redirecting to home");
+          console.log("Session valide trouvée, redirection vers l'accueil");
           navigate("/");
         }
       } catch (error) {
-        console.error("Error in checkSession:", error);
-        toast.error("Une erreur est survenue lors de la vérification de la session");
+        console.error("Erreur lors de la vérification de la session:", error);
+        toast.error("Une erreur est survenue. Veuillez réessayer plus tard.");
       }
     };
 
     checkSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event, session);
+      console.log("État de l'authentification changé:", event, session);
       
       if (event === 'SIGNED_IN') {
-        console.log("User signed in, redirecting to home");
-        navigate("/");
-      } else if (event === 'SIGNED_OUT') {
-        console.log("User signed out");
-        // Clear any remaining session data
-        await supabase.auth.signOut();
-      } else if (event === 'TOKEN_REFRESHED') {
-        console.log("Token refreshed successfully");
+        try {
+          // Vérifier si l'utilisateur existe déjà dans la table des profils
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('id', session?.user?.id)
+            .single();
+
+          if (profileError && profileError.code !== 'PGRST116') {
+            console.error("Erreur lors de la vérification du profil:", profileError);
+            toast.error("Erreur lors de la création du profil");
+            return;
+          }
+
+          if (!profile) {
+            // Créer un nouveau profil si nécessaire
+            const { error: insertError } = await supabase
+              .from('profiles')
+              .insert([
+                {
+                  id: session?.user?.id,
+                  email: session?.user?.email,
+                  username: session?.user?.email?.split('@')[0]
+                }
+              ]);
+
+            if (insertError) {
+              console.error("Erreur lors de la création du profil:", insertError);
+              toast.error("Erreur lors de la création du profil");
+              return;
+            }
+          }
+
+          // Vérifier si l'utilisateur a un rôle
+          const { data: role, error: roleError } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', session?.user?.id)
+            .single();
+
+          if (roleError && roleError.code !== 'PGRST116') {
+            console.error("Erreur lors de la vérification du rôle:", roleError);
+            toast.error("Erreur lors de la vérification des permissions");
+            return;
+          }
+
+          if (!role) {
+            // Attribuer le rôle 'user' par défaut
+            const { error: insertRoleError } = await supabase
+              .from('user_roles')
+              .insert([
+                {
+                  user_id: session?.user?.id,
+                  role: 'user'
+                }
+              ]);
+
+            if (insertRoleError) {
+              console.error("Erreur lors de l'attribution du rôle:", insertRoleError);
+              toast.error("Erreur lors de l'attribution des permissions");
+              return;
+            }
+          }
+
+          toast.success("Connexion réussie");
+          navigate("/");
+        } catch (error) {
+          console.error("Erreur lors du processus d'authentification:", error);
+          toast.error("Une erreur est survenue lors de la connexion");
+        }
       }
     });
 
