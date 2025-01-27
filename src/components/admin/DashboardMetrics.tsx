@@ -8,7 +8,7 @@ export const DashboardMetrics = () => {
     queryKey: ["totalUsers"],
     queryFn: async () => {
       const { count } = await supabase
-        .from("profiles")
+        .from("users")
         .select("*", { count: "exact", head: true });
       return count || 0;
     }
