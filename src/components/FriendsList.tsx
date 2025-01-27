@@ -31,9 +31,8 @@ export const FriendsList = ({ userId }: FriendsListProps) => {
       const { data, error } = await supabase
         .from("friendships")
         .select(`
-          friend:profiles!friendships_users_friend_id_fkey(
+          friend:profiles!friendships_profiles_friend_id_fkey(
             id,
-            email,
             full_name,
             avatar_url
           )
@@ -59,9 +58,8 @@ export const FriendsList = ({ userId }: FriendsListProps) => {
       const { data, error } = await supabase
         .from("friendships")
         .select(`
-          user:profiles!friendships_users_user_id_fkey(
+          user:profiles!friendships_profiles_user_id_fkey(
             id,
-            email,
             full_name,
             avatar_url
           )
@@ -91,8 +89,8 @@ export const FriendsList = ({ userId }: FriendsListProps) => {
       console.log("Searching users with query:", query);
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, email, full_name, avatar_url")
-        .ilike("email", `%${query}%`)
+        .select("id, full_name, avatar_url")
+        .ilike("full_name", `%${query}%`)
         .limit(5);
 
       if (error) throw error;
@@ -158,7 +156,7 @@ export const FriendsList = ({ userId }: FriendsListProps) => {
       <div className="relative">
         <Input
           type="text"
-          placeholder="Rechercher un ami par email..."
+          placeholder="Rechercher un ami..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full"
@@ -174,11 +172,10 @@ export const FriendsList = ({ userId }: FriendsListProps) => {
               <div className="flex items-center gap-2">
                 <Avatar>
                   <AvatarImage src={user.avatar_url || undefined} />
-                  <AvatarFallback>{user.full_name?.[0] || user.email[0].toUpperCase()}</AvatarFallback>
+                  <AvatarFallback>{user.full_name?.[0] || "U"}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-medium">{user.full_name || user.email}</p>
-                  <p className="text-sm text-muted-foreground">{user.email}</p>
+                  <p className="font-medium">{user.full_name || "Unnamed User"}</p>
                 </div>
               </div>
               <Button
@@ -216,11 +213,10 @@ export const FriendsList = ({ userId }: FriendsListProps) => {
                 <div className="flex items-center gap-2">
                   <Avatar>
                     <AvatarImage src={friend.avatar_url || undefined} />
-                    <AvatarFallback>{friend.full_name?.[0] || friend.email[0].toUpperCase()}</AvatarFallback>
+                    <AvatarFallback>{friend.full_name?.[0] || "U"}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium">{friend.full_name || friend.email}</p>
-                    <p className="text-sm text-muted-foreground">{friend.email}</p>
+                    <p className="font-medium">{friend.full_name || "Unnamed User"}</p>
                   </div>
                 </div>
                 <Button variant="ghost" size="sm">
@@ -245,11 +241,10 @@ export const FriendsList = ({ userId }: FriendsListProps) => {
                 <div className="flex items-center gap-2">
                   <Avatar>
                     <AvatarImage src={friend.avatar_url || undefined} />
-                    <AvatarFallback>{friend.full_name?.[0] || friend.email[0].toUpperCase()}</AvatarFallback>
+                    <AvatarFallback>{friend.full_name?.[0] || "U"}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium">{friend.full_name || friend.email}</p>
-                    <p className="text-sm text-muted-foreground">{friend.email}</p>
+                    <p className="font-medium">{friend.full_name || "Unnamed User"}</p>
                   </div>
                 </div>
                 <Button
