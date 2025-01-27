@@ -28,7 +28,6 @@ export const MessagingSection = () => {
           <ChatRoom
             type={selectedConversation.type}
             recipientId={selectedConversation.id}
-            recipientName={selectedConversation.name}
           />
         ) : (
           <div className="h-full flex items-center justify-center text-muted-foreground">
