@@ -3,12 +3,14 @@ import { MessageList } from "./MessageList";
 import { SendMessageDialog } from "./SendMessageDialog";
 import { ChatRoom } from "./ChatRoom";
 
+interface Conversation {
+  type: "direct" | "group";
+  id: string | number;
+  name: string;
+}
+
 export const MessagingSection = () => {
-  const [selectedConversation, setSelectedConversation] = useState<{
-    type: "direct" | "group";
-    id: string | number;
-    name: string;
-  } | null>(null);
+  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[calc(100vh-12rem)]">
@@ -25,10 +27,15 @@ export const MessagingSection = () => {
 
       <div className="md:col-span-2 bg-white rounded-lg shadow-sm border">
         {selectedConversation ? (
-          <ChatRoom
-            type={selectedConversation.type}
-            recipientId={selectedConversation.id}
-          />
+          <div className="h-full flex flex-col">
+            <div className="p-4 border-b">
+              <h3 className="font-semibold">{selectedConversation.name}</h3>
+            </div>
+            <ChatRoom
+              type={selectedConversation.type}
+              recipientId={selectedConversation.id}
+            />
+          </div>
         ) : (
           <div className="h-full flex items-center justify-center text-muted-foreground">
             Sélectionnez une conversation pour afficher les messages
