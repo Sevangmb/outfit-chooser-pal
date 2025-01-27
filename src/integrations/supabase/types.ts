@@ -1221,6 +1221,42 @@ export type Database = {
         }
         Relationships: []
       }
+      shop_profile_categories: {
+        Row: {
+          category_id: string | null
+          created_at: string | null
+          id: string
+          shop_profile_id: string | null
+        }
+        Insert: {
+          category_id?: string | null
+          created_at?: string | null
+          id?: string
+          shop_profile_id?: string | null
+        }
+        Update: {
+          category_id?: string | null
+          created_at?: string | null
+          id?: string
+          shop_profile_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shop_profile_categories_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "shop_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shop_profile_categories_shop_profile_id_fkey"
+            columns: ["shop_profile_id"]
+            isOneToOne: false
+            referencedRelation: "shop_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shop_profiles: {
         Row: {
           address: string | null

@@ -2,11 +2,15 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 
-export const OutfitFeed = () => {
+interface OutfitFeedProps {
+  filter?: 'trending' | 'following';
+}
+
+export const OutfitFeed = ({ filter }: OutfitFeedProps) => {
   const { data: outfits } = useQuery({
-    queryKey: ["outfits"],
+    queryKey: ["outfits", filter],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("outfits")
         .select(`
           *,
@@ -27,6 +31,23 @@ export const OutfitFeed = () => {
         .order("created_at", { ascending: false })
         .limit(9);
 
+      if (filter === 'trending') {
+        query = query.order('rating', { ascending: false });
+      } else if (filter === 'following') {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: following } = await supabase
+            .from('followers')
+            .select('following_id')
+            .eq('follower_id', user.id);
+          
+          if (following?.length) {
+            query = query.in('user_id', following.map(f => f.following_id));
+          }
+        }
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
