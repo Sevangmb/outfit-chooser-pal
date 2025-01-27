@@ -180,7 +180,12 @@ export const ProfileMenu = ({ isActive }: ProfileMenuProps) => {
           <DialogHeader>
             <DialogTitle>Mes fichiers</DialogTitle>
           </DialogHeader>
-          <UserFiles />
+          <UserFiles 
+            searchTerm=""
+            fileType="all"
+            sortBy="date"
+            sortOrder="desc"
+          />
         </DialogContent>
       </Dialog>
 

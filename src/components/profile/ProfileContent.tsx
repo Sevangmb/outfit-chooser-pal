@@ -91,7 +91,12 @@ export const ProfileContent = ({ userId }: ProfileContentProps) => {
           <CardTitle>Mes fichiers</CardTitle>
         </CardHeader>
         <CardContent>
-          <UserFiles />
+          <UserFiles 
+            searchTerm=""
+            fileType="all"
+            sortBy="date"
+            sortOrder="desc"
+          />
         </CardContent>
       </Card>
     </div>
