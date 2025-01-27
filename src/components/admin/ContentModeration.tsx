@@ -35,12 +35,12 @@ export const ContentModeration = () => {
       const [outfitsResponse, commentsResponse] = await Promise.all([
         supabase
           .from('outfits')
-          .select('id, name, flag_reason, created_at, profiles!inner(email)')
+          .select('id, name, flag_reason, created_at, users!inner(email)')
           .eq('is_flagged', true)
           .order('created_at', { ascending: false }),
         supabase
           .from('outfit_comments')
-          .select('id, content, flag_reason, created_at, profiles!inner(email)')
+          .select('id, content, flag_reason, created_at, users!inner(email)')
           .eq('is_flagged', true)
           .order('created_at', { ascending: false })
       ]);
@@ -54,7 +54,7 @@ export const ContentModeration = () => {
         content: item.name,
         flag_reason: item.flag_reason || '',
         created_at: item.created_at,
-        user: item.profiles
+        user: item.users
       }));
 
       const flaggedComments = (commentsResponse.data || []).map(item => ({
@@ -63,7 +63,7 @@ export const ContentModeration = () => {
         content: item.content,
         flag_reason: item.flag_reason || '',
         created_at: item.created_at,
-        user: item.profiles
+        user: item.users
       }));
 
       const flaggedContent = [...flaggedOutfits, ...flaggedComments]

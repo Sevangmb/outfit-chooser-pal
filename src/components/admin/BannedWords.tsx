@@ -17,7 +17,7 @@ interface BannedWord {
   id: string;
   word: string;
   created_at: string;
-  profiles?: {
+  users?: {
     email: string;
   };
 }
@@ -34,7 +34,7 @@ export const BannedWords = () => {
         .from('banned_words')
         .select(`
           *,
-          profiles (
+          users (
             email
           )
         `)
@@ -130,7 +130,7 @@ export const BannedWords = () => {
           {words.map((word) => (
             <TableRow key={word.id}>
               <TableCell>{word.word}</TableCell>
-              <TableCell>{word.profiles?.email}</TableCell>
+              <TableCell>{word.users?.email}</TableCell>
               <TableCell>
                 {new Date(word.created_at).toLocaleDateString()}
               </TableCell>

@@ -16,7 +16,7 @@ interface AuditLog {
   action_type: string;
   action_details: any;
   created_at: string;
-  profiles: {
+  users: {
     email: string;
   } | null;
 }
@@ -32,7 +32,7 @@ export const AuditLogs = () => {
         .from('audit_logs')
         .select(`
           *,
-          profiles (
+          users (
             email
           )
         `)
@@ -79,7 +79,7 @@ export const AuditLogs = () => {
               <TableCell>
                 {new Date(log.created_at).toLocaleString()}
               </TableCell>
-              <TableCell>{log.profiles?.email}</TableCell>
+              <TableCell>{log.users?.email}</TableCell>
               <TableCell>{log.action_type}</TableCell>
               <TableCell>
                 <pre className="text-sm">
