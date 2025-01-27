@@ -39,17 +39,17 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "admin_messages_admin_id_fkey"
+            foreignKeyName: "admin_messages_admin_user_id_fkey"
             columns: ["admin_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "admin_messages_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -87,10 +87,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "app_settings_updated_by_fkey"
+            foreignKeyName: "app_settings_updated_by_user_id_fkey"
             columns: ["updated_by"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -122,10 +122,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "audit_logs_admin_id_fkey"
+            foreignKeyName: "audit_logs_admin_user_id_fkey"
             columns: ["admin_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -151,10 +151,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "banned_words_created_by_fkey"
+            foreignKeyName: "banned_words_created_by_user_id_fkey"
             columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -565,17 +565,17 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "followers_follower_profile_fkey"
+            foreignKeyName: "followers_follower_user_fkey"
             columns: ["follower_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "followers_following_profile_fkey"
+            foreignKeyName: "followers_following_user_fkey"
             columns: ["following_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -604,17 +604,17 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "friendships_profiles_friend_id_fkey"
+            foreignKeyName: "friendships_users_friend_id_fkey"
             columns: ["friend_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "friendships_profiles_user_id_fkey"
+            foreignKeyName: "friendships_users_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -746,10 +746,10 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "group_messages_sender_id_fkey"
+            foreignKeyName: "group_messages_sender_user_id_fkey"
             columns: ["sender_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -1029,10 +1029,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "outfit_comments_moderated_by_fkey"
+            foreignKeyName: "outfit_comments_moderated_by_user_id_fkey"
             columns: ["moderated_by"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
           {
@@ -1115,55 +1115,13 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "outfits_moderated_by_fkey"
+            foreignKeyName: "outfits_moderated_by_user_id_fkey"
             columns: ["moderated_by"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
-      }
-      profiles: {
-        Row: {
-          avatar_url: string | null
-          bio: string | null
-          created_at: string
-          email: string
-          full_name: string | null
-          has_completed_onboarding: boolean | null
-          id: string
-          is_profile_public: boolean | null
-          last_login: string | null
-          status: string | null
-          username: string | null
-        }
-        Insert: {
-          avatar_url?: string | null
-          bio?: string | null
-          created_at?: string
-          email: string
-          full_name?: string | null
-          has_completed_onboarding?: boolean | null
-          id: string
-          is_profile_public?: boolean | null
-          last_login?: string | null
-          status?: string | null
-          username?: string | null
-        }
-        Update: {
-          avatar_url?: string | null
-          bio?: string | null
-          created_at?: string
-          email?: string
-          full_name?: string | null
-          has_completed_onboarding?: boolean | null
-          id?: string
-          is_profile_public?: boolean | null
-          last_login?: string | null
-          status?: string | null
-          username?: string | null
-        }
-        Relationships: []
       }
       shop_categories: {
         Row: {
@@ -1264,10 +1222,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "shop_profiles_user_id_fkey_profiles"
+            foreignKeyName: "shop_profiles_user_id_fkey_users"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -1578,17 +1536,17 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "user_messages_recipient_id_fkey"
+            foreignKeyName: "user_messages_recipient_user_id_fkey"
             columns: ["recipient_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "user_messages_sender_id_fkey"
+            foreignKeyName: "user_messages_sender_user_id_fkey"
             columns: ["sender_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -1680,6 +1638,48 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"] | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      users: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          email: string
+          full_name: string | null
+          has_completed_onboarding: boolean | null
+          id: string
+          is_profile_public: boolean | null
+          last_login: string | null
+          status: string | null
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          email: string
+          full_name?: string | null
+          has_completed_onboarding?: boolean | null
+          id: string
+          is_profile_public?: boolean | null
+          last_login?: string | null
+          status?: string | null
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          has_completed_onboarding?: boolean | null
+          id?: string
+          is_profile_public?: boolean | null
+          last_login?: string | null
+          status?: string | null
+          username?: string | null
         }
         Relationships: []
       }
