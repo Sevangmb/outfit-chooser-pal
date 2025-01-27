@@ -9,10 +9,12 @@ import { LayoutList, Sparkles, TrendingUp, Trophy, Home } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
   const [suggestion, setSuggestion] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const getOutfitSuggestion = async () => {
     try {

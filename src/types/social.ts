@@ -1,13 +1,13 @@
 export interface Profile {
   id: string;
   email: string;
-}
-
-export interface Follower {
-  id: number;
-  follower_id: string;
-  following_id: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  username: string | null;
+  bio: string | null;
+  is_profile_public: boolean;
   created_at: string;
-  follower?: Profile;
-  following?: Profile;
+  has_completed_onboarding: boolean;
+  status: string;
+  last_login: string | null;
 }
