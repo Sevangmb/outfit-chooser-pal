@@ -1169,6 +1169,7 @@ export type Database = {
           avatar_url: string | null
           bio: string | null
           email: string | null
+          encrypted_password: string | null
           full_name: string | null
           has_completed_onboarding: boolean | null
           id: string
@@ -1181,6 +1182,7 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           email?: string | null
+          encrypted_password?: string | null
           full_name?: string | null
           has_completed_onboarding?: boolean | null
           id: string
@@ -1193,6 +1195,7 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           email?: string | null
+          encrypted_password?: string | null
           full_name?: string | null
           has_completed_onboarding?: boolean | null
           id?: string
