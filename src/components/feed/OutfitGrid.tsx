@@ -27,7 +27,7 @@ interface OutfitGridProps {
 }
 
 export const OutfitGrid = ({ outfits, isFetchingNextPage, observerRef }: OutfitGridProps) => {
-  console.log("Rendering OutfitGrid with outfits:", outfits);
+  console.log("Rendering OutfitGrid with outfits:", outfits.length);
   
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -37,7 +37,7 @@ export const OutfitGrid = ({ outfits, isFetchingNextPage, observerRef }: OutfitG
       
       <div ref={observerRef}>
         {isFetchingNextPage && (
-          <div className="grid gap-4">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[...Array(3)].map((_, i) => (
               <Skeleton key={i} className="h-[400px] rounded-xl" />
             ))}

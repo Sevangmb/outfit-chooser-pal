@@ -28,12 +28,14 @@ export const OutfitFeed = () => {
     queryKey: ["outfits-feed"],
     initialPageParam: 0,
     queryFn: async ({ pageParam = 0 }) => {
-      console.log("Fetching outfits page:", pageParam);
+      console.log("Starting to fetch outfits page:", pageParam);
       
       const start = pageParam * ITEMS_PER_PAGE;
       const end = start + ITEMS_PER_PAGE - 1;
       
-      const { data: outfits, error: outfitsError } = await supabase
+      console.log(`Fetching range ${start} to ${end}`);
+
+      const { data: outfits, error: outfitsError, count } = await supabase
         .from("outfits")
         .select(`
           *,
@@ -41,7 +43,7 @@ export const OutfitFeed = () => {
             clothes(id, name, category, color, image)
           ),
           user:users(email)
-        `)
+        `, { count: 'exact' })
         .order('created_at', { ascending: false })
         .range(start, end);
 
@@ -51,23 +53,33 @@ export const OutfitFeed = () => {
       }
 
       console.log("Fetched outfits:", outfits);
+      console.log("Total count:", count);
 
       if (!outfits || outfits.length === 0) {
+        console.log("No outfits found for this page");
         return {
           outfits: [],
           nextPage: null
         };
       }
 
-      const formattedOutfits = outfits.map(outfit => ({
-        ...outfit,
-        user_email: outfit.user?.email || "Utilisateur inconnu",
-        clothes: outfit.clothes || []
-      }));
+      const formattedOutfits = outfits.map(outfit => {
+        console.log("Processing outfit:", outfit.id, "User:", outfit.user?.email);
+        return {
+          ...outfit,
+          user_email: outfit.user?.email || "Utilisateur inconnu",
+          clothes: outfit.clothes || []
+        };
+      });
+
+      console.log("Formatted outfits:", formattedOutfits);
+
+      const hasMore = count ? start + outfits.length < count : false;
+      console.log("Has more pages:", hasMore);
 
       return {
         outfits: formattedOutfits,
-        nextPage: formattedOutfits.length === ITEMS_PER_PAGE ? pageParam + 1 : null,
+        nextPage: hasMore ? pageParam + 1 : null,
       };
     },
     getNextPageParam: (lastPage) => lastPage.nextPage,
@@ -75,7 +87,7 @@ export const OutfitFeed = () => {
 
   useEffect(() => {
     if (inView && hasNextPage && !isFetchingNextPage) {
-      console.log("Loading next page...");
+      console.log("Loading next page due to scroll...");
       fetchNextPage();
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
@@ -91,6 +103,7 @@ export const OutfitFeed = () => {
   }
 
   const allOutfits = data?.pages.flatMap(page => page.outfits) || [];
+  console.log("Total outfits rendered:", allOutfits.length);
 
   return (
     <div className="space-y-6">
