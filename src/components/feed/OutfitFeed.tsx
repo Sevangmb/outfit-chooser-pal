@@ -37,7 +37,7 @@ export const OutfitFeed = ({ filter }: OutfitFeedProps) => {
           clothes:outfit_clothes(
             clothes(id, name, category, color, image)
           ),
-          profiles(email)
+          profiles!outfits_profiles_user_id_fkey(email)
         `, { count: 'exact' });
 
       if (filter === "trending") {
