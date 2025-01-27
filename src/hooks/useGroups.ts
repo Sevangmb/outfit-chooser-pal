@@ -64,18 +64,20 @@ export const useGroups = () => {
         .insert([{
           ...newGroup,
           created_by: userId,
+          owner_id: userId
         }])
         .select()
         .single();
 
       if (error) throw error;
 
+      // Add creator as member
       const { error: memberError } = await supabase
         .from("message_group_members")
         .insert([
           {
             group_id: group.id,
-            user_id: userId,
+            member_id: userId,
             role: "admin",
             is_approved: true,
           },

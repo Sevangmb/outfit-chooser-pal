@@ -877,27 +877,27 @@ export type Database = {
           id: number
           is_approved: boolean | null
           joined_at: string
+          member_id: string | null
           role: string | null
           user_id: string | null
-          users: Json | null
         }
         Insert: {
           group_id?: number | null
           id?: number
           is_approved?: boolean | null
           joined_at?: string
+          member_id?: string | null
           role?: string | null
           user_id?: string | null
-          users?: Json | null
         }
         Update: {
           group_id?: number | null
           id?: number
           is_approved?: boolean | null
           joined_at?: string
+          member_id?: string | null
           role?: string | null
           user_id?: string | null
-          users?: Json | null
         }
         Relationships: [
           {
@@ -929,6 +929,7 @@ export type Database = {
           last_activity_at: string | null
           member_count: number | null
           name: string
+          owner_id: string | null
           post_count: number | null
           privacy: string | null
           rules: string | null
@@ -945,6 +946,7 @@ export type Database = {
           last_activity_at?: string | null
           member_count?: number | null
           name: string
+          owner_id?: string | null
           post_count?: number | null
           privacy?: string | null
           rules?: string | null
@@ -961,6 +963,7 @@ export type Database = {
           last_activity_at?: string | null
           member_count?: number | null
           name?: string
+          owner_id?: string | null
           post_count?: number | null
           privacy?: string | null
           rules?: string | null
