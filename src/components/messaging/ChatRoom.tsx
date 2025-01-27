@@ -30,7 +30,7 @@ export const ChatRoom = ({ type, recipientId, recipientName }: ChatRoomProps) =>
           .from("user_messages")
           .insert({
             sender_id: user.id,
-            recipient_id: recipientId,
+            recipient_id: recipientId.toString(), // Convert to string for direct messages
             content: newMessage.trim()
           });
 
@@ -39,7 +39,7 @@ export const ChatRoom = ({ type, recipientId, recipientName }: ChatRoomProps) =>
         const { error: sendError } = await supabase
           .from("group_messages")
           .insert({
-            group_id: recipientId,
+            group_id: Number(recipientId), // Convert to number for group messages
             sender_id: user.id,
             content: newMessage.trim()
           });
@@ -56,7 +56,7 @@ export const ChatRoom = ({ type, recipientId, recipientName }: ChatRoomProps) =>
   };
 
   if (type === "group") {
-    const { messages, loading: isLoading, error } = useGroupMessages(recipientId as number);
+    const { messages, loading: isLoading, error } = useGroupMessages(Number(recipientId));
 
     if (isLoading) {
       return (
