@@ -19,7 +19,8 @@ export const useGroupMembers = (groupId: number) => {
           joined_at,
           role,
           is_approved,
-          users:member_id (
+          users (
+            id,
             email,
             avatar_url
           )
