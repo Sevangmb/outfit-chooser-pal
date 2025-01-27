@@ -138,12 +138,13 @@ serve(async (req) => {
     Garde-robe disponible:
     ${wardrobeDescription}
 
-    Donne une suggestion précise qui:
+    Règles importantes pour la suggestion:
     1. Utilise uniquement les vêtements listés ci-dessus
-    2. Tient compte de la température et des conditions météo
-    3. Crée une combinaison harmonieuse de couleurs
-    4. Si la température est inférieure à 15°C, inclure un vêtement chaud si disponible
-    5. Si la température est inférieure à 5°C, inclure un manteau si disponible
+    2. Si il pleut, privilégie les vêtements imperméables ou adaptés à la pluie
+    3. Si il fait froid (<15°C), suggère des vêtements chauds et des couches
+    4. Si il fait très froid (<5°C), inclus absolument un manteau chaud
+    5. Si il fait chaud (>25°C), suggère des vêtements légers et respirants
+    6. Crée une combinaison harmonieuse de couleurs
     
     Format souhaité: Une phrase concise en français qui liste les vêtements spécifiques recommandés.`
 

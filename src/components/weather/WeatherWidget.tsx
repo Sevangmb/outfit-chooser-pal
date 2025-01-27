@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import { Cloud, CloudRain, Sun, Loader2, CloudSun, Moon, Snowflake, CloudFog } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface WeatherData {
   temperature: number;
@@ -57,6 +60,36 @@ export const WeatherWidget = () => {
 
     fetchWeather();
   }, []);
+
+  const handleWeatherOutfitSuggestion = async () => {
+    const weatherData = localStorage.getItem('weatherData');
+    if (!weatherData) {
+      toast.error("Les données météo ne sont pas disponibles");
+      return;
+    }
+
+    try {
+      const parsedWeatherData = JSON.parse(weatherData);
+      
+      const { data, error } = await supabase.functions.invoke('suggest-outfit', {
+        body: {
+          temperature: parsedWeatherData.temperature,
+          weatherDescription: parsedWeatherData.description,
+          conditions: parsedWeatherData.conditions
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.suggestion) {
+        toast.success(data.suggestion);
+      }
+
+    } catch (error) {
+      console.error("Error getting outfit suggestion:", error);
+      toast.error("Impossible d'obtenir une suggestion de tenue");
+    }
+  };
 
   const getWeatherIcon = (code: number) => {
     // WMO Weather interpretation codes (https://open-meteo.com/en/docs)
@@ -129,7 +162,7 @@ export const WeatherWidget = () => {
   }
 
   return (
-    <div>
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h3 className="font-medium">Météo aujourd'hui</h3>
@@ -150,6 +183,18 @@ export const WeatherWidget = () => {
           </div>
         ) : null}
       </div>
+
+      <Button 
+        variant="outline" 
+        className="w-full flex items-center gap-2 h-auto py-4"
+        onClick={handleWeatherOutfitSuggestion}
+      >
+        <CloudSun className="h-4 w-4" />
+        <div className="text-left">
+          <div className="font-medium">Suggestion météo</div>
+          <div className="text-sm text-muted-foreground">Tenue adaptée à la météo</div>
+        </div>
+      </Button>
     </div>
   );
 };
