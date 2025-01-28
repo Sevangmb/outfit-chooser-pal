@@ -23,7 +23,7 @@ export const GuestLoginButton = () => {
         } else if (error.message.includes('Email not confirmed')) {
           toast.error("L'email du compte invité n'est pas confirmé");
         } else if (error.message.includes('Invalid login credentials')) {
-          toast.error("Identifiants invalides pour le compte invité");
+          toast.error("Le compte invité n'existe pas ou les identifiants sont incorrects");
         } else {
           toast.error(error.message || "Erreur lors de la connexion invité");
         }
@@ -32,6 +32,7 @@ export const GuestLoginButton = () => {
 
       if (data?.user) {
         console.log("Guest login successful:", data.user);
+        toast.success("Connexion invité réussie!");
       }
     } catch (error) {
       console.error("Unexpected error in guest login:", error);
