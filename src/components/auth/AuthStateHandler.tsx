@@ -76,6 +76,11 @@ export const useAuthStateHandler = () => {
       } else if (event === "SIGNED_OUT") {
         console.log("User signed out");
         toast.info("Déconnexion réussie");
+        navigate("/auth");
+      } else if (event === "USER_DELETED") {
+        console.log("User account deleted");
+        toast.info("Compte supprimé");
+        navigate("/auth");
       }
     };
 

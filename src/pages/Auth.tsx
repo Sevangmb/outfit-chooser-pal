@@ -39,6 +39,7 @@ const Auth = () => {
               },
             }}
             providers={["github", "google"]}
+            redirectTo={window.location.origin}
             localization={{
               variables: {
                 sign_in: {
