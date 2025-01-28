@@ -35,7 +35,7 @@ export const useAuthStateHandler = () => {
                   id: session.user.id,
                   email: session.user.email,
                   username: session.user.email?.split('@')[0],
-                  has_completed_onboarding: false,
+                  has_completed_onboarding: session.user.email === 'guest@fring.app' ? true : false,
                   status: 'active'
                 }
               ]);
@@ -47,6 +47,7 @@ export const useAuthStateHandler = () => {
             }
           }
 
+          // Ensure user role exists
           const { error: roleError } = await supabase
             .from('user_roles')
             .upsert(
@@ -55,7 +56,7 @@ export const useAuthStateHandler = () => {
                 role: 'user' 
               },
               { 
-                onConflict: 'user_id',
+                onConflict: 'user_id,role',
                 ignoreDuplicates: true 
               }
             );

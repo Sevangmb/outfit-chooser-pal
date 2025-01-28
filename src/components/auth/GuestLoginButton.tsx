@@ -9,23 +9,39 @@ export const GuestLoginButton = () => {
   const handleGuestLogin = async () => {
     try {
       setLoading(true);
-      console.log("Attempting guest login...");
+      console.log("Starting guest login attempt...");
       
+      // First check if the guest user exists
+      const { data: userExists, error: checkError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', 'guest@fring.app')
+        .maybeSingle();
+
+      if (checkError) {
+        console.error("Error checking guest user:", checkError);
+        toast.error("Erreur lors de la vérification du compte invité");
+        return;
+      }
+
+      // Attempt login
       const { data, error } = await supabase.auth.signInWithPassword({
         email: 'guest@fring.app',
-        password: 'guest123'
+        password: 'guest123',
       });
 
       if (error) {
         console.error("Guest login error:", error);
-        if (error.message.includes('Database error')) {
-          toast.error("Erreur de connexion à la base de données. Veuillez réessayer plus tard.");
+        
+        // Handle specific error cases
+        if (error.message.includes('Invalid login credentials')) {
+          toast.error("Les identifiants du compte invité sont incorrects");
         } else if (error.message.includes('Email not confirmed')) {
-          toast.error("L'email du compte invité n'est pas confirmé");
-        } else if (error.message.includes('Invalid login credentials')) {
-          toast.error("Le compte invité n'existe pas ou les identifiants sont incorrects");
+          toast.error("Le compte invité n'est pas confirmé");
+        } else if (error.message.includes('Database error')) {
+          toast.error("Erreur de base de données. Veuillez réessayer.");
         } else {
-          toast.error(error.message || "Erreur lors de la connexion invité");
+          toast.error("Erreur lors de la connexion invité: " + error.message);
         }
         return;
       }
@@ -35,7 +51,7 @@ export const GuestLoginButton = () => {
         toast.success("Connexion invité réussie!");
       }
     } catch (error) {
-      console.error("Unexpected error in guest login:", error);
+      console.error("Unexpected error during guest login:", error);
       toast.error("Une erreur inattendue est survenue");
     } finally {
       setLoading(false);
