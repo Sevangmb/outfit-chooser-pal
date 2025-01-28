@@ -1,12 +1,10 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
 export const GuestLoginButton = () => {
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
   const handleGuestLogin = async () => {
     try {
@@ -20,7 +18,9 @@ export const GuestLoginButton = () => {
 
       if (error) {
         console.error("Guest login error:", error);
-        if (error.message.includes('Email not confirmed')) {
+        if (error.message.includes('Database error')) {
+          toast.error("Erreur de connexion à la base de données. Veuillez réessayer plus tard.");
+        } else if (error.message.includes('Email not confirmed')) {
           toast.error("L'email du compte invité n'est pas confirmé");
         } else if (error.message.includes('Invalid login credentials')) {
           toast.error("Identifiants invalides pour le compte invité");
