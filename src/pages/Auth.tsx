@@ -6,6 +6,7 @@ import { useAuthStateHandler } from "@/components/auth/AuthStateHandler";
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const Auth = () => {
   const { isUserLoggedIn } = useAuth();
@@ -77,6 +78,13 @@ const Auth = () => {
               },
             }}
             magicLink
+            onError={(error) => {
+              if (error.message.includes('Invalid login credentials')) {
+                toast.error("Les identifiants sont incorrects. Veuillez réessayer.");
+              } else {
+                toast.error("Une erreur est survenue lors de la connexion: " + error.message);
+              }
+            }}
           />
 
           <div className="relative">

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -40,6 +41,11 @@ export const useAuth = () => {
     });
     if (error) {
       console.error("Error sending magic link:", error);
+      if (error.message.includes('Invalid login credentials')) {
+        toast.error("Les identifiants sont incorrects. Veuillez réessayer.");
+      } else {
+        toast.error("Erreur lors de l'envoi du lien magique: " + error.message);
+      }
       throw error;
     }
   };
@@ -51,6 +57,11 @@ export const useAuth = () => {
     });
     if (error) {
       console.error("Error verifying magic link:", error);
+      if (error.message.includes('Invalid or expired token')) {
+        toast.error("Le lien magique est invalide ou a expiré.");
+      } else {
+        toast.error("Erreur lors de la vérification du lien magique: " + error.message);
+      }
       throw error;
     }
     setUser(session?.user ?? null);

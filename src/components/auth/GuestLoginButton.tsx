@@ -21,7 +21,11 @@ export const GuestLoginButton = () => {
 
       if (error) {
         console.error("Error sending magic link:", error);
-        toast.error("Erreur lors de l'envoi du lien magique: " + error.message);
+        if (error.message.includes('Invalid login credentials')) {
+          toast.error("Les identifiants du compte invité sont incorrects");
+        } else {
+          toast.error("Erreur lors de l'envoi du lien magique: " + error.message);
+        }
         return;
       }
 
