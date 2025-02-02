@@ -24,6 +24,7 @@ export const NotificationsSection = () => {
         .from("admin_messages")
         .select("*")
         .eq("user_id", userId)
+        .or('type.eq.authentication')
         .order("created_at", { ascending: false });
 
       if (error) {

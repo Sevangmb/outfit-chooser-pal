@@ -3,8 +3,8 @@ import type { Database } from './types';
 
 import { toast } from 'sonner';
 
-const SUPABASE_URL = "https://bjydiorocaixosezpylh.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJqeWRpb3JvY2FpeG9zZXpweWxoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY4Njk1MzYsImV4cCI6MjA1MjQ0NTUzNn0.6tXBsBOaki8CByfj_km-1_Jwv9xoRsi3CCcGiMFa568";
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
   console.error("Supabase URL or Anon Key is missing in environment variables.");
@@ -34,11 +34,6 @@ supabase.auth.onAuthStateChange((event, session) => {
     console.log("User signed out or deleted.");
   } else if (event === 'SIGNED_IN' && !session) {
     console.error("Authentication error: Invalid credentials.");
-  }
-});
-
-supabase.auth.onAuthStateChange((event, session) => {
-  if (event === 'SIGNED_IN' && !session) {
     toast.error("Les identifiants de connexion sont incorrects");
   }
 });
