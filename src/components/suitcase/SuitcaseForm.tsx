@@ -51,7 +51,9 @@ export const SuitcaseForm = ({ onSuccess }: SuitcaseFormProps) => {
       console.log("Creating suitcase...");
       const { data: session } = await supabase.auth.getSession();
       if (!session.session) {
-        throw new Error("No session found");
+        toast.error("Session utilisateur introuvable. Veuillez vous reconnecter.");
+        setIsLoading(false);
+        return;
       }
 
       // Insert suitcase with user_id
@@ -68,7 +70,12 @@ export const SuitcaseForm = ({ onSuccess }: SuitcaseFormProps) => {
         .select()
         .single();
 
-      if (suitcaseError) throw suitcaseError;
+      if (suitcaseError) {
+        console.error("Error creating suitcase:", suitcaseError);
+        toast.error("Erreur lors de la création de la valise. Veuillez réessayer.");
+        setIsLoading(false);
+        return;
+      }
 
       console.log("Suitcase created:", suitcase);
 
@@ -83,7 +90,12 @@ export const SuitcaseForm = ({ onSuccess }: SuitcaseFormProps) => {
             }))
           );
 
-        if (clothesError) throw clothesError;
+        if (clothesError) {
+          console.error("Error adding clothes to suitcase:", clothesError);
+          toast.error("Erreur lors de l'ajout des vêtements à la valise. Veuillez réessayer.");
+          setIsLoading(false);
+          return;
+        }
       }
 
       toast.success("Valise créée avec succès");

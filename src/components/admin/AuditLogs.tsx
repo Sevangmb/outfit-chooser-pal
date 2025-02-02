@@ -33,12 +33,16 @@ export const AuditLogs = () => {
         .select(`
           *,
           users:profiles!audit_logs_admin_user_id_fkey (
-            email:username
+            email
           )
         `)
         .order('created_at', { ascending: false });
 
-      if (logsError) throw logsError;
+      if (logsError) {
+        console.error('Error fetching audit logs:', logsError);
+        toast.error("Erreur lors du chargement des logs d'audit");
+        return;
+      }
 
       console.log('Audit logs data:', logsData);
       setLogs(logsData || []);

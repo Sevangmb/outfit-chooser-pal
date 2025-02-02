@@ -43,35 +43,33 @@ export const StorageSettings = () => {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [fileType, setFileType] = useState<"all" | "image" | "document">("all");
 
-  const { data: storageInfo, refetch: refetchStorageInfo } = useQuery({
+  const { data: storageInfo, error: storageError, refetch: refetchStorageInfo } = useQuery({
     queryKey: ["storage_info"],
     queryFn: async () => {
-      try {
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        if (userError) throw userError;
-        if (!user) return null;
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      if (!user) return null;
 
-        const { data: files, error } = await supabase
-          .from('user_files')
-          .select('size')
-          .eq('user_id', user.id);
+      const { data: files, error } = await supabase
+        .from('user_files')
+        .select('size')
+        .eq('user_id', user.id);
 
-        if (error) throw error;
+      if (error) throw error;
 
-        const totalSize = files?.reduce((acc, file) => acc + (file.size || 0), 0) || 0;
-        const maxSize = 100 * 1024 * 1024; // 100MB in bytes
+      const totalSize = files?.reduce((acc, file) => acc + (file.size || 0), 0) || 0;
+      const maxSize = 100 * 1024 * 1024; // 100MB in bytes
 
-        return {
-          total_space: maxSize,
-          used_space: totalSize,
-          files_count: files?.length || 0,
-          percentage: (totalSize / maxSize) * 100
-        };
-      } catch (error) {
-        console.error("Error fetching storage info:", error);
-        toast.error("Erreur lors de la récupération des informations de stockage");
-        return null;
-      }
+      return {
+        total_space: maxSize,
+        used_space: totalSize,
+        files_count: files?.length || 0,
+        percentage: (totalSize / maxSize) * 100
+      };
+    },
+    onError: (error) => {
+      console.error("Error fetching storage info:", error);
+      toast.error("Erreur lors de la récupération des informations de stockage");
     }
   });
 

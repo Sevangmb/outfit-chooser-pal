@@ -57,7 +57,11 @@ export const UserManagement = () => {
         .from('profiles')
         .select('id, email, status, last_login');
 
-      if (usersError) throw usersError;
+      if (usersError) {
+        console.error('Error fetching users:', usersError);
+        toast.error("Erreur lors du chargement des utilisateurs");
+        return;
+      }
 
       const { data: roles, error: rolesError } = await supabase
         .from('user_roles')
@@ -94,7 +98,11 @@ export const UserManagement = () => {
         .from('user_roles')
         .upsert({ user_id: userId, role: newRole }, { onConflict: 'user_id' });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating user role:', error);
+        toast.error("Erreur lors de la mise à jour du rôle");
+        return;
+      }
 
       toast.success("Rôle mis à jour avec succès");
       fetchUsers();
@@ -113,7 +121,11 @@ export const UserManagement = () => {
           new_status: newStatus
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating user status:', error);
+        toast.error("Erreur lors de la mise à jour du statut");
+        return;
+      }
 
       toast.success("Statut mis à jour avec succès");
       fetchUsers();
@@ -134,7 +146,11 @@ export const UserManagement = () => {
           content: messageForm.content
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error sending message:', error);
+        toast.error("Erreur lors de l'envoi du message");
+        return;
+      }
 
       toast.success("Message envoyé avec succès");
       setMessageForm({ subject: "", content: "" });

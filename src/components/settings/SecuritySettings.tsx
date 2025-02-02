@@ -19,14 +19,20 @@ export const SecuritySettings = () => {
       const confirmPassword = formData.get("confirm_password") as string;
 
       if (password !== confirmPassword) {
-        throw new Error("Les mots de passe ne correspondent pas");
+        toast.error("Les mots de passe ne correspondent pas");
+        setIsLoading(false);
+        return;
       }
 
       const { error } = await supabase.auth.updateUser({
         password: password,
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error updating password:", error);
+        toast.error(error.message || "Erreur lors de la mise à jour du mot de passe");
+        return;
+      }
 
       toast.success("Mot de passe mis à jour avec succès");
       (e.target as HTMLFormElement).reset();

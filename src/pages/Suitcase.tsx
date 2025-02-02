@@ -14,7 +14,7 @@ const Suitcase = () => {
   const [showForm, setShowForm] = useState(false);
   const navigate = useNavigate();
 
-  const { data: suitcases, isLoading } = useQuery({
+  const { data: suitcases, isLoading, error: fetchError } = useQuery({
     queryKey: ["suitcases"],
     queryFn: async () => {
       console.log("Fetching suitcases...");
@@ -32,24 +32,27 @@ const Suitcase = () => {
         `)
         .order("created_at", { ascending: false });
 
-      if (error) {
-        console.error("Error fetching suitcases:", error);
-        toast.error("Erreur lors du chargement des valises");
-        throw error;
-      }
+      if (error) throw error;
 
       console.log("Fetched suitcases:", data);
       return data;
     },
+    onError: (error) => {
+      console.error("Error fetching suitcases:", error);
+      toast.error("Erreur lors du chargement des valises");
+    },
   });
 
   const handleDelete = async (id: number) => {
-    const { error } = await supabase.from("suitcases").delete().eq("id", id);
-    if (error) {
+    try {
+      const { error } = await supabase.from("suitcases").delete().eq("id", id);
+      if (error) throw error;
+
+      toast.success("Valise supprimée avec succès");
+    } catch (error) {
+      console.error("Error deleting suitcase:", error);
       toast.error("Erreur lors de la suppression de la valise");
-      return;
     }
-    toast.success("Valise supprimée avec succès");
   };
 
   return (

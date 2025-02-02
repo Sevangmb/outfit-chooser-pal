@@ -49,15 +49,19 @@ serve(async (req) => {
       throw new Error("Missing Supabase configuration")
     }
 
-    const supabase = createClient(supabaseUrl, supabaseKey)
+    if (!supabaseUrl || !supabaseKey) {
+      console.error("Supabase configuration is missing");
+      throw new Error("Missing Supabase configuration");
+    }
+    const supabase = createClient(supabaseUrl, supabaseKey);
     
     // Get user ID from JWT
     const jwt = authHeader.replace('Bearer ', '')
     const { data: { user }, error: userError } = await supabase.auth.getUser(jwt)
     
     if (userError || !user) {
-      console.error("Error getting user:", userError)
-      throw new Error("Failed to authenticate user")
+      console.error("Error getting user:", userError);
+      throw new Error("Failed to authenticate user");
     }
 
     console.log("Authenticated user:", user.id)
@@ -69,8 +73,8 @@ serve(async (req) => {
       .eq('user_id', user.id)
 
     if (clothesError) {
-      console.error("Error fetching clothes:", clothesError)
-      throw new Error("Failed to fetch user's clothes")
+      console.error("Error fetching clothes:", clothesError);
+      throw new Error("Failed to fetch user's clothes");
     }
 
     if (!clothes || clothes.length === 0) {
@@ -168,8 +172,13 @@ serve(async (req) => {
 
     // Use the retry mechanism for the Gemini API call
     const result = await retryWithDelay(async () => {
-      const response = await model.generateContent(prompt)
-      return response.response
+      try {
+        const response = await model.generateContent(prompt);
+        return response.response;
+      } catch (error) {
+        console.error("Error generating content with AI model:", error);
+        throw new Error("Failed to generate outfit suggestion");
+      }
     });
 
     const suggestion = result.text()

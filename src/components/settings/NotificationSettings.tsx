@@ -18,7 +18,7 @@ interface NotificationSettings {
 export const NotificationSettings = () => {
   const [isLoading, setIsLoading] = useState(false);
 
-  const { data: settings } = useQuery({
+  const { data: settings, error: settingsError } = useQuery({
     queryKey: ["notification_settings"],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -31,8 +31,13 @@ export const NotificationSettings = () => {
         .maybeSingle();
 
       if (error) throw error;
+      if (error) throw error;
       return data as NotificationSettings | null;
     },
+    onError: (error) => {
+      console.error("Error fetching notification settings:", error);
+      toast.error("Erreur lors du chargement des paramètres de notification");
+    }
   });
 
   const updateSettingsMutation = useMutation({

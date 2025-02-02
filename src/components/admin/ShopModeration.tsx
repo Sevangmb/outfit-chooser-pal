@@ -76,7 +76,11 @@ const ShopModeration = () => {
         })
         .eq('id', shopId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating shop status:', error);
+        toast.error('Erreur lors de la mise à jour du statut');
+        return;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pending-shops'] });

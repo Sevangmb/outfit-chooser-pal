@@ -54,7 +54,11 @@ export const OutfitCard = ({ outfit }: OutfitCardProps) => {
         .select("*", { count: "exact", head: true })
         .eq("outfit_id", outfit.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error voting:", error);
+        toast.error("Erreur lors du vote");
+        return;
+      }
       return count || 0;
     },
   });
@@ -84,10 +88,11 @@ export const OutfitCard = ({ outfit }: OutfitCardProps) => {
       .eq("id", outfit.id);
 
     if (error) {
+      console.error("Error reporting content:", error);
       toast.error("Erreur lors du signalement");
-    } else {
-      toast.success("Contenu signalé");
+      return;
     }
+    toast.success("Contenu signalé");
   };
 
   const handleHide = () => {

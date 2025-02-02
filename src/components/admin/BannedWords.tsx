@@ -35,12 +35,16 @@ export const BannedWords = () => {
         .select(`
           *,
           users:profiles!banned_words_created_by_user_id_fkey (
-            email:username
+            email
           )
         `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching banned words:', error);
+        toast.error("Erreur lors du chargement des mots bannis");
+        return;
+      }
 
       console.log('Banned words:', data);
       setWords(data || []);
@@ -61,7 +65,11 @@ export const BannedWords = () => {
         .from('banned_words')
         .insert({ word: newWord.toLowerCase().trim() });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error adding banned word:', error);
+        toast.error("Erreur lors de l'ajout du mot banni");
+        return;
+      }
 
       toast.success("Mot banni ajouté");
       setNewWord("");
@@ -80,7 +88,11 @@ export const BannedWords = () => {
         .delete()
         .eq('id', id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error removing banned word:', error);
+        toast.error("Erreur lors de la suppression du mot banni");
+        return;
+      }
 
       toast.success("Mot banni supprimé");
       fetchWords();

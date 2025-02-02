@@ -28,7 +28,8 @@ export const NotificationsSection = () => {
 
       if (error) {
         console.error("Error fetching notifications:", error);
-        throw error;
+        toast.error("Erreur lors du chargement des notifications");
+        return [];
       }
 
       console.log("Fetched notifications:", data);

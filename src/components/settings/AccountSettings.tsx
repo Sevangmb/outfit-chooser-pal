@@ -37,7 +37,7 @@ export const AccountSettings = () => {
       });
   });
 
-  const { data: profile } = useQuery({
+  const { data: profile, error: profileError } = useQuery({
     queryKey: ["profile"],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -53,6 +53,11 @@ export const AccountSettings = () => {
       return data;
     },
   });
+
+  if (profileError) {
+    console.error("Error fetching profile:", profileError);
+    toast.error("Erreur lors du chargement du profil");
+  }
 
   const { data: stats } = useQuery({
     queryKey: ["profileStats"],

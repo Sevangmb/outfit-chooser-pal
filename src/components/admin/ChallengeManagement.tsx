@@ -60,13 +60,17 @@ export const ChallengeManagement = () => {
         },
       ]);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error creating challenge:", error);
+        toast.error("Erreur lors de la création du challenge");
+        return;
+      }
 
       toast.success("Challenge créé avec succès");
       refetch();
     } catch (error) {
-      console.error("Error creating challenge:", error);
-      toast.error("Erreur lors de la création du challenge");
+      console.error("Unexpected error creating challenge:", error);
+      toast.error("Erreur inattendue lors de la création du challenge");
     }
   };
 
@@ -78,13 +82,17 @@ export const ChallengeManagement = () => {
         .update({ is_active: !currentStatus })
         .eq("id", id);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error updating challenge status:", error);
+        toast.error("Erreur lors de la mise à jour du statut");
+        return;
+      }
 
       toast.success("Statut mis à jour avec succès");
       refetch();
     } catch (error) {
-      console.error("Error updating challenge status:", error);
-      toast.error("Erreur lors de la mise à jour du statut");
+      console.error("Unexpected error updating challenge status:", error);
+      toast.error("Erreur inattendue lors de la mise à jour du statut");
     }
   };
 
