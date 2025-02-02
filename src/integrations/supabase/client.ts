@@ -11,6 +11,7 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
   throw new Error("Supabase configuration error.");
 }
 
+console.log("Initializing Supabase client...");
 export const supabase = createClient<Database>(
   SUPABASE_URL,
   SUPABASE_ANON_KEY,
@@ -30,7 +31,9 @@ export const supabase = createClient<Database>(
 
 supabase.auth.onAuthStateChange((event, session) => {
   if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
-    toast.info("Déconnexion réussie");
+    console.log("User signed out or deleted.");
+  } else if (event === 'SIGNED_IN' && !session) {
+    console.error("Authentication error: Invalid credentials.");
   }
 });
 

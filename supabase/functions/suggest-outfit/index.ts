@@ -1,4 +1,4 @@
- : import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+: import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 import { GoogleGenerativeAI } from "https://esm.sh/@google/generative-ai@0.1.3"
 
@@ -49,7 +49,13 @@ serve(async (req) => {
       console.error("Supabase configuration is missing");
       throw new Error("Missing Supabase configuration");
     }
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    let supabase;
+    try {
+      supabase = createClient(supabaseUrl, supabaseKey);
+    } catch (error) {
+      console.error("Error initializing Supabase client:", error);
+      throw new Error("Failed to initialize database connection");
+    }
     
     // Get user ID from JWT
     const jwt = authHeader.replace('Bearer ', '')

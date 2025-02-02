@@ -30,10 +30,18 @@ export const SecuritySettings = () => {
 
       if (error) {
         console.error("Error updating password:", error);
-        if (error.code === "invalid_credentials") {
-          toast.error("Les identifiants de connexion sont incorrects");
-        } else {
-          toast.error(error.message || "Erreur lors de la mise à jour du mot de passe");
+        switch (error.code) {
+          case "invalid_credentials":
+            toast.error("Les identifiants de connexion sont incorrects");
+            break;
+          case "password_too_weak":
+            toast.error("Le mot de passe est trop faible. Veuillez choisir un mot de passe plus fort.");
+            break;
+          case "network_error":
+            toast.error("Erreur réseau. Veuillez vérifier votre connexion et réessayer.");
+            break;
+          default:
+            toast.error(error.message || "Erreur lors de la mise à jour du mot de passe");
         }
         return;
       }
