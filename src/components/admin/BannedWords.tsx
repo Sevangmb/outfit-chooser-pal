@@ -27,7 +27,17 @@ export const BannedWords = () => {
   const [newWord, setNewWord] = useState("");
   const [loading, setLoading] = useState(true);
 
+  const checkSupabaseConnection = () => {
+    if (!supabase) {
+      console.error("Supabase client is not initialized.");
+      toast.error("Erreur de connexion à la base de données. Veuillez réessayer plus tard.");
+      return false;
+    }
+    return true;
+  };
+
   const fetchWords = async () => {
+    if (!checkSupabaseConnection()) return;
     try {
       console.log('Fetching banned words...');
       const { data, error } = await supabase
@@ -57,7 +67,7 @@ export const BannedWords = () => {
   };
 
   const addWord = async () => {
-    if (!newWord.trim()) return;
+    if (!checkSupabaseConnection() || !newWord.trim()) return;
 
     try {
       console.log('Adding banned word:', newWord);
@@ -81,6 +91,8 @@ export const BannedWords = () => {
   };
 
   const removeWord = async (id: string) => {
+    if (!checkSupabaseConnection()) return;
+
     try {
       console.log('Removing banned word:', id);
       const { error } = await supabase

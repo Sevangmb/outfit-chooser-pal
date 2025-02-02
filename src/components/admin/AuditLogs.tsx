@@ -25,7 +25,17 @@ export const AuditLogs = () => {
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const checkSupabaseConnection = () => {
+    if (!supabase) {
+      console.error("Supabase client is not initialized.");
+      toast.error("Erreur de connexion à la base de données. Veuillez réessayer plus tard.");
+      return false;
+    }
+    return true;
+  };
+
   const fetchLogs = async () => {
+    if (!checkSupabaseConnection()) return;
     try {
       console.log('Fetching audit logs...');
       const { data: logsData, error: logsError } = await supabase

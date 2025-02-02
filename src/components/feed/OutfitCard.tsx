@@ -41,6 +41,15 @@ interface OutfitCardProps {
   outfit: Outfit;
 }
 
+const checkSupabaseConnection = () => {
+  if (!supabase) {
+    console.error("Supabase client is not initialized.");
+    toast.error("Erreur de connexion à la base de données. Veuillez réessayer plus tard.");
+    return false;
+  }
+  return true;
+};
+
 export const OutfitCard = ({ outfit }: OutfitCardProps) => {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
@@ -65,6 +74,7 @@ export const OutfitCard = ({ outfit }: OutfitCardProps) => {
 
   const voteMutation = useMutation({
     mutationFn: async () => {
+      if (!checkSupabaseConnection()) return;
       const { error } = await supabase
         .from("outfit_votes")
         .insert({ outfit_id: outfit.id });
@@ -82,6 +92,7 @@ export const OutfitCard = ({ outfit }: OutfitCardProps) => {
   });
 
   const handleReport = async () => {
+    if (!checkSupabaseConnection()) return;
     const { error } = await supabase
       .from("outfits")
       .update({ is_flagged: true })

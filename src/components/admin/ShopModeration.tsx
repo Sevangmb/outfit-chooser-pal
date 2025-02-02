@@ -33,6 +33,15 @@ interface ShopProfile {
   } | null;
 }
 
+const checkSupabaseConnection = () => {
+  if (!supabase) {
+    console.error("Supabase client is not initialized.");
+    toast.error("Erreur de connexion à la base de données. Veuillez réessayer plus tard.");
+    return false;
+  }
+  return true;
+};
+
 const ShopModeration = () => {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
@@ -67,6 +76,7 @@ const ShopModeration = () => {
 
   const updateShopStatusMutation = useMutation({
     mutationFn: async ({ shopId, status }: { shopId: string, status: 'approved' | 'rejected' }) => {
+      if (!checkSupabaseConnection()) return;
       console.log(`Updating shop ${shopId} status to ${status}`);
       const { error } = await supabase
         .from('shop_profiles')

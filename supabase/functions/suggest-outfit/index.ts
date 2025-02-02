@@ -49,11 +49,6 @@ serve(async (req) => {
       console.error("Supabase configuration is missing");
       throw new Error("Missing Supabase configuration");
     }
-
-    if (!supabaseUrl || !supabaseKey) {
-      console.error("Supabase configuration is missing");
-      throw new Error("Missing Supabase configuration");
-    }
     const supabase = createClient(supabaseUrl, supabaseKey);
     
     // Get user ID from JWT

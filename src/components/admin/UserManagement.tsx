@@ -40,6 +40,15 @@ interface MessageForm {
   content: string;
 }
 
+const checkSupabaseConnection = () => {
+  if (!supabase) {
+    console.error("Supabase client is not initialized.");
+    toast.error("Erreur de connexion à la base de données. Veuillez réessayer plus tard.");
+    return false;
+  }
+  return true;
+};
+
 export const UserManagement = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,6 +60,7 @@ export const UserManagement = () => {
   });
 
   const fetchUsers = async () => {
+    if (!checkSupabaseConnection()) return;
     try {
       console.log("Fetching users...");
       const { data: usersData, error: usersError } = await supabase
@@ -92,6 +102,7 @@ export const UserManagement = () => {
   }, []);
 
   const updateUserRole = async (userId: string, newRole: "admin" | "user") => {
+    if (!checkSupabaseConnection()) return;
     try {
       console.log("Updating user role:", userId, newRole);
       const { error } = await supabase
@@ -113,6 +124,7 @@ export const UserManagement = () => {
   };
 
   const updateUserStatus = async (userId: string, newStatus: string) => {
+    if (!checkSupabaseConnection()) return;
     try {
       console.log("Updating user status:", userId, newStatus);
       const { error } = await supabase
@@ -136,6 +148,7 @@ export const UserManagement = () => {
   };
 
   const sendMessage = async (userId: string) => {
+    if (!checkSupabaseConnection()) return;
     try {
       console.log("Sending message to user:", userId, messageForm);
       const { error } = await supabase
