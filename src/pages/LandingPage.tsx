@@ -2,34 +2,32 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/components/ui/use-toast";
 
 const LandingPage = () => {
   const navigate = useNavigate();
+  const { isUserLoggedIn } = useAuth();
 
   useEffect(() => {
-    const checkSession = async () => {
+    const checkLoginStatus = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) {
-          console.error("Error checking session:", error);
-          toast({
-            variant: "destructive",
-            title: "Erreur",
-            description: "Impossible de vérifier votre session"
-          });
-        }
-        if (session) {
+        const loggedIn = await isUserLoggedIn();
+        if (loggedIn) {
           navigate("/");
         }
       } catch (error) {
-        console.error("Error in checkSession:", error);
+        console.error("Error in checkLoginStatus:", error);
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Impossible de vérifier votre session"
+        });
       }
     };
 
-    checkSession();
-  }, [navigate]);
+    checkLoginStatus();
+  }, [navigate, isUserLoggedIn]);
 
   const handleAuthClick = () => {
     console.log("Navigating to auth page");

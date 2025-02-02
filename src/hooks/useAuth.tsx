@@ -26,5 +26,10 @@ export const useAuth = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  return { user, loading };
+  const isUserLoggedIn = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    return !!session?.user;
+  };
+
+  return { user, loading, isUserLoggedIn };
 };

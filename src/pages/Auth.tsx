@@ -3,9 +3,26 @@ import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { GuestLoginButton } from "@/components/auth/GuestLoginButton";
 import { useAuthStateHandler } from "@/components/auth/AuthStateHandler";
+import { useAuth } from "@/hooks/useAuth";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Auth = () => {
+  const { isUserLoggedIn } = useAuth();
+  const navigate = useNavigate();
+
   useAuthStateHandler();
+
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      const loggedIn = await isUserLoggedIn();
+      if (loggedIn) {
+        navigate("/");
+      }
+    };
+
+    checkLoginStatus();
+  }, [isUserLoggedIn, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
