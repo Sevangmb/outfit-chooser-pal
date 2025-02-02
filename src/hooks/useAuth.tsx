@@ -31,5 +31,30 @@ export const useAuth = () => {
     return !!session?.user;
   };
 
-  return { user, loading, isUserLoggedIn };
+  const sendMagicLink = async (email: string) => {
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: window.location.origin,
+      },
+    });
+    if (error) {
+      console.error("Error sending magic link:", error);
+      throw error;
+    }
+  };
+
+  const verifyMagicLink = async (accessToken: string) => {
+    const { data: { session }, error } = await supabase.auth.verifyOtp({
+      token: accessToken,
+      type: 'magiclink',
+    });
+    if (error) {
+      console.error("Error verifying magic link:", error);
+      throw error;
+    }
+    setUser(session?.user ?? null);
+  };
+
+  return { user, loading, sendMagicLink, verifyMagicLink };
 };

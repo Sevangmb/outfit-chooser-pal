@@ -69,10 +69,16 @@ const Auth = () => {
                   password_label: "Mot de passe",
                   button_label: "S'inscrire",
                 },
+                magic_link: {
+                  email_input_label: "Entrez votre email pour recevoir un lien magique",
+                  button_label: "Envoyer le lien magique",
+                  link_text: "Se connecter avec un lien magique",
+                },
               },
             }}
+            magicLink
           />
-          
+
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t" />
