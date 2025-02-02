@@ -53,8 +53,8 @@ serve(async (req) => {
     try {
       supabase = createClient(supabaseUrl, supabaseKey);
     } catch (error) {
-      console.error("Error initializing Supabase client:", error);
-      throw new Error("Failed to initialize database connection");
+      console.error("Unexpected error during Supabase client initialization:", error);
+      throw new Error("Failed to initialize Supabase client");
     }
     
     // Get user ID from JWT
@@ -62,12 +62,12 @@ serve(async (req) => {
     const { data: { user }, error: userError } = await supabase.auth.getUser(jwt)
     
     if (userError || !user) {
-      console.error("Error getting user:", userError);
+      console.error("Error retrieving user data:", userError);
       if (userError?.message.includes("invalid_credentials")) {
         console.error("Invalid login credentials");
         throw new Error("Les identifiants de connexion sont incorrects");
       }
-      throw new Error("Failed to authenticate user");
+      throw new Error("User authentication failed");
     }
 
     console.log("Authenticated user:", user.id)
@@ -79,8 +79,8 @@ serve(async (req) => {
       .eq('user_id', user.id)
 
     if (clothesError) {
-      console.error("Error fetching clothes:", clothesError);
-      throw new Error("Failed to fetch user's clothes");
+      console.error("Database error while fetching clothes:", clothesError);
+      throw new Error("Unable to retrieve user's clothing data");
     }
 
     if (!clothes || clothes.length === 0) {

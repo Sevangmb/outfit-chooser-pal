@@ -34,6 +34,8 @@ export const LoginForm = () => {
           toast.error("Votre email n'est pas confirmé");
         } else if (error.message.includes('User not found')) {
           toast.error("Utilisateur non trouvé");
+        } else if (error.message.includes('Network error')) {
+          toast.error("Erreur réseau. Veuillez vérifier votre connexion.");
         } else {
           toast.error("Erreur lors de la connexion: " + error.message);
         }
