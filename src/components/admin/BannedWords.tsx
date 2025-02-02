@@ -41,8 +41,8 @@ export const BannedWords = () => {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching banned words:', error);
-        toast.error("Erreur lors du chargement des mots bannis");
+        console.error('Unexpected error occurred while fetching banned words:', error);
+        toast.error("Une erreur inattendue est survenue lors du chargement des mots bannis. Veuillez réessayer plus tard.");
         return;
       }
 
@@ -66,8 +66,8 @@ export const BannedWords = () => {
         .insert({ word: newWord.toLowerCase().trim() });
 
       if (error) {
-        console.error('Error adding banned word:', error);
-        toast.error("Erreur lors de l'ajout du mot banni");
+        console.error('Unexpected error occurred while adding banned word:', error);
+        toast.error("Une erreur inattendue est survenue lors de l'ajout du mot banni. Veuillez réessayer plus tard.");
         return;
       }
 
@@ -89,8 +89,8 @@ export const BannedWords = () => {
         .eq('id', id);
 
       if (error) {
-        console.error('Error removing banned word:', error);
-        toast.error("Erreur lors de la suppression du mot banni");
+        console.error('Unexpected error occurred while removing banned word:', error);
+        toast.error("Une erreur inattendue est survenue lors de la suppression du mot banni. Veuillez réessayer plus tard.");
         return;
       }
 

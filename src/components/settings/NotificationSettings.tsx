@@ -35,8 +35,8 @@ export const NotificationSettings = () => {
       return data as NotificationSettings | null;
     },
     onError: (error) => {
-      console.error("Error fetching notification settings:", error);
-      toast.error("Erreur lors du chargement des paramètres de notification");
+      console.error("Unexpected error occurred while fetching notification settings:", error);
+      toast.error("Une erreur inattendue est survenue lors du chargement des paramètres de notification. Veuillez réessayer plus tard.");
     }
   });
 
@@ -64,8 +64,8 @@ export const NotificationSettings = () => {
       toast.success("Paramètres de notification mis à jour");
     },
     onError: (error) => {
-      console.error("Error updating notification settings:", error);
-      toast.error("Erreur lors de la mise à jour des paramètres");
+      console.error("Unexpected error occurred while updating notification settings:", error);
+      toast.error("Une erreur inattendue est survenue lors de la mise à jour des paramètres de notification. Veuillez réessayer plus tard.");
     }
   });
 

@@ -78,7 +78,7 @@ const ShopModeration = () => {
 
       if (error) {
         console.error('Error updating shop status:', error);
-        toast.error('Erreur lors de la mise à jour du statut');
+        toast.error('Erreur lors de la mise à jour du statut. Veuillez réessayer plus tard.');
         return;
       }
     },
@@ -87,8 +87,8 @@ const ShopModeration = () => {
       toast.success('Statut de la boutique mis à jour avec succès');
     },
     onError: (error) => {
-      console.error('Error updating shop status:', error);
-      toast.error('Erreur lors de la mise à jour du statut');
+      console.error('Unexpected error occurred while updating shop status:', error);
+      toast.error('Une erreur inattendue est survenue lors de la mise à jour du statut. Veuillez réessayer plus tard.');
     }
   });
 

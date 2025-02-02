@@ -46,7 +46,8 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     
     if (!supabaseUrl || !supabaseKey) {
-      throw new Error("Missing Supabase configuration")
+      console.error("Supabase configuration is missing");
+      throw new Error("Missing Supabase configuration");
     }
 
     if (!supabaseUrl || !supabaseKey) {

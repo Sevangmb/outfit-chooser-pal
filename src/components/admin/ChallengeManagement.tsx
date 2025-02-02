@@ -38,7 +38,8 @@ export const ChallengeManagement = () => {
         .order("start_date", { ascending: false });
 
       if (error) {
-        console.error("Error fetching challenges:", error);
+        console.error("Unexpected error occurred while fetching challenges:", error);
+        toast.error("Une erreur inattendue est survenue lors du chargement des défis. Veuillez réessayer plus tard.");
         throw error;
       }
 
@@ -61,8 +62,8 @@ export const ChallengeManagement = () => {
       ]);
 
       if (error) {
-        console.error("Error creating challenge:", error);
-        toast.error("Erreur lors de la création du challenge");
+        console.error("Unexpected error occurred while creating challenge:", error);
+        toast.error("Une erreur inattendue est survenue lors de la création du défi. Veuillez réessayer plus tard.");
         return;
       }
 
@@ -83,8 +84,8 @@ export const ChallengeManagement = () => {
         .eq("id", id);
 
       if (error) {
-        console.error("Error updating challenge status:", error);
-        toast.error("Erreur lors de la mise à jour du statut");
+        console.error("Unexpected error occurred while updating challenge status:", error);
+        toast.error("Une erreur inattendue est survenue lors de la mise à jour du statut du défi. Veuillez réessayer plus tard.");
         return;
       }
 

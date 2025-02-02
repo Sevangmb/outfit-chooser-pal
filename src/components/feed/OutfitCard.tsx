@@ -55,8 +55,8 @@ export const OutfitCard = ({ outfit }: OutfitCardProps) => {
         .eq("outfit_id", outfit.id);
 
       if (error) {
-        console.error("Error voting:", error);
-        toast.error("Erreur lors du vote");
+        console.error("Unexpected error occurred while voting:", error);
+        toast.error("Une erreur inattendue est survenue lors du vote. Veuillez réessayer plus tard.");
         return;
       }
       return count || 0;
@@ -89,7 +89,8 @@ export const OutfitCard = ({ outfit }: OutfitCardProps) => {
 
     if (error) {
       console.error("Error reporting content:", error);
-      toast.error("Erreur lors du signalement");
+      console.error("Unexpected error occurred while reporting content:", error);
+      toast.error("Une erreur inattendue est survenue lors du signalement. Veuillez réessayer plus tard.");
       return;
     }
     toast.success("Contenu signalé");

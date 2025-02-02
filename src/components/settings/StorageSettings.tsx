@@ -68,8 +68,8 @@ export const StorageSettings = () => {
       };
     },
     onError: (error) => {
-      console.error("Error fetching storage info:", error);
-      toast.error("Erreur lors de la récupération des informations de stockage");
+      console.error("Unexpected error occurred while fetching storage info:", error);
+      toast.error("Une erreur inattendue est survenue lors de la récupération des informations de stockage. Veuillez réessayer plus tard.");
     }
   });
 

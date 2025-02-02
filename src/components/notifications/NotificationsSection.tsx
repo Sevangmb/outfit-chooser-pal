@@ -27,8 +27,8 @@ export const NotificationsSection = () => {
         .order("created_at", { ascending: false });
 
       if (error) {
-        console.error("Error fetching notifications:", error);
-        toast.error("Erreur lors du chargement des notifications");
+        console.error("Unexpected error occurred while fetching notifications:", error);
+        toast.error("Une erreur inattendue est survenue lors du chargement des notifications. Veuillez réessayer plus tard.");
         return [];
       }
 
@@ -45,8 +45,8 @@ export const NotificationsSection = () => {
       .eq("id", notificationId);
 
     if (error) {
-      console.error("Error marking notification as read:", error);
-      toast.error("Erreur lors du marquage de la notification comme lue");
+      console.error("Unexpected error occurred while marking notification as read:", error);
+      toast.error("Une erreur inattendue est survenue lors du marquage de la notification comme lue. Veuillez réessayer plus tard.");
       return;
     }
 

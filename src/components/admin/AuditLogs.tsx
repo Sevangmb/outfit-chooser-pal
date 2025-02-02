@@ -39,16 +39,16 @@ export const AuditLogs = () => {
         .order('created_at', { ascending: false });
 
       if (logsError) {
-        console.error('Error fetching audit logs:', logsError);
-        toast.error("Erreur lors du chargement des logs d'audit");
+        console.error('Error fetching audit logs from database:', logsError);
+        toast.error("Erreur lors du chargement des logs d'audit. Veuillez réessayer plus tard.");
         return;
       }
 
       console.log('Audit logs data:', logsData);
       setLogs(logsData || []);
     } catch (error) {
-      console.error('Error fetching audit logs:', error);
-      toast.error("Erreur lors du chargement des logs d'audit");
+      console.error('Unexpected error occurred while fetching audit logs:', error);
+      toast.error("Une erreur inattendue est survenue lors du chargement des logs d'audit. Veuillez réessayer plus tard.");
     } finally {
       setLoading(false);
     }

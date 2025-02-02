@@ -32,7 +32,11 @@ const Suitcase = () => {
         `)
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Unexpected error occurred while fetching suitcases:", error);
+        toast.error("Une erreur inattendue est survenue lors du chargement des valises. Veuillez réessayer plus tard.");
+        throw error;
+      }
 
       console.log("Fetched suitcases:", data);
       return data;
@@ -46,7 +50,11 @@ const Suitcase = () => {
   const handleDelete = async (id: number) => {
     try {
       const { error } = await supabase.from("suitcases").delete().eq("id", id);
-      if (error) throw error;
+      if (error) {
+        console.error("Unexpected error occurred while deleting suitcase:", error);
+        toast.error("Une erreur inattendue est survenue lors de la suppression de la valise. Veuillez réessayer plus tard.");
+        return;
+      }
 
       toast.success("Valise supprimée avec succès");
     } catch (error) {

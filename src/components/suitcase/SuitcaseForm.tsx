@@ -91,8 +91,8 @@ export const SuitcaseForm = ({ onSuccess }: SuitcaseFormProps) => {
           );
 
         if (clothesError) {
-          console.error("Error adding clothes to suitcase:", clothesError);
-          toast.error("Erreur lors de l'ajout des vêtements à la valise. Veuillez réessayer.");
+          console.error("Unexpected error occurred while adding clothes to suitcase:", clothesError);
+          toast.error("Une erreur inattendue est survenue lors de l'ajout des vêtements à la valise. Veuillez réessayer plus tard.");
           setIsLoading(false);
           return;
         }
@@ -113,8 +113,8 @@ export const SuitcaseForm = ({ onSuccess }: SuitcaseFormProps) => {
         onSuccess();
       }
     } catch (error) {
-      console.error("Error creating suitcase:", error);
-      toast.error("Erreur lors de la création de la valise");
+      console.error("Unexpected error occurred while creating suitcase:", error);
+      toast.error("Une erreur inattendue est survenue lors de la création de la valise. Veuillez réessayer plus tard.");
     } finally {
       setIsLoading(false);
     }

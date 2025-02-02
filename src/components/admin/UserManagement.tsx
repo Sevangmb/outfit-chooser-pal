@@ -58,8 +58,8 @@ export const UserManagement = () => {
         .select('id, email, status, last_login');
 
       if (usersError) {
-        console.error('Error fetching users:', usersError);
-        toast.error("Erreur lors du chargement des utilisateurs");
+        console.error('Error fetching users from database:', usersError);
+        toast.error("Erreur lors du chargement des utilisateurs. Veuillez réessayer plus tard.");
         return;
       }
 
@@ -99,8 +99,8 @@ export const UserManagement = () => {
         .upsert({ user_id: userId, role: newRole }, { onConflict: 'user_id' });
 
       if (error) {
-        console.error('Error updating user role:', error);
-        toast.error("Erreur lors de la mise à jour du rôle");
+        console.error('Unexpected error occurred while updating user role:', error);
+        toast.error("Une erreur inattendue est survenue lors de la mise à jour du rôle. Veuillez réessayer plus tard.");
         return;
       }
 
@@ -122,8 +122,8 @@ export const UserManagement = () => {
         });
 
       if (error) {
-        console.error('Error updating user status:', error);
-        toast.error("Erreur lors de la mise à jour du statut");
+        console.error('Unexpected error occurred while updating user status:', error);
+        toast.error("Une erreur inattendue est survenue lors de la mise à jour du statut. Veuillez réessayer plus tard.");
         return;
       }
 
@@ -147,8 +147,8 @@ export const UserManagement = () => {
         });
 
       if (error) {
-        console.error('Error sending message:', error);
-        toast.error("Erreur lors de l'envoi du message");
+        console.error('Unexpected error occurred while sending message:', error);
+        toast.error("Une erreur inattendue est survenue lors de l'envoi du message. Veuillez réessayer plus tard.");
         return;
       }
 

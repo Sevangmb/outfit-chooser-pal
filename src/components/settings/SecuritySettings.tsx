@@ -29,16 +29,16 @@ export const SecuritySettings = () => {
       });
 
       if (error) {
-        console.error("Error updating password:", error);
-        toast.error(error.message || "Erreur lors de la mise à jour du mot de passe");
+        console.error("Unexpected error occurred while updating password:", error);
+        toast.error(error.message || "Une erreur inattendue est survenue lors de la mise à jour du mot de passe. Veuillez réessayer plus tard.");
         return;
       }
 
       toast.success("Mot de passe mis à jour avec succès");
       (e.target as HTMLFormElement).reset();
     } catch (error: any) {
-      console.error("Error updating password:", error);
-      toast.error(error.message || "Erreur lors de la mise à jour du mot de passe");
+      console.error("Unexpected error occurred while updating password:", error);
+      toast.error(error.message || "Une erreur inattendue est survenue lors de la mise à jour du mot de passe. Veuillez réessayer plus tard.");
     } finally {
       setIsLoading(false);
     }

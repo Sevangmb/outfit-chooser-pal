@@ -55,8 +55,8 @@ export const AccountSettings = () => {
   });
 
   if (profileError) {
-    console.error("Error fetching profile:", profileError);
-    toast.error("Erreur lors du chargement du profil");
+    console.error("Unexpected error occurred while fetching profile:", profileError);
+    toast.error("Une erreur inattendue est survenue lors du chargement du profil. Veuillez réessayer plus tard.");
   }
 
   const { data: stats } = useQuery({
@@ -135,8 +135,8 @@ export const AccountSettings = () => {
       queryClient.invalidateQueries({ queryKey: ["profile"] });
     },
     onError: (error) => {
-      console.error("Error updating profile:", error);
-      toast.error("Erreur lors de la mise à jour du profil");
+      console.error("Unexpected error occurred while updating profile:", error);
+      toast.error("Une erreur inattendue est survenue lors de la mise à jour du profil. Veuillez réessayer plus tard.");
     }
   });
 
