@@ -28,43 +28,61 @@ export const useAuth = () => {
   }, []);
 
   const isUserLoggedIn = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    return !!session?.user;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      return !!session?.user;
+    } catch (error) {
+      console.error("Error checking user login status:", error);
+      toast.error("Erreur lors de la vérification de l'état de connexion.");
+      return false;
+    }
   };
 
   const sendMagicLink = async (email: string) => {
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: window.location.origin,
-      },
-    });
-    if (error) {
-      console.error("Error sending magic link:", error);
-      if (error.message.includes('Invalid login credentials')) {
-        toast.error("Les identifiants sont incorrects. Veuillez réessayer.");
-      } else {
-        toast.error("Erreur lors de l'envoi du lien magique: " + error.message);
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: window.location.origin,
+        },
+      });
+      if (error) {
+        console.error("Error sending magic link:", error);
+        if (error.message.includes('Invalid login credentials')) {
+          toast.error("Les identifiants sont incorrects. Veuillez réessayer.");
+        } else {
+          toast.error("Erreur lors de l'envoi du lien magique: " + error.message);
+        }
+        throw error;
       }
+    } catch (error) {
+      console.error("Unexpected error sending magic link:", error);
+      toast.error("Une erreur inattendue s'est produite lors de l'envoi du lien magique.");
       throw error;
     }
   };
 
   const verifyMagicLink = async (accessToken: string) => {
-    const { data: { session }, error } = await supabase.auth.verifyOtp({
-      token: accessToken,
-      type: 'magiclink',
-    });
-    if (error) {
-      console.error("Error verifying magic link:", error);
-      if (error.message.includes('Invalid or expired token')) {
-        toast.error("Le lien magique est invalide ou a expiré.");
-      } else {
-        toast.error("Erreur lors de la vérification du lien magique: " + error.message);
+    try {
+      const { data: { session }, error } = await supabase.auth.verifyOtp({
+        token: accessToken,
+        type: 'magiclink',
+      });
+      if (error) {
+        console.error("Error verifying magic link:", error);
+        if (error.message.includes('Invalid or expired token')) {
+          toast.error("Le lien magique est invalide ou a expiré.");
+        } else {
+          toast.error("Erreur lors de la vérification du lien magique: " + error.message);
+        }
+        throw error;
       }
+      setUser(session?.user ?? null);
+    } catch (error) {
+      console.error("Unexpected error verifying magic link:", error);
+      toast.error("Une erreur inattendue s'est produite lors de la vérification du lien magique.");
       throw error;
     }
-    setUser(session?.user ?? null);
   };
 
   return { user, loading, sendMagicLink, verifyMagicLink, isUserLoggedIn };

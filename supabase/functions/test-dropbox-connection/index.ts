@@ -27,7 +27,19 @@ serve(async (req) => {
     }
 
     const { data: { user }, error: userError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''))
-    if (userError) throw userError
+    if (userError) {
+      console.error('Error retrieving user:', userError)
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Failed to retrieve user information'
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500
+        }
+      )
+    }
     if (!user) throw new Error('User not found')
 
     // Get user's Dropbox connection
@@ -42,11 +54,11 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({
           success: false,
-          error: 'No Dropbox connection found'
+          error: 'Failed to retrieve Dropbox connection'
         }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200
+          status: 500
         }
       )
     }
@@ -59,7 +71,7 @@ serve(async (req) => {
         }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200
+          status: 500
         }
       )
     }
@@ -89,7 +101,7 @@ serve(async (req) => {
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200
+        status: 500
       }
     )
 
@@ -102,7 +114,7 @@ serve(async (req) => {
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200
+        status: 500
       }
     )
   }
