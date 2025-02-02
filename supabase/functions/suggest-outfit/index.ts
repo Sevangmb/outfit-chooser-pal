@@ -57,6 +57,10 @@ serve(async (req) => {
     
     if (userError || !user) {
       console.error("Error getting user:", userError);
+      if (userError?.message.includes("invalid_credentials")) {
+        console.error("Invalid login credentials");
+        throw new Error("Les identifiants de connexion sont incorrects");
+      }
       throw new Error("Failed to authenticate user");
     }
 
@@ -193,7 +197,9 @@ serve(async (req) => {
     console.error("Error in suggest-outfit function:", error)
     return new Response(
       JSON.stringify({ 
-        error: error.message || "Une erreur est survenue lors de la génération de la suggestion",
+        error: error.message.includes("Les identifiants de connexion sont incorrects") 
+          ? "Les identifiants de connexion sont incorrects" 
+          : "Une erreur est survenue lors de la génération de la suggestion",
         details: error.toString()
       }),
       { 

@@ -29,8 +29,12 @@ export const SecuritySettings = () => {
       });
 
       if (error) {
-        console.error("Unexpected error occurred while updating password:", error);
-        toast.error(error.message || "Une erreur inattendue est survenue lors de la mise à jour du mot de passe. Veuillez réessayer plus tard.");
+        console.error("Error updating password:", error);
+        if (error.code === "invalid_credentials") {
+          toast.error("Les identifiants de connexion sont incorrects");
+        } else {
+          toast.error(error.message || "Erreur lors de la mise à jour du mot de passe");
+        }
         return;
       }
 

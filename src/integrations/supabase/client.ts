@@ -1,6 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
+import { toast } from 'sonner';
+
 const SUPABASE_URL = "https://bjydiorocaixosezpylh.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJqeWRpb3JvY2FpeG9zZXpweWxoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY4Njk1MzYsImV4cCI6MjA1MjQ0NTUzNn0.6tXBsBOaki8CByfj_km-1_Jwv9xoRsi3CCcGiMFa568";
 
@@ -25,3 +27,15 @@ export const supabase = createClient<Database>(
     }
   }
 );
+
+supabase.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+    toast.info("Déconnexion réussie");
+  }
+});
+
+supabase.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_IN' && !session) {
+    toast.error("Les identifiants de connexion sont incorrects");
+  }
+});
