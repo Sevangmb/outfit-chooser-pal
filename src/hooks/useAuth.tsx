@@ -56,5 +56,5 @@ export const useAuth = () => {
     setUser(session?.user ?? null);
   };
 
-  return { user, loading, sendMagicLink, verifyMagicLink };
+  return { user, loading, sendMagicLink, verifyMagicLink, isUserLoggedIn };
 };
