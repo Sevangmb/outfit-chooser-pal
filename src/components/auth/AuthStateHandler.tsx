@@ -21,8 +21,8 @@ export const useAuthStateHandler = () => {
             .maybeSingle();
 
           if (profileError) {
-            console.error("Error checking profile:", profileError);
-            toast.error("Erreur lors de la vérification du profil");
+            console.error("Error checking profile for user:", session.user.id, "Error:", profileError);
+            toast.error("Erreur lors de la vérification du profil. Veuillez réessayer.");
             return;
           }
 
@@ -41,8 +41,8 @@ export const useAuthStateHandler = () => {
               ]);
 
             if (insertError) {
-              console.error("Error creating profile:", insertError);
-              toast.error("Erreur lors de la création du profil");
+              console.error("Error creating profile for user:", session.user.id, "Error:", insertError);
+              toast.error("Erreur lors de la création du profil. Veuillez réessayer.");
               return;
             }
           }
@@ -62,8 +62,8 @@ export const useAuthStateHandler = () => {
             );
 
           if (roleError) {
-            console.error("Error setting user role:", roleError);
-            toast.error("Erreur lors de la configuration du rôle");
+            console.error("Error setting user role for user:", session.user.id, "Error:", roleError);
+            toast.error("Erreur lors de la configuration du rôle. Veuillez réessayer.");
             return;
           }
 
@@ -71,8 +71,8 @@ export const useAuthStateHandler = () => {
           toast.success("Connexion réussie !");
           navigate("/");
         } catch (error) {
-          console.error("Error in auth flow:", error);
-          toast.error("Une erreur est survenue lors de l'authentification");
+          console.error("Unexpected error in auth flow for user:", session.user.id, "Error:", error);
+          toast.error("Une erreur inattendue est survenue lors de l'authentification. Veuillez réessayer.");
         }
       } else if (event === "SIGNED_OUT") {
         console.log("User signed out");

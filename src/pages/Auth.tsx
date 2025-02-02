@@ -20,6 +20,14 @@ const Auth = () => {
       if (loggedIn) {
         navigate("/");
       }
+            onError={(error) => {
+              console.error("Authentication error:", error);
+              if (error.message.includes('Invalid login credentials')) {
+                toast.error("Les identifiants sont incorrects. Veuillez réessayer.");
+              } else {
+                toast.error("Une erreur est survenue lors de la connexion: " + error.message);
+              }
+            }}
     };
 
     checkLoginStatus();
