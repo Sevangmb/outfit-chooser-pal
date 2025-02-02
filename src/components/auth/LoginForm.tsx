@@ -25,7 +25,19 @@ export const LoginForm = () => {
       });
 
       if (error) {
-        throw error;
+        console.error("Login error:", error);
+
+        // Handle specific error cases
+        if (error.message.includes('Invalid login credentials')) {
+          toast.error("Les identifiants de connexion sont incorrects");
+        } else if (error.message.includes('Email not confirmed')) {
+          toast.error("Votre email n'est pas confirmé");
+        } else if (error.message.includes('User not found')) {
+          toast.error("Utilisateur non trouvé");
+        } else {
+          toast.error("Erreur lors de la connexion: " + error.message);
+        }
+        return;
       }
 
       toast.success("Connexion réussie!");
