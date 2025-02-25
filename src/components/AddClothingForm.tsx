@@ -25,9 +25,9 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
     defaultValues: {
       image: existingClothing?.image || null,
       name: "Mon nouveau vêtement",
-      category: existingClothing?.category || "",
+      category: "Hauts", // Valeur par défaut pour la catégorie
       color: existingClothing?.color || "",
-      subcategory: existingClothing?.subcategory || "",
+      subcategory: "T-shirt", // Valeur par défaut pour la sous-catégorie
       brand: existingClothing?.brand || "",
       secondary_color: existingClothing?.secondary_color || "",
       size: existingClothing?.size || "",
