@@ -1174,6 +1174,7 @@ export type Database = {
           id: string
           is_profile_public: boolean | null
           last_login: string | null
+          last_seen_at: string | null
           status: string | null
           username: string | null
         }
@@ -1186,6 +1187,7 @@ export type Database = {
           id: string
           is_profile_public?: boolean | null
           last_login?: string | null
+          last_seen_at?: string | null
           status?: string | null
           username?: string | null
         }
@@ -1198,6 +1200,7 @@ export type Database = {
           id?: string
           is_profile_public?: boolean | null
           last_login?: string | null
+          last_seen_at?: string | null
           status?: string | null
           username?: string | null
         }
