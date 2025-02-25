@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { uploadImageToSupabase } from '@/utils/uploadImage';
@@ -29,6 +30,7 @@ export const useImageUpload = () => {
 
       setUploadProgress(100);
       toast.success('Image téléchargée avec succès');
+      setPreviewUrl(publicUrl); // Update preview with the actual URL
       
       return publicUrl;
     } catch (error) {
@@ -43,7 +45,7 @@ export const useImageUpload = () => {
   };
 
   const resetPreview = () => {
-    if (previewUrl) {
+    if (previewUrl && previewUrl.startsWith('blob:')) {
       URL.revokeObjectURL(previewUrl);
     }
     setPreviewUrl(null);

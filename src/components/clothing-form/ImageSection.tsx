@@ -1,3 +1,4 @@
+
 import { UseFormReturn } from "react-hook-form";
 import { FormValues } from "@/types/clothing";
 import { ImageUploadTabs } from "./ImageUploadTabs";
@@ -26,7 +27,12 @@ export const ImageSection = ({
   onResetPreview
 }: ImageSectionProps) => {
   const handleUrlUpload = async (url: string) => {
-    form.setValue("image", url, { shouldValidate: true });
+    try {
+      form.setValue("image", url);
+      await form.trigger("image");
+    } catch (error) {
+      console.error("Error setting image URL:", error);
+    }
   };
 
   return (

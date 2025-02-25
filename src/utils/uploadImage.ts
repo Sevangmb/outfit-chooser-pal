@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 export const uploadImageToSupabase = async (file: File): Promise<string | null> => {
@@ -7,23 +8,19 @@ export const uploadImageToSupabase = async (file: File): Promise<string | null> 
       throw new Error('Invalid file type. Only images are allowed.');
     }
 
-    // Generate unique filename
-    const timestamp = new Date().toISOString().replace(/[^0-9]/g, "").slice(0, 14);
+    // Generate unique filename with timestamp and UUID
+    const timestamp = new Date().toISOString().replace(/\D/g, "").slice(0, 14);
     const fileExt = file.name.split('.').pop();
     const fileName = `${timestamp}_${crypto.randomUUID()}.${fileExt}`;
 
     console.log("Starting upload for file:", fileName, "type:", file.type, "size:", file.size);
 
-    // Create FormData and append file
-    const formData = new FormData();
-    formData.append('file', file, fileName);
-
-    // Upload file directly with explicit content type
+    // Upload file to Supabase Storage
     const { data, error } = await supabase.storage
       .from('clothes')
       .upload(fileName, file, {
         cacheControl: '3600',
-        contentType: file.type, // Ensure we're using the file's actual MIME type
+        contentType: file.type,
         upsert: false
       });
 
@@ -32,6 +29,7 @@ export const uploadImageToSupabase = async (file: File): Promise<string | null> 
       throw error;
     }
 
+    // Get public URL
     const { data: { publicUrl } } = supabase.storage
       .from('clothes')
       .getPublicUrl(fileName);
