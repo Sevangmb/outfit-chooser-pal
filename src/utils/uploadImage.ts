@@ -15,10 +15,14 @@ export const uploadImageToSupabase = async (file: File): Promise<string | null> 
 
     console.log("Starting upload for file:", fileName, "type:", file.type, "size:", file.size);
 
+    // Convert File to ArrayBuffer for upload
+    const arrayBuffer = await file.arrayBuffer();
+    const fileData = new Uint8Array(arrayBuffer);
+
     // Upload file to Supabase Storage
     const { data, error } = await supabase.storage
       .from('clothes')
-      .upload(fileName, file, {
+      .upload(fileName, fileData, {
         cacheControl: '3600',
         contentType: file.type,
         upsert: false

@@ -16,7 +16,7 @@ export const useImageUpload = () => {
       setUploadProgress(0);
       console.log("Starting file upload:", file.name);
 
-      // Create a local preview
+      // Create a local preview immediately
       const localPreviewUrl = URL.createObjectURL(file);
       setPreviewUrl(localPreviewUrl);
       setUploadProgress(30);
