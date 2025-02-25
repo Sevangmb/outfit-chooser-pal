@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,79 +9,53 @@ export const useAuthStateHandler = () => {
 
   useEffect(() => {
     const handleAuthStateChange = async (event: string, session: any) => {
-      console.log("Auth state changed:", event, session);
+      console.log("Changement d'état d'authentification:", event, session);
       
       if (event === "SIGNED_IN" && session?.user) {
         try {
-          console.log("Checking profile for user:", session.user.id);
-          
+          // Check if profile exists
           const { data: existingProfile, error: profileError } = await supabase
             .from("profiles")
             .select("*")
             .eq("id", session.user.id)
-            .maybeSingle();
+            .single();
 
-          if (profileError) {
-            console.error("Error checking profile:", profileError);
+          if (profileError && profileError.code !== 'PGRST116') {
+            console.error("Erreur lors de la vérification du profil:", profileError);
             toast.error("Erreur lors de la vérification du profil");
             return;
           }
 
           if (!existingProfile) {
-            console.log("Creating new profile for user:", session.user.id);
+            console.log("Création d'un nouveau profil pour:", session.user.id);
+            
             const { error: insertError } = await supabase
               .from("profiles")
               .insert([
                 {
                   id: session.user.id,
                   email: session.user.email,
-                  username: session.user.email?.split('@')[0],
-                  has_completed_onboarding: session.user.email === 'guest@fring.app' ? true : false,
-                  status: 'active'
+                  username: session.user.email?.split('@')[0] || 'guest',
+                  has_completed_onboarding: session.user.email === 'guest@fring.app'
                 }
               ]);
 
             if (insertError) {
-              console.error("Error creating profile:", insertError);
+              console.error("Erreur lors de la création du profil:", insertError);
               toast.error("Erreur lors de la création du profil");
               return;
             }
           }
 
-          // Ensure user role exists
-          const { error: roleError } = await supabase
-            .from('user_roles')
-            .upsert(
-              { 
-                user_id: session.user.id, 
-                role: 'user' 
-              },
-              { 
-                onConflict: 'user_id,role',
-                ignoreDuplicates: true 
-              }
-            );
-
-          if (roleError) {
-            console.error("Error setting user role:", roleError);
-            toast.error("Erreur lors de la configuration du rôle");
-            return;
-          }
-
-          console.log("Profile setup completed:", existingProfile || "New profile created");
           toast.success("Connexion réussie !");
           navigate("/");
         } catch (error) {
-          console.error("Error in auth flow:", error);
+          console.error("Erreur dans le flux d'authentification:", error);
           toast.error("Une erreur est survenue lors de l'authentification");
         }
       } else if (event === "SIGNED_OUT") {
-        console.log("User signed out");
+        console.log("Déconnexion de l'utilisateur");
         toast.info("Déconnexion réussie");
-        navigate("/auth");
-      } else if (event === "USER_DELETED") {
-        console.log("User account deleted");
-        toast.info("Compte supprimé");
         navigate("/auth");
       }
     };
