@@ -1,3 +1,4 @@
+
 import { useForm } from "react-hook-form";
 import { useImageUpload } from "@/hooks/useImageUpload";
 import { FormContainer } from "./clothing-form/FormContainer";
@@ -23,7 +24,7 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
   const form = useForm<FormValues>({
     defaultValues: {
       image: existingClothing?.image || null,
-      name: existingClothing?.name || "",
+      name: "Mon nouveau vêtement",
       category: existingClothing?.category || "",
       color: existingClothing?.color || "",
       subcategory: existingClothing?.subcategory || "",
@@ -31,7 +32,7 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
       secondary_color: existingClothing?.secondary_color || "",
       size: existingClothing?.size || "",
       material: existingClothing?.material || "",
-      notes: existingClothing?.notes || "",
+      notes: "Description de mon vêtement",
       imageUrl: existingClothing?.image || "",
       is_for_sale: existingClothing?.is_for_sale || false,
       purchase_price: existingClothing?.purchase_price || null,
