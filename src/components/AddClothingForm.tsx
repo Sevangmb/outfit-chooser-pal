@@ -11,6 +11,8 @@ import { Trash2 } from "lucide-react";
 import { useClothingFormSubmit } from "./clothing-form/hooks/useClothingFormSubmit";
 import { useClothingDelete } from "./clothing-form/hooks/useClothingDelete";
 import { useCameraCapture } from "./clothing-form/hooks/useCameraCapture";
+import { analyzeImage } from "@/utils/imageAnalysis";
+import { toast } from "sonner";
 
 interface AddClothingFormProps {
   onSuccess?: () => void;
@@ -25,9 +27,9 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
     defaultValues: {
       image: existingClothing?.image || null,
       name: "Mon nouveau vêtement",
-      category: "Hauts", // Valeur par défaut pour la catégorie
+      category: existingClothing?.category || "",
       color: existingClothing?.color || "",
-      subcategory: "T-shirt", // Valeur par défaut pour la sous-catégorie
+      subcategory: existingClothing?.subcategory || "",
       brand: existingClothing?.brand || "",
       secondary_color: existingClothing?.secondary_color || "",
       size: existingClothing?.size || "",
@@ -48,8 +50,53 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
   const { isUploading, previewUrl, uploadError, uploadProgress, handleFileUpload, resetPreview } = useImageUpload();
   const { handleSubmit } = useClothingFormSubmit(mode, existingClothing?.id);
   const { handleDelete } = useClothingDelete();
-  const { handleCameraCapture } = useCameraCapture((imageData: string) => {
+
+  const handleImageUploadWithAnalysis = async (file: File) => {
+    try {
+      const imageUrl = await handleFileUpload(file);
+      if (imageUrl) {
+        const analysis = await analyzeImage(imageUrl);
+        if (analysis) {
+          if (analysis.category) {
+            form.setValue("category", analysis.category);
+            toast.success(`Catégorie détectée : ${analysis.category}`);
+          }
+          if (analysis.subcategory) {
+            form.setValue("subcategory", analysis.subcategory);
+            toast.success(`Sous-catégorie détectée : ${analysis.subcategory}`);
+          }
+          if (analysis.name) {
+            form.setValue("name", analysis.name);
+            toast.success(`Nom détecté : ${analysis.name}`);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Erreur lors de l'analyse de l'image:", error);
+      toast.error("Erreur lors de l'analyse de l'image");
+    }
+  };
+
+  const { handleCameraCapture } = useCameraCapture(async (imageData: string) => {
     form.setValue("image", imageData);
+    // Analyse de l'image capturée par la caméra
+    if (imageData) {
+      const analysis = await analyzeImage(imageData);
+      if (analysis) {
+        if (analysis.category) {
+          form.setValue("category", analysis.category);
+          toast.success(`Catégorie détectée : ${analysis.category}`);
+        }
+        if (analysis.subcategory) {
+          form.setValue("subcategory", analysis.subcategory);
+          toast.success(`Sous-catégorie détectée : ${analysis.subcategory}`);
+        }
+        if (analysis.name) {
+          form.setValue("name", analysis.name);
+          toast.success(`Nom détecté : ${analysis.name}`);
+        }
+      }
+    }
   });
 
   return (
@@ -83,7 +130,7 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
             previewUrl={previewUrl}
             uploadError={uploadError}
             uploadProgress={uploadProgress}
-            onFileUpload={handleFileUpload}
+            onFileUpload={handleImageUploadWithAnalysis}
             onCameraCapture={handleCameraCapture}
             onResetPreview={resetPreview}
           />
