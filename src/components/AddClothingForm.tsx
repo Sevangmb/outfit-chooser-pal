@@ -51,7 +51,7 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
   const { handleSubmit } = useClothingFormSubmit(mode, existingClothing?.id);
   const { handleDelete } = useClothingDelete();
 
-  const handleImageUploadWithAnalysis = async (file: File) => {
+  const handleImageUploadWithAnalysis = async (file: File): Promise<string | null> => {
     try {
       const imageUrl = await handleFileUpload(file);
       if (imageUrl) {
@@ -71,9 +71,11 @@ export const AddClothingForm = ({ onSuccess }: AddClothingFormProps) => {
           }
         }
       }
+      return imageUrl; // Return the URL to satisfy the type requirement
     } catch (error) {
       console.error("Erreur lors de l'analyse de l'image:", error);
       toast.error("Erreur lors de l'analyse de l'image");
+      return null;
     }
   };
 
